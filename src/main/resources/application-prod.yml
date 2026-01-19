@@ -24,7 +24,6 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
 
 server:
   port: ${SERVER_PORT:8080}
@@ -34,3 +33,9 @@ server:
 logging:
   level:
     org.springframework.security: info
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
