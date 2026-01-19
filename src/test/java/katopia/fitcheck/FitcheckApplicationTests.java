@@ -1,0 +1,13 @@
+package katopia.fitcheck;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class FitcheckApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}

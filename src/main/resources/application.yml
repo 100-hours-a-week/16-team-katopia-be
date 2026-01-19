@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: fit-check
+
+  profiles:
+    default: local # java -jar app.jar
+    group:
+      local: "local,local-secret"
+      prod: "prod"
+
+  jackson:
+    time-zone: Asia/Seoul # JSON 직렬화/역직렬화 시간대 기준
+
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: 8080
+  shutdown: graceful # 종료 전 기존 요청 처리 대기 활성화
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      roles: ADMIN # 시큐리티 actuate EndpointRequest ADMIN Role 설정 필요
+
+logging:
+  level:
+    root: info
+    org.springframework.web: info
+    org.springframework.security: debug
+
+app:
+  jwt:
+    issuer: fit-check
+    access-token-ttl: 15m
+    refresh-token-ttl: 14d
+  security:
+    cors:
+      allowed-origins:
+        - "http://localhost:3000"
+        - "http://localhost:8080"
+      allowed-methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+      allowed-headers: ["*"]
+      allow-credentials: true
+
+  sse:
+    emitter-timeout: 30m   # SSE 연결 유지(클라이언트 재연결 고려)
+
+# S3 이미지 업로드는 클라이언트 -> S3로 진행
+#  file:
+#    upload:
+#      max-size: 10MB
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
