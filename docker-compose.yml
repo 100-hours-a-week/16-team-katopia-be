@@ -1,0 +1,30 @@
+name: fitcheck
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fitcheck-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: fitcheck
+      TZ: Asia/Seoul
+    ports:
+      - "3307:3306"
+    volumes:
+      - fitcheck_mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: fitcheck-redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: fitcheck-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  fitcheck_mysql_data:
