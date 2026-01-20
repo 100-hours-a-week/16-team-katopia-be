@@ -8,7 +8,6 @@ import katopia.fitcheck.global.exception.AuthException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider.TokenType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;

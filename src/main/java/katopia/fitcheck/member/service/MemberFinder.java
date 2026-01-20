@@ -1,16 +1,13 @@
-package katopia.fitcheck.member;
+package katopia.fitcheck.member.service;
 
-import katopia.fitcheck.global.exception.AuthException;
-import katopia.fitcheck.global.exception.code.AuthErrorCode;
-import katopia.fitcheck.global.security.oauth2.SocialProvider;
+import katopia.fitcheck.global.exception.BusinessException;
+import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.security.oauth2.SocialUserProfile;
+import katopia.fitcheck.member.MemberRepository;
 import katopia.fitcheck.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.util.Locale;
 
 @Component
 @Transactional(readOnly = true)
@@ -18,9 +15,14 @@ import java.util.Locale;
 public class MemberFinder {
     private final MemberRepository memberRepository;
 
-    @Transactional
     public Member findBySocialProfileOrNull(SocialUserProfile profile) {
         return memberRepository.findByOauth2ProviderAndOauth2UserId(profile.provider(), profile.providerUserId())
                 .orElse(null);
     }
+
+    public Member findByIdOrThrow(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
 }

@@ -45,8 +45,10 @@ public class SecurityConfig {
                                 "/error",
                                 "/.well-known/**"
                         ).permitAll()
-                        // 공개 API { 사용자 프로필 상세보기, 닉네임 중복 검증 }
-                        .requestMatchers(HttpMethod.GET, "/api/members", "/api/members?nickname=*").permitAll()
+                        // 공개 API { 사용자 공개 프로필, 닉네임 중복 검증 }
+                        .requestMatchers(HttpMethod.GET, "/api/members/check").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/members/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/members/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/tokens").permitAll()
                         .anyRequest().authenticated()
                 )

@@ -65,24 +65,24 @@ public class JwtProvider {
      */
 
     // 회원가입 임시 토큰 생성
-    public String createRegistrationToken(Long memberId) {
-        return buildToken(memberId, TokenType.REGISTRATION).token();
+    public Token createRegistrationToken(Long memberId) {
+        return buildToken(memberId, TokenType.REGISTRATION);
     }
 
     // AT 생성
-    public String createAccessToken(Long memberId) {
-        return buildToken(memberId, TokenType.ACCESS).token();
+    public Token createAccessToken(Long memberId) {
+        return buildToken(memberId, TokenType.ACCESS);
     }
 
     // RT 생성
-    public String createRefreshToken(Long memberId) {
-        return buildToken(memberId, TokenType.REFRESH).token();
+    public Token createRefreshToken(Long memberId) {
+        return buildToken(memberId, TokenType.REFRESH);
     }
 
     // AT + RT 생성
     public TokenPair issueTokens(Long memberId) {
-        String accessToken = createAccessToken(memberId);
-        String refreshToken = createRefreshToken(memberId);
+        Token accessToken = createAccessToken(memberId);
+        Token refreshToken = createRefreshToken(memberId);
         return new TokenPair(accessToken, refreshToken);
     }
 
@@ -195,5 +195,5 @@ public class JwtProvider {
 
     public record Token(String token, Instant expiresAt) { }
 
-    public record TokenPair(String accessToken, String refreshToken) { }
+    public record TokenPair(Token accessToken, Token refreshToken) { }
 }

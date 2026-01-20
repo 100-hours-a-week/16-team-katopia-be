@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import katopia.fitcheck.global.security.oauth2.SocialProvider;
+import katopia.fitcheck.member.dto.MemberProfileUpdate;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,10 +66,10 @@ public class Member {
     @Column(length = 1)
     private Gender gender;
 
-    @Column
+    @Column(columnDefinition = "0")
     private Short height;
 
-    @Column
+    @Column(columnDefinition = "0")
     private Short weight;
 
     @Column(name = "enable_realtime_notification", nullable = false)

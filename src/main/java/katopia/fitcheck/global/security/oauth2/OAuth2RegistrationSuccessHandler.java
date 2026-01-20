@@ -9,9 +9,12 @@ import katopia.fitcheck.global.exception.AuthException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.AuthSuccessCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
+import katopia.fitcheck.global.security.jwt.JwtProvider.Token;
+import katopia.fitcheck.global.security.jwt.JwtProvider.TokenPair;
 import katopia.fitcheck.global.security.jwt.LoginResponse;
 import katopia.fitcheck.member.domain.Member;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -53,13 +56,23 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
 
         // 활성 사용자 처리
         if (!memberOAuth2User.registrationRequired()) {
-            super.onAuthenticationSuccess(request, response, authentication);
+            TokenPair tokens = jwtProvider.issueTokens(member.getId());
+            response.addHeader(HttpHeaders.SET_COOKIE,
+                    jwtProvider.buildRefreshCookie(tokens.refreshToken()).toString());
+
+            LoginResponse loginResponse = LoginResponse.of(member, tokens.accessToken().token());
+            ResponseEntity<APIResponse<LoginResponse>> entity =
+                    APIResponse.ok(AuthSuccessCode.LOGIN_SUCCESS, loginResponse);
+            response.setStatus(entity.getStatusCodeValue());
+            response.setContentType("application/json");
+            objectMapper.writeValue(response.getWriter(), entity.getBody());
+            clearAuthenticationAttributes(request);
             return;
         }
 
         // 비활성 사용자(신규 회원, 재가입 회원) 처리
-        String registrationToken = jwtProvider.createRegistrationToken(member.getId());
-        LoginResponse loginResponse = new LoginResponse(member.getAccountStatus(), member.getEmail(), registrationToken);
+        String registrationToken = jwtProvider.createRegistrationToken(member.getId()).token();
+        LoginResponse loginResponse = LoginResponse.of(member, registrationToken);
 
         ResponseEntity<APIResponse<LoginResponse>> entity =
                 APIResponse.ok(AuthSuccessCode.NEW_MEMBER_NEED_INFO, loginResponse);
