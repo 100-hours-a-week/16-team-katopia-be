@@ -24,4 +24,16 @@ public class GlobalExceptionHandler {
         log.warn("Method not supported: {}", ex.getMethod());
         return APIResponse.error(CommonErrorCode.METHOD_NOT_ALLOWED);
     }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<APIResponse<?>> handleBusinessException(BusinessException ex) {
+        log.warn("Business exception: {}", ex.getErrorCode().getMessage());
+        return APIResponse.error(ex.getErrorCode());
+    }
+
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<APIResponse<?>> handleAuthException(AuthException ex) {
+        log.warn("Auth exception: {}", ex.getErrorCode().getMessage());
+        return APIResponse.error(ex.getErrorCode());
+    }
 }
