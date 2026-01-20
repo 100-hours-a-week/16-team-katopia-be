@@ -1,12 +1,16 @@
 package katopia.fitcheck.member.domain;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import katopia.fitcheck.global.security.oauth2.SocialProvider;
@@ -17,7 +21,13 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -46,7 +56,7 @@ public class Member {
     private SocialProvider oauth2Provider;
 
     @Column(name = "oauth2_user_id", nullable = false)
-    private Long oauth2UserId;
+    private String oauth2UserId;
 
     @Column(name = "profile_image_url", length = 1024)
     private String profileImageUrl;
@@ -63,6 +73,12 @@ public class Member {
 
     @Column(name = "enable_realtime_notification", nullable = false)
     private boolean enableRealtimeNotification;
+
+    @ElementCollection(fetch = FetchType.LAZY, targetClass = StyleType.class)
+    @CollectionTable(name = "member_styles", joinColumns = @JoinColumn(name = "member_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "style", length = 30, nullable = false)
+    private Set<StyleType> styles = new LinkedHashSet<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -87,12 +103,13 @@ public class Member {
                    String email,
                    String nickname,
                    SocialProvider oauth2Provider,
-                   Long oauth2UserId,
+                   String oauth2UserId,
                    String profileImageUrl,
                    Gender gender,
                    Short height,
                    Short weight,
                    boolean enableRealtimeNotification,
+                   Set<StyleType> styles,
                    LocalDateTime deletedAt,
                    LocalDateTime termsAgreedAt,
                    AccountStatus accountStatus) {
@@ -106,29 +123,74 @@ public class Member {
         this.height = height;
         this.weight = weight;
         this.enableRealtimeNotification = enableRealtimeNotification;
+        if (styles != null) {
+            this.styles.addAll(styles);
+        }
         this.deletedAt = deletedAt;
         this.termsAgreedAt = termsAgreedAt;
         this.accountStatus = accountStatus != null ? accountStatus : AccountStatus.PENDING;
     }
 
     public static Member createPending(SocialProvider provider,
-                                       Long providerUserId,
-                                       String email
+                                       String providerUserId,
+                                       String email,
+                                       String nickname
     ) {
         return Member.builder()
                 .oauth2Provider(provider)
                 .oauth2UserId(providerUserId)
+                .nickname(nickname)
                 .email(email)
                 .enableRealtimeNotification(false)
+                .styles(Set.of())
                 .accountStatus(AccountStatus.PENDING)
                 .build();
+    }
+
+    public void completeRegistration(String nickname) {
+        this.nickname = nickname;
+        this.accountStatus = AccountStatus.ACTIVE;
+        this.termsAgreedAt = LocalDateTime.now();
     }
 
     public void markAsWithdrawn(String anonymizedNickname) {
         this.nickname = anonymizedNickname;
         this.profileImageUrl = null;
         this.enableRealtimeNotification = false;
+        this.styles.clear();
         this.accountStatus = AccountStatus.WITHDRAWN;
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isWithdrawn() {
+        return this.accountStatus == AccountStatus.WITHDRAWN;
+    }
+
+    public boolean isRejoinAllowed(Duration waitingPeriod) {
+        if (waitingPeriod == null || deletedAt == null) {
+            return false;
+        }
+        Instant withdrawnInstant = deletedAt.atZone(ZoneId.systemDefault()).toInstant();
+        return Duration.between(withdrawnInstant, Instant.now()).compareTo(waitingPeriod) >= 0;
+    }
+
+    public void reopenForRejoin() {
+        this.accountStatus = AccountStatus.PENDING;
+        this.deletedAt = null;
+        this.termsAgreedAt = null;
+    }
+
+    public void updateProfile(MemberProfileUpdate update) {
+        Objects.requireNonNull(update, "update must not be null");
+        this.nickname = update.nickname();
+        this.profileImageUrl = update.profileImageUrl();
+        this.gender = update.gender();
+        this.height = update.height();
+        this.weight = update.weight();
+        this.enableRealtimeNotification = update.enableRealtimeNotification();
+        if (update.styles() != null) {
+            this.styles.clear();
+            this.styles.addAll(update.styles());
+        }
     }
 }

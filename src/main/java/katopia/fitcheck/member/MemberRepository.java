@@ -7,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    Optional<Member> findByOauth2ProviderAndOauth2UserId(SocialProvider provider, Long oauth2UserId);
+    Optional<Member> findByOauth2ProviderAndOauth2UserId(SocialProvider provider, String oauth2UserId);
 
     boolean existsByNickname(String nickname);
-    boolean existsByoauth2ProviderAndOauth2UserId(SocialProvider provider, Long oauth2UserId);
 }
