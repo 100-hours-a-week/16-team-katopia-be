@@ -244,11 +244,11 @@ jobs:
           fi
 
           sudo mkdir -p "/etc/systemd/system/${SERVICE_NAME}.service.d"
-          sudo tee "/etc/systemd/system/${SERVICE_NAME}.service.d/override.conf" >/dev/null <<EOF
-[Service]
-ExecStart=
-ExecStart=${JAVA_BIN} -jar ${LINK_JAR} --spring.profiles.active=prod
-EOF
+          printf '%s\n' \
+            '[Service]' \
+            'ExecStart=' \
+            "ExecStart=${JAVA_BIN} -jar ${LINK_JAR} --spring.profiles.active=prod" \
+            | sudo tee "/etc/systemd/system/${SERVICE_NAME}.service.d/override.conf" >/dev/null
           sudo systemctl daemon-reload
 
           sudo systemctl stop "${SERVICE_NAME}"
@@ -261,7 +261,7 @@ EOF
           fi
 
           echo "✅ Deployed ${LATEST_JAR} via ${SERVICE_NAME}"
-          EOF
+
 
       # 실패 시 디스코드 알림 (실패 step name 포함)
 #      - name: Notify Discord on failure
