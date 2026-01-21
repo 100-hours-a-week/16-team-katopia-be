@@ -22,12 +22,16 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 
 @Component
 @RequiredArgsConstructor
 public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private static final Duration WITHDRAW_REJOIN_PERIOD = Duration.ofDays(14);
+    public static final String WITHDRAWN_REJOIN_AT_ATTR = "withdrawnRejoinAt";
+    private static final DateTimeFormatter REJOIN_AT_FORMATTER = DateTimeFormatter.ISO_INSTANT;
 
     private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
@@ -50,6 +54,13 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
                 member.reopenForRejoin();
                 // 비활성 사용자 처리 로직으로
             } else {
+                Instant rejoinAvailableAt = member.rejoinAvailableAt(WITHDRAW_REJOIN_PERIOD);
+                if (rejoinAvailableAt != null) {
+                    request.setAttribute(
+                            WITHDRAWN_REJOIN_AT_ATTR,
+                            REJOIN_AT_FORMATTER.format(rejoinAvailableAt)
+                    );
+                }
                 throw new AuthException(AuthErrorCode.WITHDRAWN_MEMBER);
             }
         }

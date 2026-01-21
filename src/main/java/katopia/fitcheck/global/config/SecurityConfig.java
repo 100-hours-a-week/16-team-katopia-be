@@ -5,6 +5,7 @@ import katopia.fitcheck.global.security.handler.RestAuthenticationEntryPoint;
 import katopia.fitcheck.global.security.jwt.JwtFilter;
 import katopia.fitcheck.global.security.jwt.RegistrationTokenFilter;
 import katopia.fitcheck.global.security.oauth2.CustomOAuth2UserService;
+import katopia.fitcheck.global.security.oauth2.OAuth2AuthenticationFailureHandler;
 import katopia.fitcheck.global.security.oauth2.OAuth2RegistrationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
@@ -14,7 +15,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2RegistrationSuccessHandler oAuth2RegistrationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final RestAccessDeniedHandler restAccessDeniedHandler;
     private final RegistrationTokenFilter registrationTokenFilter;
@@ -56,15 +58,16 @@ public class SecurityConfig {
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(user -> user.userService(customOAuth2UserService))
                         .successHandler(oAuth2RegistrationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
                 .exceptionHandling(eh -> eh
                         .authenticationEntryPoint(restAuthenticationEntryPoint)
                         .accessDeniedHandler(restAccessDeniedHandler)
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtFilter, FilterSecurityInterceptor.class)
                 .addFilterBefore(registrationTokenFilter, JwtFilter.class);
         /*
-        RegistrationTokenFilter - JwtFilter - UsernamePasswordAuthenticationFilter
+        RegistrationTokenFilter - JwtFilter - FilterSecurityInterceptor
          */
 
         return http.build();

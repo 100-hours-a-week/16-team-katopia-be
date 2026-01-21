@@ -9,6 +9,7 @@ import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider.TokenType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -36,7 +37,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         // AT가 있는데, 시큐리티 컨텍스트가 없는 경우
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (needsAuthentication(accessToken)) {
             Long memberId = jwtProvider.extractMemberId(accessToken, JwtProvider.TokenType.ACCESS);
             if (memberId == null) {
                 throw new AuthException(AuthErrorCode.INVALID_AT);
@@ -51,5 +52,20 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean needsAuthentication(String accessToken) {
+        if (accessToken == null) {
+            return false;
+        }
+        Authentication current = SecurityContextHolder.getContext().getAuthentication();
+        if (current == null) {
+            return true;
+        }
+        Object principal = current.getPrincipal();
+        if (principal instanceof MemberPrincipal) {
+            return false;
+        }
+        return true;
     }
 }

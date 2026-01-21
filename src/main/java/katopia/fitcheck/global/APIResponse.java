@@ -56,7 +56,13 @@ public class APIResponse<T> {
     public static ResponseEntity<APIResponse<?>> error(ResponseCode code) {
         return ResponseEntity
                 .status(code.getStatus())
-                .body(body(code, Map.of()));
+                .body(new APIResponse<>(false, code.getMessage(), code.getCode(), Map.of(), now()));
+    }
+
+    public static ResponseEntity<APIResponse<?>> error(ResponseCode code, String message) {
+        return ResponseEntity
+                .status(code.getStatus())
+                .body(new APIResponse<>(false, message, code.getCode(), Map.of(), now()));
     }
 
     public static ResponseEntity<APIResponse<?>> error(String message) {
