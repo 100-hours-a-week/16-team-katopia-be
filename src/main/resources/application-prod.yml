@@ -14,7 +14,7 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate # 수동 DDL 필요
+      ddl-auto: update # 수동 DDL 필요
     properties:
       hibernate:
         format_sql: false
