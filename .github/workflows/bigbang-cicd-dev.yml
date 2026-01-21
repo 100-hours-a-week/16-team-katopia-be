@@ -261,7 +261,7 @@ EOF
           fi
 
           echo "✅ Deployed ${LATEST_JAR} via ${SERVICE_NAME}"
-          EOF
+
 
       # 실패 시 디스코드 알림 (실패 step name 포함)
 #      - name: Notify Discord on failure
