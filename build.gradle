@@ -9,6 +9,10 @@ group = 'katopia'
 version = '0.0.1-SNAPSHOT'
 description = 'fitcheck'
 
+ext {
+    set('springCloudAwsVersion', '3.2.0')
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -23,6 +27,12 @@ configurations {
 
 repositories {
     mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}"
+    }
 }
 
 dependencies {
@@ -54,6 +64,7 @@ dependencies {
 
     // Actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
 
     // Dev & Test
     implementation 'io.micrometer:micrometer-registry-prometheus'
