@@ -37,12 +37,9 @@ logging:
     root: info
     org.springframework.web: info
     org.springframework.security: debug
+    org.springframework.security.oauth2: TRACE
 
 app:
-  jwt:
-    issuer: fit-check
-    access-token-ttl: 15m
-    refresh-token-ttl: 14d
   security:
     cors:
       allowed-origins:

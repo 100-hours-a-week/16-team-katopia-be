@@ -36,4 +36,10 @@ public class GlobalExceptionHandler {
         log.warn("Auth exception: {}", ex.getErrorCode().getMessage());
         return APIResponse.error(ex.getErrorCode());
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<APIResponse<?>> handleUnhandled(Exception ex) {
+        log.error("Unhandled exception", ex);
+        return APIResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR);
+    }
 }

@@ -36,7 +36,7 @@ spring:
     compose:
       enabled: true
       file: docker-compose.yml
-      lifecycle-management: start_and_stop
+      lifecycle-management: start_only
 
 server:
   error:
