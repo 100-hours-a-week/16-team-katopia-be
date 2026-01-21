@@ -20,19 +20,15 @@
 #        with:
 #          fetch-depth: 1
 #
-#      # Gradle 의존성/래퍼 캐시: setup-java에서 처리
-#      - name: Set up JDK 21 (+ Gradle dependency cache)
+#      - name: Set up JDK 21
 #        id: setup_jdk
 #        uses: actions/setup-java@v4
 #        with:
 #          distribution: temurin
 #          java-version: "21"
-#          cache: gradle
-#          cache-dependency-path: |
-#            **/*.gradle*
-#            **/gradle-wrapper.properties
-#            gradle.properties
-#            settings.gradle*
+#      - name: Set up Gradle
+#        id: setup_gradle
+#        uses: gradle/actions/setup-gradle@v3
 #
 #      # "중간 산출물" 캐시 (프로젝트 루트 .gradle)
 #      - name: Cache project .gradle (intermediate outputs)
@@ -44,9 +40,6 @@
 #          restore-keys: |
 #            project-gradle-${{ runner.os }}-
 #
-#      - name: Ensure Gradle wrapper executable
-#        id: chmod_gradlew
-#        run: chmod +x ./gradlew
 #      #
 #      #      # 2) 정적 분석 (SpotBugs only)
 #      #      - name: Static analysis (SpotBugs)
@@ -70,9 +63,9 @@
 #      #        run: ./gradlew --no-daemon --build-cache e2eTest
 #
 #      # 4) 빌드 (테스트는 위에서 이미 수행)
-#      - name: Build (bootJar)
+#      - name: Build (gradle build)
 #        id: build_bootjar
-#        run: ./gradlew --no-daemon --build-cache bootJar -x test
+#        run: gradle --no-daemon --build-cache build -x test
 #
 #      # 4.5) 전송할 JAR 파일명 만들기: 날짜(Asia/Seoul) + commit message(slug)
 #      - name: Prepare jar filename (date + commit message)
