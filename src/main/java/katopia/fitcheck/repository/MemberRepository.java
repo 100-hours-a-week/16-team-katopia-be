@@ -1,4 +1,4 @@
-package katopia.fitcheck.member;
+package katopia.fitcheck.repository;
 
 import katopia.fitcheck.global.security.oauth2.SocialProvider;
 import katopia.fitcheck.member.domain.Member;

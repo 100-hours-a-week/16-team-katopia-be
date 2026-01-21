@@ -3,7 +3,7 @@ package katopia.fitcheck.member.service;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.security.oauth2.SocialUserProfile;
-import katopia.fitcheck.member.MemberRepository;
+import katopia.fitcheck.repository.MemberRepository;
 import katopia.fitcheck.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

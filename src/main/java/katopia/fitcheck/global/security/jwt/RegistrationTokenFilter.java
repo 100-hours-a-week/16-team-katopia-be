@@ -36,7 +36,7 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
         if (!isRegistrationEndpoint) {
             // 회원가입 API 요청이 아닌데, 임시 AT인 경우
             if (accessToken != null && jwtProvider.isTokenType(accessToken, TokenType.REGISTRATION)) {
-                throw new AuthException(AuthErrorCode.INVALID_AT);
+                throw new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN_PATH);
             }
             filterChain.doFilter(request, response);
             return;

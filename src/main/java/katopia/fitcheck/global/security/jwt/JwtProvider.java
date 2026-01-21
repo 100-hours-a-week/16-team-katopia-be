@@ -91,7 +91,7 @@ public class JwtProvider {
         long maxAge = Math.max(0, Duration.between(Instant.now(), refreshToken.expiresAt()).getSeconds());
         return ResponseCookie.from(REFRESH_COOKIE, refreshToken.token())
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path(REFRESH_PATH)
                 .sameSite("None")
                 .maxAge(maxAge)

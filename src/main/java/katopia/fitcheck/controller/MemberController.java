@@ -1,6 +1,7 @@
-package katopia.fitcheck.member;
+package katopia.fitcheck.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import katopia.fitcheck.controller.spec.MemberApiSpec;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.AuthException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
@@ -33,7 +34,6 @@ public class MemberController implements MemberApiSpec {
 
     private final MemberFacade memberFacade;
     private final SecuritySupport securitySupport;
-
 
     @PostMapping
     @Override
@@ -102,6 +102,6 @@ public class MemberController implements MemberApiSpec {
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
         memberFacade.withdraw(memberId);
-        return APIResponse.noContent(MemberSuccessCode.MEMBER_WITHDRAWN);
+        return APIResponse.noContent(AuthSuccessCode.MEMBER_WITHDRAWN);
     }
 }

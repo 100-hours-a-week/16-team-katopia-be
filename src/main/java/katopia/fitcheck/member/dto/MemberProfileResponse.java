@@ -1,6 +1,5 @@
 package katopia.fitcheck.member.dto;
 
-import katopia.fitcheck.member.domain.AccountStatus;
 import katopia.fitcheck.member.domain.Member;
 import lombok.Builder;
 

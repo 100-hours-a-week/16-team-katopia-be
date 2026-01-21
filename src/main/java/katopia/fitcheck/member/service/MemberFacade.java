@@ -1,6 +1,5 @@
 package katopia.fitcheck.member.service;
 
-import jakarta.servlet.http.HttpServletResponse;
 import katopia.fitcheck.member.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;

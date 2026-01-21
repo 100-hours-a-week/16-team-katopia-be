@@ -8,8 +8,8 @@ import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.AuthException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.AuthSuccessCode;
+import katopia.fitcheck.global.exception.code.ResponseCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
-import katopia.fitcheck.global.security.jwt.JwtProvider.Token;
 import katopia.fitcheck.global.security.jwt.JwtProvider.TokenPair;
 import katopia.fitcheck.global.security.jwt.LoginResponse;
 import katopia.fitcheck.member.domain.Member;
@@ -61,9 +61,10 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
                     jwtProvider.buildRefreshCookie(tokens.refreshToken()).toString());
 
             LoginResponse loginResponse = LoginResponse.of(member, tokens.accessToken().token());
+            ResponseCode code = AuthSuccessCode.LOGIN_SUCCESS;
             ResponseEntity<APIResponse<LoginResponse>> entity =
-                    APIResponse.ok(AuthSuccessCode.LOGIN_SUCCESS, loginResponse);
-            response.setStatus(entity.getStatusCodeValue());
+                    APIResponse.ok(code, loginResponse);
+            response.setStatus(code.getStatus().value());
             response.setContentType("application/json");
             objectMapper.writeValue(response.getWriter(), entity.getBody());
             clearAuthenticationAttributes(request);

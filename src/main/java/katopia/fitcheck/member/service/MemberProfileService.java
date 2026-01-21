@@ -2,7 +2,7 @@ package katopia.fitcheck.member.service;
 
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
-import katopia.fitcheck.member.MemberRepository;
+import katopia.fitcheck.repository.MemberRepository;
 import katopia.fitcheck.member.domain.AccountStatus;
 import katopia.fitcheck.member.domain.Gender;
 import katopia.fitcheck.member.domain.Member;
