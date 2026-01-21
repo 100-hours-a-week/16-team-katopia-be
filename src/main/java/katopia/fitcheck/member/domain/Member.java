@@ -78,7 +78,7 @@ public class Member {
     @ElementCollection(fetch = FetchType.LAZY, targetClass = StyleType.class)
     @CollectionTable(name = "member_styles", joinColumns = @JoinColumn(name = "member_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "style", length = 30, nullable = false)
+    @Column(name = "style", length = 30)
     private Set<StyleType> styles = new LinkedHashSet<>();
 
     @CreationTimestamp

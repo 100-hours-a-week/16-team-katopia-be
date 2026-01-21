@@ -24,6 +24,7 @@ public class MemberProfileValidator {
     private static final int MAX_HEIGHT = 300;
     private static final int MIN_WEIGHT = 20;
     private static final int MAX_WEIGHT = 500;
+    private static final int MAX_STYLE_COUNT = 2;
 
     public String normalizeNickname(String nickname) {
         if (!StringUtils.hasText(nickname)) {
@@ -97,6 +98,9 @@ public class MemberProfileValidator {
             } catch (IllegalArgumentException ex) {
                 throw new BusinessException(MemberErrorCode.INVALID_STYLE_FORMAT);
             }
+        }
+        if (parsed.size() > MAX_STYLE_COUNT) {
+            throw new BusinessException(MemberErrorCode.STYLE_LIMIT_EXCEEDED);
         }
         return parsed;
     }

@@ -19,6 +19,7 @@ public enum MemberErrorCode implements ResponseCode {
     ALREADY_WITHDRAWN_MEMBER(HttpStatus.FORBIDDEN, "MEMBER-E-011", "이미 탈퇴 처리가 완료된 계정입니다."),
     WAITING_REJOIN_PERIOD(HttpStatus.FORBIDDEN, "MEMBER-E-012", "탈퇴 후 재가입 유예 기간 중입니다. 14일 후에 다시 시도해주세요."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "MEMBER-E-013", "이미 사용중인 닉네임입니다."),
+    STYLE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "MEMBER-E-014", "스타일은 최대 2개까지 선택 가능합니다."),
     ;
 
     private final HttpStatus status;

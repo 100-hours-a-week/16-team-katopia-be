@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record MemberProfileResponse(
     Long id,
     MemberProfile profile,
-    MemberAggregate aggregate,
+    MemberAggregateDto aggregate,
     LocalDateTime updatedAt
 ) {
     public static MemberProfileResponse of(Member member) {
