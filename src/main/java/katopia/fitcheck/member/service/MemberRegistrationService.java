@@ -7,7 +7,7 @@ import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
 import katopia.fitcheck.global.security.jwt.JwtProvider.Token;
 import katopia.fitcheck.global.security.jwt.JwtProvider.TokenPair;
-import katopia.fitcheck.repository.MemberRepository;
+import katopia.fitcheck.member.MemberRepository;
 import katopia.fitcheck.member.domain.AccountStatus;
 import katopia.fitcheck.member.domain.Member;
 import katopia.fitcheck.member.domain.MemberProfileValidator;
