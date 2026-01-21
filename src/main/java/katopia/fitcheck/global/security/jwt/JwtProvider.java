@@ -98,6 +98,16 @@ public class JwtProvider {
                 .build();
     }
 
+    public ResponseCookie clearRefreshCookie() {
+        return ResponseCookie.from(REFRESH_COOKIE, "")
+                .httpOnly(true)
+                .secure(true)
+                .path(REFRESH_PATH)
+                .sameSite("None")
+                .maxAge(0)
+                .build();
+    }
+
     // 토큰 생성
     private Token buildToken(Long memberId, TokenType type) {
         Assert.notNull(memberId, "memberId must not be null");

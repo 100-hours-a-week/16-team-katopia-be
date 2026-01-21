@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthTokenController implements AuthApiSpec {
 
     private final AuthTokenService authTokenService;
+    private final JwtProvider jwtProvider;
 
     @PostMapping("/tokens")
     @Override
@@ -41,5 +43,12 @@ public class AuthTokenController implements AuthApiSpec {
         response.addHeader(HttpHeaders.SET_COOKIE, result.refreshToken().toString());
 
         return APIResponse.ok(AuthSuccessCode.TOKEN_REFRESH_SUCCESS, new TokenRefreshResponse(result.accessToken()));
+    }
+
+    @DeleteMapping("/tokens")
+    @Override
+    public ResponseEntity<APIResponse<Void>> logout(HttpServletResponse response) {
+        response.addHeader(HttpHeaders.SET_COOKIE, jwtProvider.clearRefreshCookie().toString());
+        return APIResponse.ok(AuthSuccessCode.LOGOUT_SUCCESS);
     }
 }

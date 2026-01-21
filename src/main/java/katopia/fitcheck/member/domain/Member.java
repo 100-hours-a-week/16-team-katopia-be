@@ -175,6 +175,14 @@ public class Member {
         return Duration.between(withdrawnInstant, Instant.now()).compareTo(waitingPeriod) >= 0;
     }
 
+    public Instant rejoinAvailableAt(Duration waitingPeriod) {
+        if (waitingPeriod == null || deletedAt == null) {
+            return null;
+        }
+        Instant withdrawnInstant = deletedAt.atZone(ZoneId.systemDefault()).toInstant();
+        return withdrawnInstant.plus(waitingPeriod);
+    }
+
     public void reopenForRejoin() {
         this.accountStatus = AccountStatus.PENDING;
         this.deletedAt = null;

@@ -10,6 +10,7 @@ import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 public interface AuthApiSpec {
@@ -27,4 +28,12 @@ public interface AuthApiSpec {
             @CookieValue(value = JwtProvider.REFRESH_COOKIE, required = false) String refreshToken,
             HttpServletResponse response
     );
+
+    @DeleteMapping("/tokens")
+    @Operation(summary = "로그아웃", description = "서비스 Refresh Token 쿠키를 만료 처리합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "로그아웃 성공",
+                            content = @Content(schema = @Schema(implementation = APIResponse.class)))
+            })
+    ResponseEntity<APIResponse<Void>> logout(HttpServletResponse response);
 }
