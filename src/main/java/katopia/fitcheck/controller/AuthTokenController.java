@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthTokenController{
 
     private final AuthTokenService authTokenService;
-    private final JwtProvider jwtProvider;
 
     @PostMapping("/tokens")
     @Operation(summary = "토큰 재발급", description = "RTR 규칙에 따라 AT/RT를 모두 재발급합니다.",
@@ -50,9 +49,8 @@ public class AuthTokenController{
 
         TokenRefreshResult result = authTokenService.refreshTokens(refreshToken);
 
-        response.addHeader(HttpHeaders.SET_COOKIE,
-                jwtProvider.buildRefreshCookie(result.refreshToken()).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, result.refreshToken().toString());
 
-        return APIResponse.ok(AuthSuccessCode.TOKEN_REFRESH_SUCCESS, TokenRefreshResponse.from(result.accessToken()));
+        return APIResponse.ok(AuthSuccessCode.TOKEN_REFRESH_SUCCESS, new TokenRefreshResponse(result.accessToken()));
     }
 }
