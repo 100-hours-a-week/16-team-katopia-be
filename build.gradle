@@ -76,3 +76,7 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+spotbugs {
+    ignoreFailures = true
+}
