@@ -66,10 +66,10 @@ public class Member {
     @Column(length = 1)
     private Gender gender;
 
-    @Column(columnDefinition = "0")
+    @Column(columnDefinition = "smallint default 0")
     private Short height;
 
-    @Column(columnDefinition = "0")
+    @Column(columnDefinition = "smallint default 0")
     private Short weight;
 
     @Column(name = "enable_realtime_notification", nullable = false)
