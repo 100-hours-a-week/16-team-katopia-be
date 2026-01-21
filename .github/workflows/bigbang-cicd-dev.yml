@@ -1,0 +1,311 @@
+name: BE CI/CD (dev) - Spring
+
+on:
+  push:
+    branches: ["dev"]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Build/Test/Analyze + SCP artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # Gradle 의존성/래퍼 캐시: setup-java에서 처리
+      - name: Set up JDK 21 (+ Gradle dependency cache)
+        id: setup_jdk
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+          cache-dependency-path: |
+            **/*.gradle*
+            **/gradle-wrapper.properties
+            gradle.properties
+            settings.gradle*
+
+      # "중간 산출물" 캐시 (프로젝트 루트 .gradle)
+      - name: Cache project .gradle (intermediate outputs)
+        id: cache_project_gradle
+        uses: actions/cache@v4
+        with:
+          path: .gradle
+          key: project-gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties', 'settings.gradle*') }}
+          restore-keys: |
+            project-gradle-${{ runner.os }}-
+
+      - name: Ensure Gradle wrapper executable
+        id: chmod_gradlew
+        run: chmod +x ./gradlew
+      # 2) 정적 분석 (SpotBugs only)
+      # - name: Static analysis (SpotBugs)
+      #   id: spotbugs
+      #   continue-on-error: true
+      #   run: ./gradlew --no-daemon --build-cache spotbugsMain spotbugsTest
+      #
+      # 3) 테스트 (단위)
+      # - name: Unit tests
+      #   id: unit_tests
+      #   run: ./gradlew --no-daemon --build-cache test
+
+      # 4) 빌드 (테스트는 위에서 이미 수행)
+      - name: Build (bootJar)
+        id: build_bootjar
+        run: ./gradlew --no-daemon --build-cache bootJar -x test
+
+      # 4.5) 전송할 JAR 파일명 만들기: 날짜(Asia/Seoul) + commit message(slug)
+      - name: Prepare jar filename (date + commit message)
+        id: prep_jar
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # KST 기준 날짜
+          DATE="$(TZ=Asia/Seoul date +'%Y%m%d-%H%M%S')"
+
+          # 커밋 메시지(첫 줄만)
+          MSG="$(printf "%s" "${{ github.event.head_commit.message }}" | head -n 1)"
+
+          # 파일명 안전 슬러그(영문/숫자/- 만 허용)
+          SLUG="$(printf "%s" "$MSG" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g' \
+            | cut -c1-60)"
+
+          if [ -z "${SLUG}" ]; then
+            SLUG="no-message"
+          fi
+
+          # Spring Boot jar 찾기 (plain.jar 제외)
+          SRC_JAR="$(ls -1 build/libs/*.jar 2>/dev/null | grep -v '\-plain\.jar$' | head -n 1 || true)"
+          if [ -z "${SRC_JAR}" ]; then
+            echo "❌ No jar found in build/libs"
+            ls -la build/libs || true
+            exit 1
+          fi
+
+          TARGET_NAME="${DATE}_${SLUG}.jar"
+          TARGET_PATH="build/libs/${TARGET_NAME}"
+
+          cp "${SRC_JAR}" "${TARGET_PATH}"
+
+          echo "artifact_name=${TARGET_NAME}" >> "$GITHUB_OUTPUT"
+          echo "artifact_path=${TARGET_PATH}" >> "$GITHUB_OUTPUT"
+
+          echo "✅ Prepared: ${TARGET_PATH}"
+
+      # 5) scp 전송 (성공했을 때만)
+      - name: SCP to EC2
+        id: scp_to_ec2
+        if: success()
+        shell: bash
+        env:
+          EC2_PUBLIC_IP: ${{ secrets.DEV_EC2_PUBLIC_IP }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          printf "%s" "${{ secrets.DEV_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
+          chmod 600 ~/.ssh/katopia.pem
+
+          ARTIFACT_PATH="${{ steps.prep_jar.outputs.artifact_path }}"
+          ARTIFACT_NAME="${{ steps.prep_jar.outputs.artifact_name }}"
+
+          scp -o StrictHostKeyChecking=no \
+            -i ~/.ssh/katopia.pem \
+            "${ARTIFACT_PATH}" \
+            "ec2-user@${EC2_PUBLIC_IP}:/home/ec2-user/spring/${ARTIFACT_NAME}"
+
+      # 실패 시 디스코드 알림 (실패 step name 포함)
+#      - name: Notify Discord on failure
+#        id: notify_discord
+#        if: failure()
+#        env:
+#          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#          STEPS_JSON: ${{ toJson(steps) }}
+#        shell: bash
+#        run: |
+#          set -euo pipefail
+#
+#          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+#          COMMIT_URL="${{ github.event.head_commit.url }}"
+#          BRANCH="${{ github.ref_name }}"
+#
+#          FAILED_IDS=$(echo "$STEPS_JSON" | jq -r '
+#            to_entries[]
+#            | select((.value.outcome == "failure") or (.value.conclusion == "failure"))
+#            | .key
+#          ' | tr '\n' ' ')
+#
+#          declare -A STEP_NAMES=(
+#            [checkout]="Checkout"
+#            [setup_jdk]="Set up JDK 21 (+ Gradle dependency cache)"
+#            [cache_project_gradle]="Cache project .gradle (intermediate outputs)"
+#            [chmod_gradlew]="Ensure Gradle wrapper executable"
+#            [spotbugs]="Static analysis (SpotBugs)"
+#            [unit_tests]="Unit tests"
+#            [build_bootjar]="Build (bootJar)"
+#            [prep_jar]="Prepare jar filename"
+#            [scp_to_ec2]="SCP to EC2"
+#            [upload_reports]="Upload reports (SpotBugs/Test)"
+#          )
+#
+#          if [ -z "$FAILED_IDS" ]; then
+#            FAILED_TEXT="(failed step unknown)"
+#          else
+#            FAILED_TEXT=""
+#            for id in $FAILED_IDS; do
+#              name="${STEP_NAMES[$id]:-$id}"
+#              FAILED_TEXT="${FAILED_TEXT}- ${name}"$'\n'
+#            done
+#          fi
+#
+#          payload=$(jq -n --arg content "❌ CI 실패: ${{ job.name }}
+#Repo: ${{ github.repository }}
+#Branch: ${BRANCH}
+#Commit: ${{ github.sha }} (${COMMIT_URL})
+#Run: ${RUN_URL}
+#
+#Failed step(s):
+#${FAILED_TEXT}" '{content: $content}')
+#
+#          curl -sS -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK_URL"
+
+  cd:
+    name: Deploy via systemd
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: ci
+    if: ${{ needs.ci.result == 'success' }}
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Deploy on EC2 (stop/start systemd)
+        id: deploy_ec2
+        if: success()
+        shell: bash
+        env:
+          EC2_PUBLIC_IP: ${{ secrets.DEV_EC2_PUBLIC_IP }}
+          SERVICE_NAME: spring-app
+          APP_DIR: /home/ec2-user/spring
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          printf "%s" "${{ secrets.DEV_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
+          chmod 600 ~/.ssh/katopia.pem
+
+          ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/katopia.pem \
+            "ec2-user@${EC2_PUBLIC_IP}" \
+            "SERVICE_NAME='${SERVICE_NAME}' APP_DIR='${APP_DIR}' bash -s" <<'EOF'
+          set -euo pipefail
+
+          if [ -z "${SERVICE_NAME:-}" ]; then
+            echo "❌ SERVICE_NAME is empty"
+            exit 1
+          fi
+
+          if [ ! -d "${APP_DIR}" ]; then
+            echo "❌ APP_DIR not found: ${APP_DIR}"
+            exit 1
+          fi
+
+          LATEST_JAR="$(ls -1t "${APP_DIR}"/*.jar 2>/dev/null | head -n 1 || true)"
+          if [ -z "${LATEST_JAR}" ]; then
+            echo "❌ No jar found in ${APP_DIR}"
+            ls -la "${APP_DIR}" || true
+            exit 1
+          fi
+
+          LINK_JAR="${APP_DIR}/app.jar"
+          ln -sfn "${LATEST_JAR}" "${LINK_JAR}"
+
+          JAVA_BIN="$(command -v java || true)"
+          if [ -z "${JAVA_BIN}" ]; then
+            echo "❌ java not found in PATH"
+            exit 1
+          fi
+
+          sudo mkdir -p "/etc/systemd/system/${SERVICE_NAME}.service.d"
+          sudo tee "/etc/systemd/system/${SERVICE_NAME}.service.d/override.conf" >/dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=${JAVA_BIN} -jar ${LINK_JAR} --spring.profiles.active=prod
+EOF
+          sudo systemctl daemon-reload
+
+          sudo systemctl stop "${SERVICE_NAME}"
+          sudo systemctl start "${SERVICE_NAME}"
+
+          if ! sudo systemctl is-active --quiet "${SERVICE_NAME}"; then
+            echo "❌ systemd service not active: ${SERVICE_NAME}"
+            sudo systemctl status "${SERVICE_NAME}" --no-pager || true
+            exit 1
+          fi
+
+          echo "✅ Deployed ${LATEST_JAR} via ${SERVICE_NAME}"
+          EOF
+
+      # 실패 시 디스코드 알림 (실패 step name 포함)
+#      - name: Notify Discord on failure
+#        id: notify_discord
+#        if: failure()
+#        env:
+#          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#          STEPS_JSON: ${{ toJson(steps) }}
+#        shell: bash
+#        run: |
+#          set -euo pipefail
+#
+#          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+#          COMMIT_URL="${{ github.event.head_commit.url }}"
+#          BRANCH="${{ github.ref_name }}"
+#
+#          FAILED_IDS=$(echo "$STEPS_JSON" | jq -r '
+#            to_entries[]
+#            | select((.value.outcome == "failure") or (.value.conclusion == "failure"))
+#            | .key
+#          ' | tr '\n' ' ')
+#
+#          declare -A STEP_NAMES=(
+#            [checkout]="Checkout"
+#            [deploy_ec2]="Deploy on EC2 (stop/start systemd)"
+#          )
+#
+#          if [ -z "$FAILED_IDS" ]; then
+#            FAILED_TEXT="(failed step unknown)"
+#          else
+#            FAILED_TEXT=""
+#            for id in $FAILED_IDS; do
+#              name="${STEP_NAMES[$id]:-$id}"
+#              FAILED_TEXT="${FAILED_TEXT}- ${name}"$'\n'
+#            done
+#          fi
+#
+#          payload=$(jq -n --arg content "❌ CD 실패: ${{ job.name }}
+#Repo: ${{ github.repository }}
+#Branch: ${BRANCH}
+#Commit: ${{ github.sha }} (${COMMIT_URL})
+#Run: ${RUN_URL}
+#
+#Failed step(s):
+#${FAILED_TEXT}" '{content: $content}')
+#
+#          curl -sS -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK_URL"
