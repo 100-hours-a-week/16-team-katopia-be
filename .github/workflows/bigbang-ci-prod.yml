@@ -1,0 +1,194 @@
+#name: CI (dev) - Spring
+#
+#on:
+#  pull_request:
+#    branches: ["main"]
+#
+#permissions:
+#  contents: read
+#
+#jobs:
+#  ci:
+#    name: Build/Test/Analyze + SCP artifact
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 30
+#
+#    steps:
+#      - name: Checkout
+#        id: checkout
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 1
+#
+#      # Gradle 의존성/래퍼 캐시: setup-java에서 처리
+#      - name: Set up JDK 21 (+ Gradle dependency cache)
+#        id: setup_jdk
+#        uses: actions/setup-java@v4
+#        with:
+#          distribution: temurin
+#          java-version: "21"
+#          cache: gradle
+#          cache-dependency-path: |
+#            **/*.gradle*
+#            **/gradle-wrapper.properties
+#            gradle.properties
+#            settings.gradle*
+#
+#      # "중간 산출물" 캐시 (프로젝트 루트 .gradle)
+#      - name: Cache project .gradle (intermediate outputs)
+#        id: cache_project_gradle
+#        uses: actions/cache@v4
+#        with:
+#          path: .gradle
+#          key: project-gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties', 'settings.gradle*') }}
+#          restore-keys: |
+#            project-gradle-${{ runner.os }}-
+#
+#      - name: Ensure Gradle wrapper executable
+#        id: chmod_gradlew
+#        run: chmod +x ./gradlew
+#      #
+#      #      # 2) 정적 분석 (SpotBugs only)
+#      #      - name: Static analysis (SpotBugs)
+#      #        id: spotbugs
+#      #        continue-on-error: true
+#      #        run: ./gradlew --no-daemon --build-cache spotbugsMain spotbugsTest
+#      #
+#      #      # 3) 테스트 (단위)
+#      #      - name: Unit tests
+#      #        id: unit_tests
+#      #        run: ./gradlew --no-daemon --build-cache test
+#      #
+#      #      # 3.1) 테스트 (통합)
+#      #      - name: Integration tests
+#      #        id: integration_tests
+#      #        run: ./gradlew --no-daemon --build-cache integrationTest
+#      #
+#      #      # 3.2) 테스트 (E2E)
+#      #      - name: E2E tests
+#      #        id: e2e_tests
+#      #        run: ./gradlew --no-daemon --build-cache e2eTest
+#
+#      # 4) 빌드 (테스트는 위에서 이미 수행)
+#      - name: Build (bootJar)
+#        id: build_bootjar
+#        run: ./gradlew --no-daemon --build-cache bootJar -x test
+#
+#      # 4.5) 전송할 JAR 파일명 만들기: 날짜(Asia/Seoul) + commit message(slug)
+#      - name: Prepare jar filename (date + commit message)
+#        id: prep_jar
+#        if: success()
+#        shell: bash
+#        run: |
+#          set -euo pipefail
+#
+#          # KST 기준 날짜
+#          DATE="$(TZ=Asia/Seoul date +'%Y%m%d-%H%M%S')"
+#
+#          # 커밋 메시지(첫 줄만)
+#          MSG="$(printf "%s" "${{ github.event.head_commit.message }}" | head -n 1)"
+#
+#          # 파일명 안전 슬러그(영문/숫자/- 만 허용)
+#          SLUG="$(printf "%s" "$MSG" \
+#            | tr '[:upper:]' '[:lower:]' \
+#            | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g' \
+#            | cut -c1-60)"
+#
+#          if [ -z "${SLUG}" ]; then
+#            SLUG="no-message"
+#          fi
+#
+#          # Spring Boot jar 찾기 (plain.jar 제외)
+#          SRC_JAR="$(ls -1 build/libs/*.jar 2>/dev/null | grep -v '\-plain\.jar$' | head -n 1 || true)"
+#          if [ -z "${SRC_JAR}" ]; then
+#            echo "❌ No jar found in build/libs"
+#            ls -la build/libs || true
+#            exit 1
+#          fi
+#
+#          TARGET_NAME="${DATE}_${SLUG}.jar"
+#          TARGET_PATH="build/libs/${TARGET_NAME}"
+#
+#          cp "${SRC_JAR}" "${TARGET_PATH}"
+#
+#          echo "artifact_name=${TARGET_NAME}" >> "$GITHUB_OUTPUT"
+#          echo "artifact_path=${TARGET_PATH}" >> "$GITHUB_OUTPUT"
+#
+#          echo "✅ Prepared: ${TARGET_PATH}"
+#
+#      # 5) scp 전송 (성공했을 때만)
+#      - name: SCP to EC2
+#        id: scp_to_ec2
+#        if: success()
+#        shell: bash
+#        env:
+#          EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
+#        run: |
+#          set -euo pipefail
+#
+#          mkdir -p ~/.ssh
+#          printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
+#          chmod 600 ~/.ssh/katopia.pem
+#
+#          ARTIFACT_PATH="${{ steps.prep_jar.outputs.artifact_path }}"
+#          ARTIFACT_NAME="${{ steps.prep_jar.outputs.artifact_name }}"
+#
+#          scp -o StrictHostKeyChecking=no \
+#            -i ~/.ssh/katopia.pem \
+#            "${ARTIFACT_PATH}" \
+#            "ec2-user@${EC2_PUBLIC_IP}:/home/ec2-user/spring/${ARTIFACT_NAME}"
+#
+#      # 실패 시 디스코드 알림 (실패 step name 포함)
+##      - name: Notify Discord on failure
+##        id: notify_discord
+##        if: failure()
+##        env:
+##          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+##          STEPS_JSON: ${{ toJson(steps) }}
+##        shell: bash
+##        run: |
+##          set -euo pipefail
+##
+##          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+##          COMMIT_URL="${{ github.event.head_commit.url }}"
+##          BRANCH="${{ github.ref_name }}"
+##
+##          FAILED_IDS=$(echo "$STEPS_JSON" | jq -r '
+##            to_entries[]
+##            | select((.value.outcome == "failure") or (.value.conclusion == "failure"))
+##            | .key
+##          ' | tr '\n' ' ')
+##
+##          declare -A STEP_NAMES=(
+##            [checkout]="Checkout"
+##            [setup_jdk]="Set up JDK 21 (+ Gradle dependency cache)"
+##            [cache_project_gradle]="Cache project .gradle (intermediate outputs)"
+##            [chmod_gradlew]="Ensure Gradle wrapper executable"
+##            [spotbugs]="Static analysis (SpotBugs)"
+##            [unit_tests]="Unit tests"
+##            [build_bootjar]="Build (bootJar)"
+##            [prep_jar]="Prepare jar filename"
+##            [scp_to_ec2]="SCP to EC2"
+##            [upload_reports]="Upload reports (SpotBugs/Test)"
+##          )
+##
+##          if [ -z "$FAILED_IDS" ]; then
+##            FAILED_TEXT="(failed step unknown)"
+##          else
+##            FAILED_TEXT=""
+##            for id in $FAILED_IDS; do
+##              name="${STEP_NAMES[$id]:-$id}"
+##              FAILED_TEXT="${FAILED_TEXT}- ${name}"$'\n'
+##            done
+##          fi
+##
+##          payload=$(jq -n --arg content "❌ CI 실패: ${{ job.name }}
+##Repo: ${{ github.repository }}
+##Branch: ${BRANCH}
+##Commit: ${{ github.sha }} (${COMMIT_URL})
+##Run: ${RUN_URL}
+##
+##Failed step(s):
+##${FAILED_TEXT}" '{content: $content}')
+##
+##  curl -sS -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK_URL"
