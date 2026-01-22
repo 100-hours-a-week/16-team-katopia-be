@@ -23,7 +23,7 @@ public class OAuth2AuthenticationFailureHandler implements AuthenticationFailure
             AuthenticationException exception
     ) throws IOException, ServletException {
         String baseUrl = frontendProperties.getBaseUrl();
-        String redirectUrl = normalizeBaseUrl(baseUrl) + "/home";
+        String redirectUrl = normalizeBaseUrl(baseUrl) + "/home?STATE=ERROR";
         response.sendRedirect(redirectUrl);
     }
 

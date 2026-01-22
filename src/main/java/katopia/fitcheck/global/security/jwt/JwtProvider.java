@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import katopia.fitcheck.global.security.oauth2.FrontendProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -42,6 +43,8 @@ public class JwtProvider {
 
     private SecretKey accessSecretKey;
     private SecretKey refreshSecretKey;
+
+    private final FrontendProperties frontendProperties;
 
     @PostConstruct
     void init() {
@@ -107,6 +110,7 @@ public class JwtProvider {
                 .httpOnly(true)
                 .secure(true)
                 .path(REGISTRATION_PATH)
+                .domain(frontendProperties.getBaseUrl().split(":")[0])
                 .sameSite("None")
                 .maxAge(maxAge)
                 .build();
@@ -117,6 +121,7 @@ public class JwtProvider {
                 .httpOnly(true)
                 .secure(true)
                 .path(REFRESH_PATH)
+                .domain(frontendProperties.getBaseUrl().split(":")[0])
                 .sameSite("None")
                 .maxAge(0)
                 .build();

@@ -4,6 +4,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
+import katopia.fitcheck.global.security.jwt.JwtProvider.Token;
+import katopia.fitcheck.member.domain.AccountStatus;
 import katopia.fitcheck.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -35,7 +37,7 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
         // 소셜로그인만 지원. CustomOAuth2User가 아니라면 비정상 상태
         if (!(authentication.getPrincipal() instanceof CustomOAuth2User memberOAuth2User)) {
             clearAuthenticationAttributes(request);
-            redirectToHome(request, response);
+            redirectToHome(request, response, null);
             return;
         }
 
@@ -55,7 +57,7 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
                     );
                 }
                 clearAuthenticationAttributes(request);
-                redirectToHome(request, response);
+                redirectToHome(request, response, AccountStatus.WITHDRAWN);
                 return;
             }
         }
@@ -66,21 +68,21 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
             response.addHeader(HttpHeaders.SET_COOKIE,
                     jwtProvider.buildRefreshCookie(tokens.refreshToken()).toString());
             clearAuthenticationAttributes(request);
-            redirectToHome(request, response);
+            redirectToHome(request, response, AccountStatus.ACTIVE);
             return;
         }
 
         // 비활성 사용자(신규 회원, 재가입 회원) 처리
-        var registrationToken = jwtProvider.createRegistrationToken(member.getId());
+        Token registrationToken = jwtProvider.createRegistrationToken(member.getId());
         response.addHeader(HttpHeaders.SET_COOKIE,
                 jwtProvider.buildRegistrationCookie(registrationToken).toString());
         clearAuthenticationAttributes(request);
         redirectToSignup(request, response);
     }
 
-    private void redirectToHome(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String baseUrl = frontendProperties.getBaseUrl();
-        getRedirectStrategy().sendRedirect(request, response, normalizeBaseUrl(baseUrl) + "/home");
+    private void redirectToHome(HttpServletRequest request, HttpServletResponse response, AccountStatus status) throws IOException {
+        String url = String.format("%s/home%s", frontendProperties.getBaseUrl(), status != null ? "?STATE="+status : "");
+        getRedirectStrategy().sendRedirect(request, response, url);
     }
 
     private void redirectToSignup(HttpServletRequest request, HttpServletResponse response) throws IOException {
