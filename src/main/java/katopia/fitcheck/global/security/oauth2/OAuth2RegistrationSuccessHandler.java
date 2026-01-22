@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
+import katopia.fitcheck.global.security.jwt.JwtProvider.Token;
 import katopia.fitcheck.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -71,7 +72,7 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
         }
 
         // 비활성 사용자(신규 회원, 재가입 회원) 처리
-        var registrationToken = jwtProvider.createRegistrationToken(member.getId());
+        Token registrationToken = jwtProvider.createRegistrationToken(member.getId());
         response.addHeader(HttpHeaders.SET_COOKIE,
                 jwtProvider.buildRegistrationCookie(registrationToken).toString());
         clearAuthenticationAttributes(request);
