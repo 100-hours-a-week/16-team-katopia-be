@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class MemberFacade {
+public class MemberService {
 
     private final MemberRegistrationService memberRegistrationService;
     private final MemberProfileService memberProfileService;

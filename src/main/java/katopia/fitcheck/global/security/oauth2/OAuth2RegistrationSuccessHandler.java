@@ -1,21 +1,12 @@
 package katopia.fitcheck.global.security.oauth2;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import katopia.fitcheck.global.APIResponse;
-import katopia.fitcheck.global.exception.AuthException;
-import katopia.fitcheck.global.exception.code.AuthErrorCode;
-import katopia.fitcheck.global.exception.code.AuthSuccessCode;
-import katopia.fitcheck.global.exception.code.ResponseCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
-import katopia.fitcheck.global.security.jwt.JwtProvider.TokenPair;
-import katopia.fitcheck.global.security.jwt.LoginResponse;
 import katopia.fitcheck.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -34,7 +25,7 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
     private static final DateTimeFormatter REJOIN_AT_FORMATTER = DateTimeFormatter.ISO_INSTANT;
 
     private final JwtProvider jwtProvider;
-    private final ObjectMapper objectMapper;
+    private final FrontendProperties frontendProperties;
 
     @Override
     public void onAuthenticationSuccess(
@@ -43,7 +34,9 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
 
         // 소셜로그인만 지원. CustomOAuth2User가 아니라면 비정상 상태
         if (!(authentication.getPrincipal() instanceof CustomOAuth2User memberOAuth2User)) {
-            throw new AuthException(AuthErrorCode.UNSUPPORTED_OAUTH2_PRINCIPAL);
+            clearAuthenticationAttributes(request);
+            redirectToHome(request, response);
+            return;
         }
 
         Member member = memberOAuth2User.getMember();
@@ -61,36 +54,44 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
                             REJOIN_AT_FORMATTER.format(rejoinAvailableAt)
                     );
                 }
-                throw new AuthException(AuthErrorCode.WITHDRAWN_MEMBER);
+                clearAuthenticationAttributes(request);
+                redirectToHome(request, response);
+                return;
             }
         }
 
         // 활성 사용자 처리
         if (!memberOAuth2User.registrationRequired()) {
-            TokenPair tokens = jwtProvider.issueTokens(member.getId());
+            var tokens = jwtProvider.issueTokens(member.getId());
             response.addHeader(HttpHeaders.SET_COOKIE,
                     jwtProvider.buildRefreshCookie(tokens.refreshToken()).toString());
-
-            LoginResponse loginResponse = LoginResponse.of(member, tokens.accessToken().token());
-            ResponseCode code = AuthSuccessCode.LOGIN_SUCCESS;
-            ResponseEntity<APIResponse<LoginResponse>> entity =
-                    APIResponse.ok(code, loginResponse);
-            response.setStatus(code.getStatus().value());
-            response.setContentType("application/json");
-            objectMapper.writeValue(response.getWriter(), entity.getBody());
             clearAuthenticationAttributes(request);
+            redirectToHome(request, response);
             return;
         }
 
         // 비활성 사용자(신규 회원, 재가입 회원) 처리
-        String registrationToken = jwtProvider.createRegistrationToken(member.getId()).token();
-        LoginResponse loginResponse = LoginResponse.of(member, registrationToken);
-
-        ResponseEntity<APIResponse<LoginResponse>> entity =
-                APIResponse.ok(AuthSuccessCode.NEW_MEMBER_NEED_INFO, loginResponse);
-        response.setStatus(entity.getStatusCodeValue());
-        response.setContentType("application/json");
-        objectMapper.writeValue(response.getWriter(), entity.getBody());
+        var registrationToken = jwtProvider.createRegistrationToken(member.getId());
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                jwtProvider.buildRegistrationCookie(registrationToken).toString());
         clearAuthenticationAttributes(request);
+        redirectToSignup(request, response);
+    }
+
+    private void redirectToHome(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String baseUrl = frontendProperties.getBaseUrl();
+        getRedirectStrategy().sendRedirect(request, response, normalizeBaseUrl(baseUrl) + "/home");
+    }
+
+    private void redirectToSignup(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String baseUrl = frontendProperties.getBaseUrl();
+        getRedirectStrategy().sendRedirect(request, response, normalizeBaseUrl(baseUrl) + "/signup/step1");
+    }
+
+    private String normalizeBaseUrl(String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            return "";
+        }
+        return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
     }
 }

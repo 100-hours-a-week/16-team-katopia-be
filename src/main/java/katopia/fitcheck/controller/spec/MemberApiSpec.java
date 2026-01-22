@@ -30,7 +30,7 @@ public interface MemberApiSpec {
     // CREATE
     @Operation(
             summary = "회원가입 완료",
-            description = "소셜 로그인으로 받은 임시 등록 토큰과 닉네임으로 회원을 생성하고 Access/Refresh Token을 발급합니다."
+            description = "소셜 로그인으로 발급된 등록 토큰(쿠키)과 닉네임으로 회원을 생성하고 Refresh Token을 쿠키로 발급합니다."
     )
     @ApiResponse(responseCode = "201", description = "회원가입 완료", content = @Content(schema = @Schema(implementation = MemberSignupResponse.class)))
     @ApiResponse(responseCode = "400", description = "닉네임 형식 오류", content = @Content(schema = @Schema(implementation = APIResponse.class)))
