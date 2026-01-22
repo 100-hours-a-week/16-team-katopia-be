@@ -121,7 +121,7 @@ public class JwtProvider {
                 .httpOnly(true)
                 .secure(true)
                 .path(REFRESH_PATH)
-                .domain(frontendProperties.getBaseUrl())
+                .domain(frontendProperties.getBaseUrl().split(":")[0])
                 .sameSite("None")
                 .maxAge(0)
                 .build();
