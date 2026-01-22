@@ -32,6 +32,7 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
 
         boolean isRegistrationEndpoint = isRegistrationRequest(request);
         String accessToken = jwtProvider.extractBearerToken(request);
+        String registrationToken = jwtProvider.extractCookieValue(request, JwtProvider.REGISTRATION_COOKIE);
 
         if (!isRegistrationEndpoint) {
             // 회원가입 API 요청이 아닌데, 임시 AT인 경우
@@ -42,11 +43,11 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (accessToken == null) { // isRegistrationEndpoint && accessToken == null
+        if (registrationToken == null) { // isRegistrationEndpoint && registrationToken == null
             throw new AuthException(AuthErrorCode.NOT_FOUND_AT);
         }
 
-        Long memberId = jwtProvider.extractMemberId(accessToken, JwtProvider.TokenType.REGISTRATION);
+        Long memberId = jwtProvider.extractMemberId(registrationToken, JwtProvider.TokenType.REGISTRATION);
         if (memberId == null) {
             throw new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN);
         }

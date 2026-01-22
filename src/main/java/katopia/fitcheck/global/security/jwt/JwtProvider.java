@@ -25,6 +25,7 @@ public class JwtProvider {
 
     // Cookie
     public static final String REFRESH_COOKIE = "refresh_token";
+    public static final String REGISTRATION_COOKIE = "registration_token";
 
     // Claim
     private static final String CLAIM_MEMBER_ID = "memberId";
@@ -35,6 +36,7 @@ public class JwtProvider {
 
     // Path
     public static final String REFRESH_PATH = "/api/auth/tokens";
+    public static final String REGISTRATION_PATH = "/api/members";
 
     private final JwtProperties jwtProperties;
 
@@ -93,6 +95,18 @@ public class JwtProvider {
                 .httpOnly(true)
                 .secure(true)
                 .path(REFRESH_PATH)
+                .sameSite("None")
+                .maxAge(maxAge)
+                .build();
+    }
+
+    // 회원가입 임시 토큰 쿠키 변환
+    public ResponseCookie buildRegistrationCookie(Token registrationToken) {
+        long maxAge = Math.max(0, Duration.between(Instant.now(), registrationToken.expiresAt()).getSeconds());
+        return ResponseCookie.from(REGISTRATION_COOKIE, registrationToken.token())
+                .httpOnly(true)
+                .secure(true)
+                .path(REGISTRATION_PATH)
                 .sameSite("None")
                 .maxAge(maxAge)
                 .build();
@@ -167,6 +181,18 @@ public class JwtProvider {
             return null;
         }
         return header.substring(BEARER_PREFIX.length());
+    }
+
+    public String extractCookieValue(HttpServletRequest request, String cookieName) {
+        if (request.getCookies() == null || cookieName == null) {
+            return null;
+        }
+        for (var cookie : request.getCookies()) {
+            if (cookieName.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 
 

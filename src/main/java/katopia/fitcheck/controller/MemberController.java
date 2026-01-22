@@ -11,7 +11,7 @@ import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.global.security.jwt.RegistrationTokenFilter;
 import katopia.fitcheck.member.dto.*;
-import katopia.fitcheck.member.service.MemberFacade;
+import katopia.fitcheck.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class MemberController implements MemberApiSpec {
 
-    private final MemberFacade memberFacade;
+    private final MemberService memberService;
     private final SecuritySupport securitySupport;
 
     @PostMapping
@@ -46,7 +46,7 @@ public class MemberController implements MemberApiSpec {
             throw new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN);
         }
 
-        MemberFacade.SignupWithCookie payload = memberFacade.signup(registrationMemberId, request.nickname());
+        MemberService.SignupWithCookie payload = memberService.signup(registrationMemberId, request.nickname());
         response.addHeader(HttpHeaders.SET_COOKIE, payload.refreshCookie().toString());
         return APIResponse.ok(AuthSuccessCode.LOGIN_SUCCESS, MemberSignupResponse.from(payload.signupResult()));
     }
@@ -57,7 +57,7 @@ public class MemberController implements MemberApiSpec {
     public ResponseEntity<APIResponse<NicknameDuplicateCheckResponse>> checkNickname(
             @RequestParam("nickname") String nickname
     ) {
-        NicknameDuplicateCheckResponse body = memberFacade.checkNickname(nickname);
+        NicknameDuplicateCheckResponse body = memberService.checkNickname(nickname);
         return APIResponse.ok(MemberSuccessCode.NICKNAME_AVAILABLE, body);
     }
 
@@ -67,7 +67,7 @@ public class MemberController implements MemberApiSpec {
     public ResponseEntity<APIResponse<MemberProfileResponse>> getProfile(
             @PathVariable Long memberId
     ) {
-        MemberProfileResponse responseBody = memberFacade.getProfile(memberId);
+        MemberProfileResponse responseBody = memberService.getProfile(memberId);
         return APIResponse.ok(MemberSuccessCode.PROFILE_FETCHED, responseBody);
     }
 
@@ -78,7 +78,7 @@ public class MemberController implements MemberApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
-        MemberProfileDetailResponse responseBody = memberFacade.getProfileDetail(memberId);
+        MemberProfileDetailResponse responseBody = memberService.getProfileDetail(memberId);
         return APIResponse.ok(MemberSuccessCode.PROFILE_FETCHED, responseBody);
     }
 
@@ -90,7 +90,7 @@ public class MemberController implements MemberApiSpec {
             @RequestBody MemberProfileUpdateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
-        MemberProfileDetailResponse responseBody = memberFacade.updateProfile(memberId, request);
+        MemberProfileDetailResponse responseBody = memberService.updateProfile(memberId, request);
         return APIResponse.ok(MemberSuccessCode.PROFILE_UPDATED, responseBody);
     }
 
@@ -101,7 +101,7 @@ public class MemberController implements MemberApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
-        memberFacade.withdraw(memberId);
+        memberService.withdraw(memberId);
         return APIResponse.noContent(AuthSuccessCode.MEMBER_WITHDRAWN);
     }
 }

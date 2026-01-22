@@ -41,3 +41,7 @@ spring:
 server:
   error:
     include-message: always # 로컬 편의 디버깅
+
+app:
+  frontend:
+    base-url: http://localhost:3000
