@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MemberFinder {
+
     private final MemberRepository memberRepository;
 
     public Member findBySocialProfileOrNull(SocialUserProfile profile) {
