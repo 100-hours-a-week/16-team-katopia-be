@@ -32,9 +32,9 @@ public class PostLikeService {
         Member member = memberFinder.findByIdOrThrow(memberId);
         PostLike like = PostLike.of(member, post);
         postLikeRepository.save(like);
-        post.increaseLikeCount();
-
-        return PostLikeResponse.of(post);
+        postRepository.incrementLikeCount(postId);
+        long likeCount = resolveLikeCount(postId);
+        return new PostLikeResponse(post.getId(), likeCount);
     }
 
     @Transactional
@@ -43,6 +43,15 @@ public class PostLikeService {
                 .orElseThrow(() -> new BusinessException(PostLikeErrorCode.NOT_FOUND_LIKE));
         Post post = like.getPost();
         postLikeRepository.delete(like);
-        post.decreaseLikeCount();
+        postRepository.decrementLikeCount(post.getId());
+        resolveLikeCount(post.getId());
+    }
+
+    private long resolveLikeCount(Long postId) {
+        Long likeCount = postRepository.findLikeCountById(postId);
+        if (likeCount == null) {
+            throw new BusinessException(PostErrorCode.POST_NOT_FOUND);
+        }
+        return likeCount;
     }
 }

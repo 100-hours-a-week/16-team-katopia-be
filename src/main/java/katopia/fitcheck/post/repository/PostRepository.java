@@ -28,4 +28,41 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("id") Long id,
             Pageable pageable
     );
+
+    @Query("""
+            update Post p
+            set p.likeCount = p.likeCount + 1
+            where p.id = :id
+            """)
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    int incrementLikeCount(@Param("id") Long id);
+
+    @Query("""
+            update Post p
+            set p.likeCount = p.likeCount - 1
+            where p.id = :id and p.likeCount > 0
+            """)
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    int decrementLikeCount(@Param("id") Long id);
+
+    @Query("""
+            update Post p
+            set p.commentCount = p.commentCount + 1
+            where p.id = :id
+            """)
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    int incrementCommentCount(@Param("id") Long id);
+
+    @Query("""
+            update Post p
+            set p.commentCount = p.commentCount - 1
+            where p.id = :id and p.commentCount > 0
+            """)
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    int decrementCommentCount(@Param("id") Long id);
+
+    @Query("""
+            select p.likeCount from Post p where p.id = :id
+            """)
+    Long findLikeCountById(@Param("id") Long id);
 }
