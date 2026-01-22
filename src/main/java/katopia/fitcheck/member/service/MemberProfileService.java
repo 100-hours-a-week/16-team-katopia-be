@@ -2,7 +2,7 @@ package katopia.fitcheck.member.service;
 
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
-import katopia.fitcheck.repository.MemberRepository;
+import katopia.fitcheck.member.MemberRepository;
 import katopia.fitcheck.member.domain.AccountStatus;
 import katopia.fitcheck.member.domain.Gender;
 import katopia.fitcheck.member.domain.Member;
@@ -52,16 +52,18 @@ public class MemberProfileService {
             throw new BusinessException(MemberErrorCode.ALREADY_WITHDRAWN_MEMBER);
         }
 
+        // nickname
         String normalizedNickname = profileValidator.normalizeNickname(request.nickname());
         boolean nicknameChanged = !normalizedNickname.equals(member.getNickname());
         if (nicknameChanged && memberRepository.existsByNickname(normalizedNickname)) {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
 
+        // gender, height, weight, styles, notification
         Gender gender = profileValidator.parseGender(request.gender());
         Short height = profileValidator.parseHeight(request.height());
         Short weight = profileValidator.parseWeight(request.weight());
-        Set<StyleType> styles = resolveStyles(member, request);
+        Set<StyleType> styles = resolveStyles(request);
         boolean notification = profileValidator.validateNotificationFlag(request.enableRealtimeNotification());
 
         member.updateProfile(new MemberProfileUpdate(
@@ -88,7 +90,7 @@ public class MemberProfileService {
     }
 
 
-    private Set<StyleType> resolveStyles(Member member, MemberProfileUpdateRequest request) {
+    private Set<StyleType> resolveStyles(MemberProfileUpdateRequest request) {
         Set<StyleType> parsed = profileValidator.parseStyles(request.style());
         if (parsed == null) {
             return null;

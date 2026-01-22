@@ -66,10 +66,10 @@ public class Member {
     @Column(length = 1)
     private Gender gender;
 
-    @Column(columnDefinition = "0")
+    @Column(columnDefinition = "smallint default 0")
     private Short height;
 
-    @Column(columnDefinition = "0")
+    @Column(columnDefinition = "smallint default 0")
     private Short weight;
 
     @Column(name = "enable_realtime_notification", nullable = false)
@@ -78,7 +78,7 @@ public class Member {
     @ElementCollection(fetch = FetchType.LAZY, targetClass = StyleType.class)
     @CollectionTable(name = "member_styles", joinColumns = @JoinColumn(name = "member_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "style", length = 30, nullable = false)
+    @Column(name = "style", length = 30)
     private Set<StyleType> styles = new LinkedHashSet<>();
 
     @CreationTimestamp
@@ -173,6 +173,14 @@ public class Member {
         }
         Instant withdrawnInstant = deletedAt.atZone(ZoneId.systemDefault()).toInstant();
         return Duration.between(withdrawnInstant, Instant.now()).compareTo(waitingPeriod) >= 0;
+    }
+
+    public Instant rejoinAvailableAt(Duration waitingPeriod) {
+        if (waitingPeriod == null || deletedAt == null) {
+            return null;
+        }
+        Instant withdrawnInstant = deletedAt.atZone(ZoneId.systemDefault()).toInstant();
+        return withdrawnInstant.plus(waitingPeriod);
     }
 
     public void reopenForRejoin() {

@@ -1,6 +1,6 @@
 package katopia.fitcheck.member.dto;
 
-public record MemberAggregate(
+public record MemberAggregateDto(
     int PostCount,
     int FollowingCount,
     int FollowerCount

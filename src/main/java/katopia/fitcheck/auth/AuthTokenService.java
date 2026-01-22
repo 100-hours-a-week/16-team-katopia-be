@@ -1,13 +1,15 @@
 package katopia.fitcheck.auth;
 
 import katopia.fitcheck.global.exception.AuthException;
+import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
+import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
 import katopia.fitcheck.global.security.jwt.JwtProvider.TokenPair;
-import katopia.fitcheck.repository.MemberRepository;
+import katopia.fitcheck.member.MemberRepository;
 import katopia.fitcheck.member.domain.AccountStatus;
-import katopia.fitcheck.member.domain.Member;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,17 +28,18 @@ public class AuthTokenService {
             throw new AuthException(AuthErrorCode.INVALID_RT);
         }
 
+        if (memberRepository.existsByIdAndAccountStatus(memberId, AccountStatus.WITHDRAWN)) {
+            throw new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER);
+        }
 
-        Member member = memberRepository.findById(memberId)
-                .filter(m -> m.getAccountStatus() == AccountStatus.ACTIVE)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_RT));
+        TokenPair pair = jwtProvider.issueTokens(memberId);
+        // TODO : RTR 관리 작업 필요 (테이블 또는 redis 관리 예정)
 
-        TokenPair pair = jwtProvider.issueTokens(member.getId());
-        return new TokenRefreshResult(pair.accessToken(), pair.refreshToken());
+        return new TokenRefreshResult(pair.accessToken().token(), jwtProvider.buildRefreshCookie(pair.refreshToken()));
     }
 
     public record TokenRefreshResult(
-            JwtProvider.Token accessToken,
-            JwtProvider.Token refreshToken
+            String accessToken,
+            ResponseCookie refreshToken
     ) { }
 }
