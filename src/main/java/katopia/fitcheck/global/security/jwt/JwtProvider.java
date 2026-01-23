@@ -106,60 +106,33 @@ public class JwtProvider {
     // 회원가입 임시 토큰 쿠키 변환
     public ResponseCookie buildRegistrationCookie(Token registrationToken) {
         long maxAge = Math.max(0, Duration.between(Instant.now(), registrationToken.expiresAt()).getSeconds());
-        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(REGISTRATION_COOKIE, registrationToken.token())
-                .httpOnly(true)
-                .secure(true)
-                .path(REGISTRATION_PATH)
-//                .sameSite("None")
-                .maxAge(maxAge);
-        String domain = resolveCookieDomain(frontendProperties.getBaseUrl());
-        if (domain != null) {
-            builder.domain(domain);
-        }
-        return builder.build();
-    }
-
-    public ResponseCookie clearRegistrationCookie() {
-        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(REGISTRATION_COOKIE, "")
+        return ResponseCookie.from(REGISTRATION_COOKIE, registrationToken.token())
                 .httpOnly(true)
                 .secure(true)
                 .path(REGISTRATION_PATH)
                 .sameSite("None")
-                .maxAge(0);
-        String domain = resolveCookieDomain(frontendProperties.getBaseUrl());
-        if (domain != null) {
-            builder.domain(domain);
-        }
-        return builder.build();
+                .maxAge(maxAge)
+                .build();
+    }
+
+    public ResponseCookie clearRegistrationCookie() {
+        return ResponseCookie.from(REGISTRATION_COOKIE, "")
+                .httpOnly(true)
+                .secure(true)
+                .path(REGISTRATION_PATH)
+                .sameSite("None")
+                .maxAge(0)
+                .build();
     }
 
     public ResponseCookie clearRefreshCookie() {
-        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(REFRESH_COOKIE, "")
+        return ResponseCookie.from(REFRESH_COOKIE, "")
                 .httpOnly(true)
                 .secure(true)
                 .path(REFRESH_PATH)
                 .sameSite("None")
-                .maxAge(0);
-        String domain = resolveCookieDomain(frontendProperties.getBaseUrl());
-        if (domain != null) {
-            builder.domain(domain);
-        }
-        return builder.build();
-    }
-
-    private String resolveCookieDomain(String baseUrl) {
-        if (baseUrl == null || baseUrl.isBlank()) {
-            return null;
-        }
-        try {
-            String host = java.net.URI.create(baseUrl).getHost();
-            if (host == null || host.isBlank() || "localhost".equals(host)) {
-                return null;
-            }
-            return host;
-        } catch (IllegalArgumentException ex) {
-            return null;
-        }
+                .maxAge(0)
+                .build();
     }
 
     // 토큰 생성
