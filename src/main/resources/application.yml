@@ -54,6 +54,13 @@ app:
   sse:
     emitter-timeout: 30m   # SSE 연결 유지(클라이언트 재연결 고려)
 
+  s3:
+    bucket: ${S3_BUCKET:}
+    region: ${AWS_REGION:}
+    cloudfront-base-url: ${CLOUDFRONT_BASE_URL:https://df1ez4kkj7703.cloudfront.net}
+    presign-expiry-seconds: 3600
+    max-size-bytes: 31457280
+
 # S3 이미지 업로드는 클라이언트 -> S3로 진행
 #  file:
 #    upload:
