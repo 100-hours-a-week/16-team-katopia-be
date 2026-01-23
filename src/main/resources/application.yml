@@ -21,6 +21,7 @@ spring:
 server:
   port: 8080
   shutdown: graceful # 종료 전 기존 요청 처리 대기 활성화
+  forward-headers-strategy: framework
 
 management:
   endpoints:
