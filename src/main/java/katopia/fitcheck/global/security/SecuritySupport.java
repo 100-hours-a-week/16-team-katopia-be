@@ -14,4 +14,8 @@ public class SecuritySupport {
         }
         return principal.memberId();
     }
+
+    public Long findMemberIdOrNull(MemberPrincipal principal) {
+        return principal != null ? principal.memberId() : null;
+    }
 }

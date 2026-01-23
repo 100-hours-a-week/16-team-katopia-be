@@ -62,6 +62,15 @@ app:
     refresh-token-secret: ${JWT_REFRESH_TOKEN_SECRET}
   frontend:
     base-url: https://dev.fitcheck.kr
+  s3:
+    bucket: ${S3_BUCKET}
+    region: ${AWS_REGION}
+    cloudfront-base-url: ${CLOUDFRONT_BASE_URL:https://df1ez4kkj7703.cloudfront.net}
+    presign-expiry-seconds: ${PRESIGN_EXPIRY_SECONDS:3600}
+    max-size-bytes: ${S3_MAX_SIZE_BYTES:31457280}
+    access-key-id: ${AWS_ACCESS_KEY_ID:}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+    session-token: ${AWS_SESSION_TOKEN:}
 
 springdoc:
   api-docs:

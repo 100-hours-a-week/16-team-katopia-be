@@ -1,6 +1,7 @@
 package katopia.fitcheck.controller.spec;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,7 +39,9 @@ public interface PostApiSpec {
     @ApiResponse(responseCode = "200", description = "게시글 목록 조회 성공", content = @Content(schema = @Schema(implementation = PostListResponse.class)))
     @ApiResponse(responseCode = "400", description = "페이지 크기(size) 형식 오류", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     ResponseEntity<APIResponse<PostListResponse>> listPosts(
+            @Parameter(description = "페이지 크기")
             @RequestParam(value = "size", required = false) String size,
+            @Parameter(description = "커서 (createdAt|id 형식)")
             @RequestParam(value = "after", required = false) String after
     );
 
