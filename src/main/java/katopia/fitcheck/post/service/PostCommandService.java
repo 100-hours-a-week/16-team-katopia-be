@@ -62,7 +62,7 @@ public class PostCommandService {
 
         post.updateContent(content);
         post.replaceImages(toImages(imageUrls));
-        post.replaceTags(buildPostTags(post, resolveTags(tags)));
+        syncTags(post, resolveTags(tags));
 
         return PostUpdateResponse.of(post);
     }
@@ -110,5 +110,21 @@ public class PostCommandService {
         return tags.stream()
                 .map(tag -> PostTag.of(post, tag))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private void syncTags(Post post, Set<Tag> newTags) {
+        Set<Long> newTagIds = newTags.stream()
+                .map(Tag::getId)
+                .collect(Collectors.toSet());
+
+        post.getPostTags().removeIf(postTag -> !newTagIds.contains(postTag.getTag().getId()));
+
+        Set<Long> existingTagIds = post.getPostTags().stream()
+                .map(postTag -> postTag.getTag().getId())
+                .collect(Collectors.toSet());
+
+        newTags.stream()
+                .filter(tag -> !existingTagIds.contains(tag.getId()))
+                .forEach(tag -> post.getPostTags().add(PostTag.of(post, tag)));
     }
 }
