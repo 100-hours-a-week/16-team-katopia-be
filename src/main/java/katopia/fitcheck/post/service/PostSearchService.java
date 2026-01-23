@@ -1,8 +1,6 @@
 package katopia.fitcheck.post.service;
 
-import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.pagination.CursorPagingHelper;
-import katopia.fitcheck.global.exception.code.PostErrorCode;
 import katopia.fitcheck.member.domain.Member;
 import katopia.fitcheck.post.domain.Post;
 import katopia.fitcheck.post.dto.PostDetailResponse;
@@ -21,6 +19,7 @@ import java.util.List;
 public class PostSearchService {
 
     private final PostRepository postRepository;
+    private final PostFinder postFinder;
 
     @Transactional(readOnly = true)
     public PostListResponse list(String sizeValue, String after) {
@@ -45,8 +44,7 @@ public class PostSearchService {
 
     @Transactional(readOnly = true)
     public PostDetailResponse getDetail(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
+        Post post = postFinder.findByIdOrThrow(postId);
         Member author = post.getMember();
 
         return PostDetailResponse.of(post, author);

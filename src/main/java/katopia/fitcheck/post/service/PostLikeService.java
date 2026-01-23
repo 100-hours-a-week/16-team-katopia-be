@@ -27,7 +27,8 @@ public class PostLikeService {
         if (postLikeRepository.existsByMemberIdAndPostId(memberId, postId)) {
             throw new BusinessException(PostLikeErrorCode.ALREADY_LIKED);
         }
-        Post post = postFinder.findByIdOrThrow(postId);
+        postFinder.requireExists(postId);
+        Post post = postFinder.getReferenceById(postId);
         Member member = memberFinder.findByIdOrThrow(memberId);
         PostLike like = PostLike.of(member, post);
         postLikeRepository.save(like);

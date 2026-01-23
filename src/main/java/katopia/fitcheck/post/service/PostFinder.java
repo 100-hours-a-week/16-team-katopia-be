@@ -25,4 +25,8 @@ public class PostFinder {
             throw new BusinessException(PostErrorCode.POST_NOT_FOUND);
         }
     }
+
+    public Post getReferenceById(Long postId) {
+        return postRepository.getReferenceById(postId);
+    }
 }

@@ -1,11 +1,7 @@
 package katopia.fitcheck.post.service;
 
-import katopia.fitcheck.global.exception.AuthException;
-import katopia.fitcheck.global.exception.BusinessException;
-import katopia.fitcheck.global.exception.code.AuthErrorCode;
-import katopia.fitcheck.global.exception.code.PostErrorCode;
-import katopia.fitcheck.member.MemberRepository;
 import katopia.fitcheck.member.domain.Member;
+import katopia.fitcheck.member.service.MemberFinder;
 import katopia.fitcheck.post.domain.Post;
 import katopia.fitcheck.post.domain.PostImage;
 import katopia.fitcheck.post.domain.PostTag;
@@ -36,11 +32,12 @@ public class PostCommandService {
     private final PostTagRepository postTagRepository;
     private final PostLikeRepository postLikeRepository;
     private final PostValidator postValidator;
-    private final MemberRepository memberRepository;
+    private final MemberFinder memberFinder;
+    private final PostFinder postFinder;
 
     @Transactional
     public PostCreateResponse create(Long memberId, PostCreateRequest request) {
-        Member proxyMember = memberRepository.getReferenceById(memberId);
+        Member proxyMember = memberFinder.getReferenceById(memberId);
         String content = postValidator.validateContent(request.content());
         List<String> imageUrls = postValidator.validateImages(request.imageUrls());
         List<String> tags = postValidator.validateTags(request.tags());
@@ -56,9 +53,8 @@ public class PostCommandService {
 
     @Transactional
     public PostUpdateResponse update(Long memberId, Long postId, PostUpdateRequest request) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
-        validateOwner(post, memberId);
+        Post post = postFinder.findByIdOrThrow(postId);
+        postValidator.validateOwner(post, memberId);
 
         String content = postValidator.validateContent(request.content());
         List<String> imageUrls = postValidator.validateImages(request.imageUrls());
@@ -73,18 +69,11 @@ public class PostCommandService {
 
     @Transactional
     public void delete(Long memberId, Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
-        validateOwner(post, memberId);
+        Post post = postFinder.findByIdOrThrow(postId);
+        postValidator.validateOwner(post, memberId);
         postLikeRepository.deleteByPostId(postId);
         postTagRepository.deleteByPostId(postId);
         postRepository.delete(post);
-    }
-
-    private void validateOwner(Post post, Long memberId) {
-        if (!post.getMember().getId().equals(memberId)) {
-            throw new AuthException(AuthErrorCode.ACCESS_DENIED);
-        }
     }
 
     private List<PostImage> toImages(List<String> imageUrls) {

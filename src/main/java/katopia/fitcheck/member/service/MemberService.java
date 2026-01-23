@@ -37,6 +37,10 @@ public class MemberService {
         memberProfileService.withdraw(memberId);
     }
 
+    public ResponseCookie clearRegistrationCookie() {
+        return memberRegistrationService.clearRegistrationCookie();
+    }
+
     public NicknameDuplicateCheckResponse checkNickname(String nickname) {
         return memberProfileService.checkNickname(nickname);
     }
