@@ -69,6 +69,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Long findLikeCountById(@Param("id") Long id);
 
     @Query("""
+            select p.id from Post p where p.member.id = :memberId
+            """)
+    List<Long> findIdsByMemberId(@Param("memberId") Long memberId);
+
+    @Query("""
             select distinct p from Post p
             join p.member m
             left join p.postTags pt
