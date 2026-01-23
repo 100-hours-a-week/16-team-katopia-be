@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -30,6 +31,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("id") Long id,
             Pageable pageable
     );
+
+    @Query("""
+            select distinct p from Post p
+            join fetch p.member m
+            left join fetch p.images i
+            left join fetch p.postTags pt
+            left join fetch pt.tag t
+            where p.id = :id
+            """)
+    Optional<Post> findDetailById(@Param("id") Long id);
 
     @Query("""
             update Post p

@@ -44,7 +44,7 @@ public class PostSearchService {
 
     @Transactional(readOnly = true)
     public PostDetailResponse getDetail(Long postId) {
-        Post post = postFinder.findByIdOrThrow(postId);
+        Post post = postFinder.findDetailByIdOrThrow(postId);
         Member author = post.getMember();
 
         return PostDetailResponse.of(post, author);
