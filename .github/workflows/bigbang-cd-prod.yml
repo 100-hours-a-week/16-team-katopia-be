@@ -1,285 +1,285 @@
-# name: CD (prod) - Spring (Blue/Green)
+name: CD (prod) - Spring (Blue/Green)
 
-# on:
-#   push:
-#     branches: ["main"]
+on:
+  push:
+    branches: ["main"]
 
-# permissions:
-#   contents: read
+permissions:
+  contents: read
 
-# jobs:
-#   cd:
-#     name: Blue/Green Deploy (prod)
-#     runs-on: ubuntu-latest
-#     timeout-minutes: 30
+jobs:
+  cd:
+    name: Blue/Green Deploy (prod)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
-#     steps:
-#       - name: Start new server (blue/green)
-#         id: start_new_server
-#         if: success()
-#         shell: bash
-#         env:
-#           EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
-#           APP_DIR: /home/ec2-user/spring
-#           SERVICE_8080: spring-app-8080
-#           SERVICE_8081: spring-app-8081
-#         run: |
-#           set -euo pipefail
+    steps:
+      - name: Start new server (blue/green)
+        id: start_new_server
+        if: success()
+        shell: bash
+        env:
+          EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
+          APP_DIR: /home/ec2-user/spring
+          SERVICE_8080: spring-app-8080
+          SERVICE_8081: spring-app-8081
+        run: |
+          set -euo pipefail
 
-#           mkdir -p ~/.ssh
-#           printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
-#           chmod 600 ~/.ssh/katopia.pem
+          mkdir -p ~/.ssh
+          printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
+          chmod 600 ~/.ssh/katopia.pem
 
-#           ssh -o StrictHostKeyChecking=no \
-#             -i ~/.ssh/katopia.pem \
-#             "ec2-user@${EC2_PUBLIC_IP}" \
-#             "APP_DIR='${APP_DIR}' SERVICE_8080='${SERVICE_8080}' SERVICE_8081='${SERVICE_8081}' bash -s" <<'EOF'
-#           set -euo pipefail
+          ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/katopia.pem \
+            "ec2-user@${EC2_PUBLIC_IP}" \
+            "APP_DIR='${APP_DIR}' SERVICE_8080='${SERVICE_8080}' SERVICE_8081='${SERVICE_8081}' bash -s" <<'EOF'
+          set -euo pipefail
 
-#           if [ -z "${APP_DIR:-}" ]; then
-#             echo "❌ APP_DIR is empty"
-#             exit 1
-#           fi
+          if [ -z "${APP_DIR:-}" ]; then
+            echo "❌ APP_DIR is empty"
+            exit 1
+          fi
 
-#           if [ -z "${SERVICE_8080:-}" ] || [ -z "${SERVICE_8081:-}" ]; then
-#             echo "❌ SERVICE_8080 or SERVICE_8081 is empty"
-#             exit 1
-#           fi
+          if [ -z "${SERVICE_8080:-}" ] || [ -z "${SERVICE_8081:-}" ]; then
+            echo "❌ SERVICE_8080 or SERVICE_8081 is empty"
+            exit 1
+          fi
 
-#           if [ ! -d "${APP_DIR}" ]; then
-#             echo "❌ APP_DIR not found: ${APP_DIR}"
-#             exit 1
-#           fi
+          if [ ! -d "${APP_DIR}" ]; then
+            echo "❌ APP_DIR not found: ${APP_DIR}"
+            exit 1
+          fi
 
-#           PORT_8080_ACTIVE=0
-#           PORT_8081_ACTIVE=0
-#           if ss -ltn | awk '{print $4}' | grep -q ':8080$'; then
-#             PORT_8080_ACTIVE=1
-#           fi
-#           if ss -ltn | awk '{print $4}' | grep -q ':8081$'; then
-#             PORT_8081_ACTIVE=1
-#           fi
+          PORT_8080_ACTIVE=0
+          PORT_8081_ACTIVE=0
+          if ss -ltn | awk '{print $4}' | grep -q ':8080$'; then
+            PORT_8080_ACTIVE=1
+          fi
+          if ss -ltn | awk '{print $4}' | grep -q ':8081$'; then
+            PORT_8081_ACTIVE=1
+          fi
 
-#           if [ "${PORT_8080_ACTIVE}" -eq 1 ] && [ "${PORT_8081_ACTIVE}" -eq 1 ]; then
-#             echo "❌ Both 8080 and 8081 are active; aborting"
-#             exit 1
-#           fi
+          if [ "${PORT_8080_ACTIVE}" -eq 1 ] && [ "${PORT_8081_ACTIVE}" -eq 1 ]; then
+            echo "❌ Both 8080 and 8081 are active; aborting"
+            exit 1
+          fi
 
-#           if [ "${PORT_8080_ACTIVE}" -eq 1 ]; then
-#             NEW_PORT=8081
-#             OLD_PORT=8080
-#             NEW_SERVICE="${SERVICE_8081}"
-#             OLD_SERVICE="${SERVICE_8080}"
-#           elif [ "${PORT_8081_ACTIVE}" -eq 1 ]; then
-#             NEW_PORT=8080
-#             OLD_PORT=8081
-#             NEW_SERVICE="${SERVICE_8080}"
-#             OLD_SERVICE="${SERVICE_8081}"
-#           else
-#             NEW_PORT=8080
-#             OLD_PORT=""
-#             NEW_SERVICE="${SERVICE_8080}"
-#             OLD_SERVICE=""
-#           fi
+          if [ "${PORT_8080_ACTIVE}" -eq 1 ]; then
+            NEW_PORT=8081
+            OLD_PORT=8080
+            NEW_SERVICE="${SERVICE_8081}"
+            OLD_SERVICE="${SERVICE_8080}"
+          elif [ "${PORT_8081_ACTIVE}" -eq 1 ]; then
+            NEW_PORT=8080
+            OLD_PORT=8081
+            NEW_SERVICE="${SERVICE_8080}"
+            OLD_SERVICE="${SERVICE_8081}"
+          else
+            NEW_PORT=8080
+            OLD_PORT=""
+            NEW_SERVICE="${SERVICE_8080}"
+            OLD_SERVICE=""
+          fi
 
-#           LATEST_JAR="$(ls -1t "${APP_DIR}"/*.jar 2>/dev/null | head -n 1 || true)"
-#           if [ -z "${LATEST_JAR}" ]; then
-#             echo "❌ No jar found in ${APP_DIR}"
-#             ls -la "${APP_DIR}" || true
-#             exit 1
-#           fi
+          LATEST_JAR="$(ls -1t "${APP_DIR}"/*.jar 2>/dev/null | head -n 1 || true)"
+          if [ -z "${LATEST_JAR}" ]; then
+            echo "❌ No jar found in ${APP_DIR}"
+            ls -la "${APP_DIR}" || true
+            exit 1
+          fi
 
-#           LINK_JAR="${APP_DIR}/app.jar"
-#           ln -sfn "${LATEST_JAR}" "${LINK_JAR}"
+          LINK_JAR="${APP_DIR}/app.jar"
+          ln -sfn "${LATEST_JAR}" "${LINK_JAR}"
 
-#           JAVA_BIN="$(command -v java || true)"
-#           if [ -z "${JAVA_BIN}" ]; then
-#             echo "❌ java not found in PATH"
-#             exit 1
-#           fi
+          JAVA_BIN="$(command -v java || true)"
+          if [ -z "${JAVA_BIN}" ]; then
+            echo "❌ java not found in PATH"
+            exit 1
+          fi
 
-#           sudo mkdir -p "/etc/systemd/system/${NEW_SERVICE}.service.d"
-#           sudo tee "/etc/systemd/system/${NEW_SERVICE}.service.d/override.conf" >/dev/null <<EOF
-# [Service]
-# ExecStart=
-# ExecStart=${JAVA_BIN} -jar ${LINK_JAR} --spring.profiles.active=prod --server.port=${NEW_PORT}
-# EOF
-#           sudo systemctl daemon-reload
-#           sudo systemctl start "${NEW_SERVICE}"
+          sudo mkdir -p "/etc/systemd/system/${NEW_SERVICE}.service.d"
+          sudo tee "/etc/systemd/system/${NEW_SERVICE}.service.d/override.conf" >/dev/null <<EOF
+          [Service]
+          ExecStart=
+          ExecStart=${JAVA_BIN} -jar ${LINK_JAR} --spring.profiles.active=prod --server.port=${NEW_PORT}
+          EOF
+                    sudo systemctl daemon-reload
+                    sudo systemctl start "${NEW_SERVICE}"
 
-#           cat >/tmp/katopia-bluegreen.env <<EOF
-# NEW_PORT=${NEW_PORT}
-# OLD_PORT=${OLD_PORT}
-# NEW_SERVICE=${NEW_SERVICE}
-# OLD_SERVICE=${OLD_SERVICE}
-# EOF
+                    cat >/tmp/katopia-bluegreen.env <<EOF
+          NEW_PORT=${NEW_PORT}
+          OLD_PORT=${OLD_PORT}
+          NEW_SERVICE=${NEW_SERVICE}
+          OLD_SERVICE=${OLD_SERVICE}
+          EOF
 
-#           echo "✅ Started new service: ${NEW_SERVICE} (port ${NEW_PORT})"
-#           EOF
+          echo "✅ Started new service: ${NEW_SERVICE} (port ${NEW_PORT})"
+          EOF
 
-#       - name: Verify new systemd service
-#         id: verify_new_service
-#         if: success()
-#         shell: bash
-#         env:
-#           EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
-#         run: |
-#           set -euo pipefail
+      - name: Verify new systemd service
+        id: verify_new_service
+        if: success()
+        shell: bash
+        env:
+          EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
+        run: |
+          set -euo pipefail
 
-#           mkdir -p ~/.ssh
-#           printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
-#           chmod 600 ~/.ssh/katopia.pem
+          mkdir -p ~/.ssh
+          printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
+          chmod 600 ~/.ssh/katopia.pem
 
-#           ssh -o StrictHostKeyChecking=no \
-#             -i ~/.ssh/katopia.pem \
-#             "ec2-user@${EC2_PUBLIC_IP}" \
-#             "bash -s" <<'EOF'
-#           set -euo pipefail
+          ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/katopia.pem \
+            "ec2-user@${EC2_PUBLIC_IP}" \
+            "bash -s" <<'EOF'
+          set -euo pipefail
 
-#           if [ ! -f /tmp/katopia-bluegreen.env ]; then
-#             echo "❌ Missing /tmp/katopia-bluegreen.env"
-#             exit 1
-#           fi
+          if [ ! -f /tmp/katopia-bluegreen.env ]; then
+            echo "❌ Missing /tmp/katopia-bluegreen.env"
+            exit 1
+          fi
 
-#           . /tmp/katopia-bluegreen.env
+          . /tmp/katopia-bluegreen.env
 
-#           if ! sudo systemctl is-active --quiet "${NEW_SERVICE}"; then
-#             echo "❌ systemd service not active: ${NEW_SERVICE}"
-#             sudo systemctl status "${NEW_SERVICE}" --no-pager || true
-#             exit 1
-#           fi
+          if ! sudo systemctl is-active --quiet "${NEW_SERVICE}"; then
+            echo "❌ systemd service not active: ${NEW_SERVICE}"
+            sudo systemctl status "${NEW_SERVICE}" --no-pager || true
+            exit 1
+          fi
 
-#           echo "✅ systemd active: ${NEW_SERVICE}"
-#           EOF
+          echo "✅ systemd active: ${NEW_SERVICE}"
+          EOF
 
-#       - name: Switch h2o port (placeholder)
-#         id: switch_h2o
-#         if: success()
-#         shell: bash
-#         env:
-#           EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
-#         run: |
-#           set -euo pipefail
+      - name: Switch h2o port (placeholder)
+        id: switch_h2o
+        if: success()
+        shell: bash
+        env:
+          EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
+        run: |
+          set -euo pipefail
 
-#           mkdir -p ~/.ssh
-#           printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
-#           chmod 600 ~/.ssh/katopia.pem
+          mkdir -p ~/.ssh
+          printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
+          chmod 600 ~/.ssh/katopia.pem
 
-#           ssh -o StrictHostKeyChecking=no \
-#             -i ~/.ssh/katopia.pem \
-#             "ec2-user@${EC2_PUBLIC_IP}" \
-#             "bash -s" <<'EOF'
-#           set -euo pipefail
+          ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/katopia.pem \
+            "ec2-user@${EC2_PUBLIC_IP}" \
+            "bash -s" <<'EOF'
+          set -euo pipefail
 
-#           if [ ! -f /tmp/katopia-bluegreen.env ]; then
-#             echo "❌ Missing /tmp/katopia-bluegreen.env"
-#             exit 1
-#           fi
+          if [ ! -f /tmp/katopia-bluegreen.env ]; then
+            echo "❌ Missing /tmp/katopia-bluegreen.env"
+            exit 1
+          fi
 
-#           . /tmp/katopia-bluegreen.env
+          . /tmp/katopia-bluegreen.env
 
-#           H2O_CONF="/etc/h2o/h2o.conf"
-#           if [ ! -f "${H2O_CONF}" ]; then
-#             echo "❌ H2O config not found: ${H2O_CONF}"
-#             exit 1
-#           fi
+          H2O_CONF="/etc/h2o/h2o.conf"
+          if [ ! -f "${H2O_CONF}" ]; then
+            echo "❌ H2O config not found: ${H2O_CONF}"
+            exit 1
+          fi
 
-#           CURRENT_PORT="$(grep -E "proxy\.reverse\.url: http://127\.0\.0\.1:(8080|8081)" -m1 "${H2O_CONF}" | sed -E 's/.*:(8080|8081).*/\1/')"
-#           if [ -z "${CURRENT_PORT}" ]; then
-#             echo "❌ Could not determine current proxy port in ${H2O_CONF}"
-#             exit 1
-#           fi
+          CURRENT_PORT="$(grep -E "proxy\.reverse\.url: http://127\.0\.0\.1:(8080|8081)" -m1 "${H2O_CONF}" | sed -E 's/.*:(8080|8081).*/\1/')"
+          if [ -z "${CURRENT_PORT}" ]; then
+            echo "❌ Could not determine current proxy port in ${H2O_CONF}"
+            exit 1
+          fi
 
-#           if [ "${CURRENT_PORT}" = "${NEW_PORT}" ]; then
-#             echo "ℹ️ H2O already points to ${NEW_PORT}; no change needed"
-#             exit 0
-#           fi
+          if [ "${CURRENT_PORT}" = "${NEW_PORT}" ]; then
+            echo "ℹ️ H2O already points to ${NEW_PORT}; no change needed"
+            exit 0
+          fi
 
-#           sudo sed -i.bak -E "s|(proxy\\.reverse\\.url: http://127\\.0\\.0\\.1:)(8080|8081)|\\1${NEW_PORT}|g" "${H2O_CONF}"
-#           sudo systemctl reload h2o || sudo systemctl restart h2o
-#           echo "✅ H2O proxy switched from ${CURRENT_PORT} to ${NEW_PORT}"
-#           EOF
+          sudo sed -i.bak -E "s|(proxy\\.reverse\\.url: http://127\\.0\\.0\\.1:)(8080|8081)|\\1${NEW_PORT}|g" "${H2O_CONF}"
+          sudo systemctl reload h2o || sudo systemctl restart h2o
+          echo "✅ H2O proxy switched from ${CURRENT_PORT} to ${NEW_PORT}"
+          EOF
 
-#       - name: Stop old server
-#         id: stop_old_server
-#         if: success()
-#         shell: bash
-#         env:
-#           EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
-#         run: |
-#           set -euo pipefail
+      - name: Stop old server
+        id: stop_old_server
+        if: success()
+        shell: bash
+        env:
+          EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
+        run: |
+          set -euo pipefail
 
-#           mkdir -p ~/.ssh
-#           printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
-#           chmod 600 ~/.ssh/katopia.pem
+          mkdir -p ~/.ssh
+          printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
+          chmod 600 ~/.ssh/katopia.pem
 
-#           ssh -o StrictHostKeyChecking=no \
-#             -i ~/.ssh/katopia.pem \
-#             "ec2-user@${EC2_PUBLIC_IP}" \
-#             "bash -s" <<'EOF'
-#           set -euo pipefail
+          ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/katopia.pem \
+            "ec2-user@${EC2_PUBLIC_IP}" \
+            "bash -s" <<'EOF'
+          set -euo pipefail
 
-#           if [ ! -f /tmp/katopia-bluegreen.env ]; then
-#             echo "❌ Missing /tmp/katopia-bluegreen.env"
-#             exit 1
-#           fi
+          if [ ! -f /tmp/katopia-bluegreen.env ]; then
+            echo "❌ Missing /tmp/katopia-bluegreen.env"
+            exit 1
+          fi
 
-#           . /tmp/katopia-bluegreen.env
+          . /tmp/katopia-bluegreen.env
 
-#           if [ -z "${OLD_SERVICE}" ]; then
-#             echo "ℹ️ No old service to stop"
-#             exit 0
-#           fi
+          if [ -z "${OLD_SERVICE}" ]; then
+            echo "ℹ️ No old service to stop"
+            exit 0
+          fi
 
-#           sudo systemctl stop "${OLD_SERVICE}"
-#           echo "✅ Stopped old service: ${OLD_SERVICE}"
-#           EOF
+          sudo systemctl stop "${OLD_SERVICE}"
+          echo "✅ Stopped old service: ${OLD_SERVICE}"
+          EOF
 
-#       # 실패 시 디스코드 알림 (실패 step name 포함)
-# #      - name: Notify Discord on failure
-# #        id: notify_discord
-# #        if: failure()
-# #        env:
-# #          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-# #          STEPS_JSON: ${{ toJson(steps) }}
-# #        shell: bash
-# #        run: |
-# #          set -euo pipefail
-# #
-# #          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-# #          COMMIT_URL="${{ github.event.head_commit.url }}"
-# #          BRANCH="${{ github.ref_name }}"
-# #
-# #          FAILED_IDS=$(echo "$STEPS_JSON" | jq -r '
-# #            to_entries[]
-# #            | select((.value.outcome == "failure") or (.value.conclusion == "failure"))
-# #            | .key
-# #          ' | tr '\n' ' ')
-# #
-# #          declare -A STEP_NAMES=(
-# #            [start_new_server]="Start new server (blue/green)"
-# #            [verify_new_service]="Verify new systemd service"
-# #            [switch_h2o]="Switch h2o port (placeholder)"
-# #            [stop_old_server]="Stop old server"
-# #          )
-# #
-# #          if [ -z "$FAILED_IDS" ]; then
-# #            FAILED_TEXT="(failed step unknown)"
-# #          else
-# #            FAILED_TEXT=""
-# #            for id in $FAILED_IDS; do
-# #              name="${STEP_NAMES[$id]:-$id}"
-# #              FAILED_TEXT="${FAILED_TEXT}- ${name}"$'\n'
-# #            done
-# #          fi
-# #
-# #          payload=$(jq -n --arg content "❌ CD 실패: ${{ job.name }}
-# #Repo: ${{ github.repository }}
-# #Branch: ${BRANCH}
-# #Commit: ${{ github.sha }} (${COMMIT_URL})
-# #Run: ${RUN_URL}
-# #
-# #Failed step(s):
-# #${FAILED_TEXT}" '{content: $content}')
-# #
-# #          curl -sS -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK_URL"
+      # 실패 시 디스코드 알림 (실패 step name 포함)
+#      - name: Notify Discord on failure
+#        id: notify_discord
+#        if: failure()
+#        env:
+#          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#          STEPS_JSON: ${{ toJson(steps) }}
+#        shell: bash
+#        run: |
+#          set -euo pipefail
+#
+#          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+#          COMMIT_URL="${{ github.event.head_commit.url }}"
+#          BRANCH="${{ github.ref_name }}"
+#
+#          FAILED_IDS=$(echo "$STEPS_JSON" | jq -r '
+#            to_entries[]
+#            | select((.value.outcome == "failure") or (.value.conclusion == "failure"))
+#            | .key
+#          ' | tr '\n' ' ')
+#
+#          declare -A STEP_NAMES=(
+#            [start_new_server]="Start new server (blue/green)"
+#            [verify_new_service]="Verify new systemd service"
+#            [switch_h2o]="Switch h2o port (placeholder)"
+#            [stop_old_server]="Stop old server"
+#          )
+#
+#          if [ -z "$FAILED_IDS" ]; then
+#            FAILED_TEXT="(failed step unknown)"
+#          else
+#            FAILED_TEXT=""
+#            for id in $FAILED_IDS; do
+#              name="${STEP_NAMES[$id]:-$id}"
+#              FAILED_TEXT="${FAILED_TEXT}- ${name}"$'\n'
+#            done
+#          fi
+#
+#          payload=$(jq -n --arg content "❌ CD 실패: ${{ job.name }}
+#Repo: ${{ github.repository }}
+#Branch: ${BRANCH}
+#Commit: ${{ github.sha }} (${COMMIT_URL})
+#Run: ${RUN_URL}
+#
+#Failed step(s):
+#${FAILED_TEXT}" '{content: $content}')
+#
+#          curl -sS -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK_URL"
