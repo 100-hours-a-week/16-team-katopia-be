@@ -121,59 +121,59 @@ jobs:
             "ec2-user@${EC2_PUBLIC_IP}:/home/ec2-user/spring/${ARTIFACT_NAME}"
 
       # 실패 시 디스코드 알림 (실패 step name 포함)
-#      - name: Notify Discord on failure
-#        id: notify_discord
-#        if: failure()
-#        env:
-#          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-#          STEPS_JSON: ${{ toJson(steps) }}
-#        shell: bash
-#        run: |
-#          set -euo pipefail
-#
-#          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-#          COMMIT_URL="${{ github.event.head_commit.url }}"
-#          BRANCH="${{ github.ref_name }}"
-#
-#          FAILED_IDS=$(echo "$STEPS_JSON" | jq -r '
-#            to_entries[]
-#            | select((.value.outcome == "failure") or (.value.conclusion == "failure"))
-#            | .key
-#          ' | tr '\n' ' ')
-#
-#          declare -A STEP_NAMES=(
-#            [checkout]="Checkout"
-#            [setup_jdk]="Set up JDK 21 (+ Gradle dependency cache)"
-#            [cache_project_gradle]="Cache project .gradle (intermediate outputs)"
-#            [chmod_gradlew]="Ensure Gradle wrapper executable"
-#            [spotbugs]="Static analysis (SpotBugs)"
-#            [unit_tests]="Unit tests"
-#            [build_bootjar]="Build (bootJar)"
-#            [prep_jar]="Prepare jar filename"
-#            [scp_to_ec2]="SCP to EC2"
-#            [upload_reports]="Upload reports (SpotBugs/Test)"
-#          )
-#
-#          if [ -z "$FAILED_IDS" ]; then
-#            FAILED_TEXT="(failed step unknown)"
-#          else
-#            FAILED_TEXT=""
-#            for id in $FAILED_IDS; do
-#              name="${STEP_NAMES[$id]:-$id}"
-#              FAILED_TEXT="${FAILED_TEXT}- ${name}"$'\n'
-#            done
-#          fi
-#
-#          payload=$(jq -n --arg content "❌ CI 실패: ${{ job.name }}
-#Repo: ${{ github.repository }}
-#Branch: ${BRANCH}
-#Commit: ${{ github.sha }} (${COMMIT_URL})
-#Run: ${RUN_URL}
-#
-#Failed step(s):
-#${FAILED_TEXT}" '{content: $content}')
-#
-#          curl -sS -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK_URL"
+  #      - name: Notify Discord on failure
+  #        id: notify_discord
+  #        if: failure()
+  #        env:
+  #          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+  #          STEPS_JSON: ${{ toJson(steps) }}
+  #        shell: bash
+  #        run: |
+  #          set -euo pipefail
+  #
+  #          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+  #          COMMIT_URL="${{ github.event.head_commit.url }}"
+  #          BRANCH="${{ github.ref_name }}"
+  #
+  #          FAILED_IDS=$(echo "$STEPS_JSON" | jq -r '
+  #            to_entries[]
+  #            | select((.value.outcome == "failure") or (.value.conclusion == "failure"))
+  #            | .key
+  #          ' | tr '\n' ' ')
+  #
+  #          declare -A STEP_NAMES=(
+  #            [checkout]="Checkout"
+  #            [setup_jdk]="Set up JDK 21 (+ Gradle dependency cache)"
+  #            [cache_project_gradle]="Cache project .gradle (intermediate outputs)"
+  #            [chmod_gradlew]="Ensure Gradle wrapper executable"
+  #            [spotbugs]="Static analysis (SpotBugs)"
+  #            [unit_tests]="Unit tests"
+  #            [build_bootjar]="Build (bootJar)"
+  #            [prep_jar]="Prepare jar filename"
+  #            [scp_to_ec2]="SCP to EC2"
+  #            [upload_reports]="Upload reports (SpotBugs/Test)"
+  #          )
+  #
+  #          if [ -z "$FAILED_IDS" ]; then
+  #            FAILED_TEXT="(failed step unknown)"
+  #          else
+  #            FAILED_TEXT=""
+  #            for id in $FAILED_IDS; do
+  #              name="${STEP_NAMES[$id]:-$id}"
+  #              FAILED_TEXT="${FAILED_TEXT}- ${name}"$'\n'
+  #            done
+  #          fi
+  #
+  #          payload=$(jq -n --arg content "❌ CI 실패: ${{ job.name }}
+  #Repo: ${{ github.repository }}
+  #Branch: ${BRANCH}
+  #Commit: ${{ github.sha }} (${COMMIT_URL})
+  #Run: ${RUN_URL}
+  #
+  #Failed step(s):
+  #${FAILED_TEXT}" '{content: $content}')
+  #
+  #          curl -sS -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK_URL"
 
   cd:
     name: Deploy via systemd
@@ -253,10 +253,16 @@ jobs:
             exit 1
           fi
 
+          # jayoon이 추가함 -------------------------------------------
+          echo "Cleaning up old jar files (keeping 2 most recent)..."
+          # ls -1t: 최신순 정렬 / tail -n +3: 3번째 줄(3등)부터 출력 / xargs: 삭제 실행
+          ls -1t "${APP_DIR}"/*.jar 2>/dev/null | tail -n +3 | xargs -r rm -f
+          # ---------------------------------------------------------
+
           echo "✅ Deployed ${LATEST_JAR} via ${SERVICE_NAME}"
 
-
       # 실패 시 디스코드 알림 (실패 step name 포함)
+
 #      - name: Notify Discord on failure
 #        id: notify_discord
 #        if: failure()
