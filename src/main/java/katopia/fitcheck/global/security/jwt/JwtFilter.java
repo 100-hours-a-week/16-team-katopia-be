@@ -28,6 +28,11 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletRequest request, HttpServletResponse response, FilterChain filterChain
     ) throws ServletException, IOException {
 
+        if (isRefreshRequest(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String accessToken = jwtProvider.extractBearerToken(request);
 
         // AT가 없거나, 회원가입 전용 토큰(registrationTokenFilter에서 전처리)인 경우
@@ -52,6 +57,11 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isRefreshRequest(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return JwtProvider.REFRESH_PATH.equals(path);
     }
 
     private boolean needsAuthentication(String accessToken) {
