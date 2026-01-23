@@ -2,6 +2,7 @@ package katopia.fitcheck.member.dto;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import katopia.fitcheck.global.docs.SwaggerExamples;
 
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
 public record MemberProfileUpdateRequest(
         @Schema(
                 description = "닉네임 (한글/영문/숫자/._, 최대 20자)",
-                example = "fit.user_01",
+                example = SwaggerExamples.NICKNAME,
                 requiredMode = Schema.RequiredMode.REQUIRED,
                 maxLength = 20,
                 pattern = "^[\\p{L}\\p{N}._]+$"
@@ -18,34 +19,34 @@ public record MemberProfileUpdateRequest(
 
         @Schema(
                 description = "프로필 이미지 URL",
-                example = "https://cdn.katopia.app/profiles/1.png"
+                example = SwaggerExamples.PROFILE_IMAGE_URL
         )
         String profileImageUrl,
 
         @Schema(
                 description = "성별 (M/F)",
-                example = "M",
+                example = SwaggerExamples.GENDER_M,
                 allowableValues = {"M", "F"}
         )
         String gender,
 
         @Schema(
                 description = "키(cm) 숫자 문자열 (50~300)",
-                example = "175",
+                example = SwaggerExamples.HEIGHT_175,
                 pattern = "^[0-9]+$"
         )
         String height,
 
         @Schema(
                 description = "몸무게(kg) 숫자 문자열 (20~500)",
-                example = "70",
+                example = SwaggerExamples.WEIGHT_70,
                 pattern = "^[0-9]+$"
         )
         String weight,
 
         @Schema(
                 description = "실시간 알림 허용 여부",
-                example = "true",
+                example = SwaggerExamples.NOTIFICATION_TRUE,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         Boolean enableRealtimeNotification,
@@ -53,7 +54,7 @@ public record MemberProfileUpdateRequest(
         @ArraySchema(
                 arraySchema = @Schema(
                         description = "스타일 목록",
-                        example = "[\"CASUAL\", \"MINIMAL\"]"
+                        example = SwaggerExamples.STYLE_LIST
                 ),
                 schema = @Schema(
                         allowableValues = {"MINIMAL", "FEMININE", "STREET", "CASUAL", "CLASSIC", "SPORTY", "VINTAGE"}
