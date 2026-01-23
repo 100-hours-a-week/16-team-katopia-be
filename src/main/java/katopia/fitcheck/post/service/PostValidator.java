@@ -1,7 +1,10 @@
 package katopia.fitcheck.post.service;
 
 import katopia.fitcheck.global.exception.BusinessException;
+import katopia.fitcheck.global.exception.AuthException;
+import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.PostErrorCode;
+import katopia.fitcheck.post.domain.Post;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -46,5 +49,11 @@ public class PostValidator {
             }
         }
         return tags.stream().map(String::trim).toList();
+    }
+
+    public void validateOwner(Post post, Long memberId) {
+        if (!post.getMember().getId().equals(memberId)) {
+            throw new AuthException(AuthErrorCode.ACCESS_DENIED);
+        }
     }
 }

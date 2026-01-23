@@ -48,6 +48,7 @@ public class MemberController implements MemberApiSpec {
 
         MemberService.SignupWithCookie payload = memberService.signup(registrationMemberId, request.nickname());
         response.addHeader(HttpHeaders.SET_COOKIE, payload.refreshCookie().toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, memberService.clearRegistrationCookie().toString());
         return APIResponse.ok(AuthSuccessCode.LOGIN_SUCCESS, MemberSignupResponse.from(payload.signupResult()));
     }
 

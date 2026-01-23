@@ -2,12 +2,8 @@ package katopia.fitcheck.member.service;
 
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
-import katopia.fitcheck.member.MemberRepository;
-import katopia.fitcheck.member.domain.AccountStatus;
-import katopia.fitcheck.member.domain.Gender;
-import katopia.fitcheck.member.domain.Member;
-import katopia.fitcheck.member.domain.MemberProfileValidator;
-import katopia.fitcheck.member.domain.StyleType;
+import katopia.fitcheck.member.domain.*;
+import katopia.fitcheck.member.repository.MemberRepository;
 import katopia.fitcheck.member.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,19 +23,13 @@ public class MemberProfileService {
 
     @Transactional(readOnly = true)
     public MemberProfileResponse getProfile(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .filter(it -> it.getAccountStatus() == AccountStatus.ACTIVE)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
-
+        Member member = memberFinder.findActiveByIdOrThrow(memberId);
         return MemberProfileResponse.of(member);
     }
 
     @Transactional(readOnly = true)
     public MemberProfileDetailResponse getProfileDetail(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .filter(it -> it.getAccountStatus() == AccountStatus.ACTIVE)
-                .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
-
+        Member member = memberFinder.findActiveByIdOrThrow(memberId);
         return MemberProfileDetailResponse.of(member);
     }
 
