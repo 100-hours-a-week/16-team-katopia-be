@@ -20,6 +20,11 @@ public class PostFinder {
                 .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
     }
 
+    public Post findDetailByIdOrThrow(Long postId) {
+        return postRepository.findDetailById(postId)
+                .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
+    }
+
     public void requireExists(Long postId) {
         if (!postRepository.existsById(postId)) {
             throw new BusinessException(PostErrorCode.POST_NOT_FOUND);
