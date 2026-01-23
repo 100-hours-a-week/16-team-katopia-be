@@ -256,7 +256,7 @@ jobs:
           # jayoon이 추가함 -------------------------------------------
           echo "Cleaning up old jar files (keeping 2 most recent)..."
           # ls -1t: 최신순 정렬 / tail -n +3: 3번째 줄(3등)부터 출력 / xargs: 삭제 실행
-          ls -1t "${APP_DIR}"/*.jar 2>/dev/null | tail -n +3 | xargs -r rm -f
+          ls -1t ./*.jar | grep -v app.jar | tail -n +3 | xargs -r rm -f
           # ---------------------------------------------------------
 
           echo "✅ Deployed ${LATEST_JAR} via ${SERVICE_NAME}"
