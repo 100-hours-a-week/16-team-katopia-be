@@ -1,7 +1,6 @@
 package katopia.fitcheck.post.service;
 
 import katopia.fitcheck.global.exception.BusinessException;
-import katopia.fitcheck.global.exception.code.PostErrorCode;
 import katopia.fitcheck.global.exception.code.PostLikeErrorCode;
 import katopia.fitcheck.member.domain.Member;
 import katopia.fitcheck.member.service.MemberFinder;
@@ -21,14 +20,14 @@ public class PostLikeService {
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
     private final MemberFinder memberFinder;
+    private final PostFinder postFinder;
 
     @Transactional
     public PostLikeResponse like(Long memberId, Long postId) {
         if (postLikeRepository.existsByMemberIdAndPostId(memberId, postId)) {
             throw new BusinessException(PostLikeErrorCode.ALREADY_LIKED);
         }
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
+        Post post = postFinder.findByIdOrThrow(postId);
         Member member = memberFinder.findByIdOrThrow(memberId);
         PostLike like = PostLike.of(member, post);
         postLikeRepository.save(like);
@@ -48,10 +47,7 @@ public class PostLikeService {
     }
 
     private long resolveLikeCount(Long postId) {
-        Long likeCount = postRepository.findLikeCountById(postId);
-        if (likeCount == null) {
-            throw new BusinessException(PostErrorCode.POST_NOT_FOUND);
-        }
-        return likeCount;
+        Post post = postFinder.findByIdOrThrow(postId);
+        return post.getLikeCount();
     }
 }

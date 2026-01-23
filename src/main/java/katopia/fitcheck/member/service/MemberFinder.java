@@ -3,7 +3,8 @@ package katopia.fitcheck.member.service;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.security.oauth2.SocialUserProfile;
-import katopia.fitcheck.member.MemberRepository;
+import katopia.fitcheck.member.repository.MemberRepository;
+import katopia.fitcheck.member.domain.AccountStatus;
 import katopia.fitcheck.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,16 @@ public class MemberFinder {
     public Member findByIdOrThrow(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    public Member findActiveByIdOrThrow(Long memberId) {
+        return memberRepository.findById(memberId)
+                .filter(member -> member.getAccountStatus() == AccountStatus.ACTIVE)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    public Member getReferenceById(Long memberId) {
+        return memberRepository.getReferenceById(memberId);
     }
 
 }

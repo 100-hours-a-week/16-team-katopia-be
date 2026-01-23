@@ -6,7 +6,7 @@ import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
 import katopia.fitcheck.global.security.jwt.JwtProvider.TokenPair;
-import katopia.fitcheck.member.MemberRepository;
+import katopia.fitcheck.member.repository.MemberRepository;
 import katopia.fitcheck.member.domain.AccountStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
