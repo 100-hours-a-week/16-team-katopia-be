@@ -57,11 +57,9 @@ public class PostCommandService {
         postValidator.validateOwner(post, memberId);
 
         String content = postValidator.validateContent(request.content());
-        List<String> imageUrls = postValidator.validateImages(request.imageUrls());
         List<String> tags = postValidator.validateTags(request.tags());
 
         post.updateContent(content);
-        post.replaceImages(toImages(imageUrls));
         syncTags(post, resolveTags(tags));
 
         return PostUpdateResponse.of(post);
