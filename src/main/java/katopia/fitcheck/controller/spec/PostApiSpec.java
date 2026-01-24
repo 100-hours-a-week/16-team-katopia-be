@@ -56,7 +56,6 @@ public interface PostApiSpec {
     @ApiResponse(responseCode = "200", description = "게시글 수정 성공", content = @Content(schema = @Schema(implementation = PostUpdateResponse.class)))
     @ApiResponse(responseCode = "400", description = "본문 필수 입력 검증 실패", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "400", description = "본문 200자 초과", content = @Content(schema = @Schema(implementation = APIResponse.class)))
-    @ApiResponse(responseCode = "400", description = "이미지 수량 검증 실패", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "400", description = "태그 길이 검증 실패", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "401", description = "AT 누락", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "401", description = "AT 만료/위조", content = @Content(schema = @Schema(implementation = APIResponse.class)))
