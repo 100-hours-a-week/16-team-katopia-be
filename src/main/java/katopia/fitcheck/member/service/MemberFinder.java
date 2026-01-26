@@ -33,6 +33,18 @@ public class MemberFinder {
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 
+    public Member findPublicProfileByIdOrThrow(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
+        if (member.getAccountStatus() == AccountStatus.PENDING) {
+            throw new BusinessException(MemberErrorCode.NOT_FOUND_PENDING_MEMBER);
+        }
+        if (member.getAccountStatus() == AccountStatus.WITHDRAWN) {
+            throw new BusinessException(MemberErrorCode.NOT_FOUND_WITHDRAWN_MEMBER);
+        }
+        return member;
+    }
+
     public Member getReferenceById(Long memberId) {
         return memberRepository.getReferenceById(memberId);
     }
