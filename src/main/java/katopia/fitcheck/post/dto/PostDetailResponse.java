@@ -12,6 +12,7 @@ import java.util.List;
 public record PostDetailResponse(
         List<PostImage> imageUrls,
         String content,
+        List<String> tags,
         PostAuthorResponse author,
         PostAggregateResponse aggregate,
         LocalDateTime createdAt
@@ -20,6 +21,10 @@ public record PostDetailResponse(
         return PostDetailResponse.builder()
                 .imageUrls(post.getImageUrls())
                 .content(post.getContent())
+                .tags(post.getPostTags().stream()
+                        .map(postTag -> postTag.getTag().getName())
+                        .distinct()
+                        .toList())
                 .author(PostAuthorResponse.of(author))
                 .aggregate(PostAggregateResponse.of(post))
                 .createdAt(post.getCreatedAt())

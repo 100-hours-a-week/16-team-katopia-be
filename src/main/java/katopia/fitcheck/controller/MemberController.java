@@ -7,11 +7,14 @@ import katopia.fitcheck.global.exception.AuthException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.AuthSuccessCode;
 import katopia.fitcheck.global.exception.code.MemberSuccessCode;
+import katopia.fitcheck.global.exception.code.PostSuccessCode;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.global.security.jwt.RegistrationTokenFilter;
 import katopia.fitcheck.member.dto.*;
 import katopia.fitcheck.member.service.MemberService;
+import katopia.fitcheck.post.dto.PostListResponse;
+import katopia.fitcheck.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController implements MemberApiSpec {
 
     private final MemberService memberService;
+    private final PostService postService;
     private final SecuritySupport securitySupport;
 
     @PostMapping
@@ -70,6 +74,17 @@ public class MemberController implements MemberApiSpec {
     ) {
         MemberProfileResponse responseBody = memberService.getProfile(memberId);
         return APIResponse.ok(MemberSuccessCode.PROFILE_FETCHED, responseBody);
+    }
+
+    @Override
+    @GetMapping("/{memberId}/posts")
+    public ResponseEntity<APIResponse<PostListResponse>> listMemberPosts(
+            @PathVariable Long memberId,
+            @RequestParam(value = "size", required = false) String size,
+            @RequestParam(value = "after", required = false) String after
+    ) {
+        PostListResponse responseBody = postService.listByMember(memberId, size, after);
+        return APIResponse.ok(PostSuccessCode.POST_LISTED, responseBody);
     }
 
 

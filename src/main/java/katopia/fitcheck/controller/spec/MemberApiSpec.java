@@ -1,6 +1,7 @@
 package katopia.fitcheck.controller.spec;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +15,7 @@ import katopia.fitcheck.member.dto.MemberProfileUpdateRequest;
 import katopia.fitcheck.member.dto.MemberSignupRequest;
 import katopia.fitcheck.member.dto.MemberSignupResponse;
 import katopia.fitcheck.member.dto.NicknameDuplicateCheckResponse;
+import katopia.fitcheck.post.dto.PostListResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -65,6 +67,22 @@ public interface MemberApiSpec {
     @GetMapping("/{memberId}")
     ResponseEntity<APIResponse<MemberProfileResponse>> getProfile(
             @PathVariable Long memberId
+    );
+
+    @Operation(
+            summary = "사용자 게시글 조회",
+            description = "특정 사용자가 작성한 게시글을 커서 기반으로 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "사용자 게시글 조회 성공", content = @Content(schema = @Schema(implementation = PostListResponse.class)))
+    @ApiResponse(responseCode = "400", description = "페이지 크기(size) 형식 오류", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @ApiResponse(responseCode = "404", description = "해당 사용자 없음", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @GetMapping("/{memberId}/posts")
+    ResponseEntity<APIResponse<PostListResponse>> listMemberPosts(
+            @PathVariable Long memberId,
+            @Parameter(description = "페이지 크기")
+            @RequestParam(value = "size", required = false) String size,
+            @Parameter(description = "커서 (createdAt|id 형식)")
+            @RequestParam(value = "after", required = false) String after
     );
 
 

@@ -23,7 +23,7 @@ public class MemberProfileService {
 
     @Transactional(readOnly = true)
     public MemberProfileResponse getProfile(Long memberId) {
-        Member member = memberFinder.findActiveByIdOrThrow(memberId);
+        Member member = memberFinder.findPublicProfileByIdOrThrow(memberId);
         return MemberProfileResponse.of(member);
     }
 
