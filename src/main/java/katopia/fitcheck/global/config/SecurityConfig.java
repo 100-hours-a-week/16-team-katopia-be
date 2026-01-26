@@ -44,8 +44,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(EndpointRequest.to("health", "prometheus", "metrics")).permitAll()
                         .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
+                                "/api/swagger-ui/**",
+                                "/api/v3/api-docs/**",
                                 "/oauth2/**",
                                 "/login/**",
                                 "/error",
