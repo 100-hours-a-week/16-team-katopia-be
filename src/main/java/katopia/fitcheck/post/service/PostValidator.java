@@ -43,12 +43,23 @@ public class PostValidator {
             if (!StringUtils.hasText(tag)) {
                 throw new BusinessException(PostErrorCode.TAG_LENGTH_INVALID);
             }
-            int length = tag.trim().length();
+            String normalized = normalizeTag(tag);
+            int length = normalized.length();
             if (length < MIN_TAG_LENGTH || length > MAX_TAG_LENGTH) {
                 throw new BusinessException(PostErrorCode.TAG_LENGTH_INVALID);
             }
         }
-        return tags.stream().map(String::trim).toList();
+        return tags.stream()
+                .map(this::normalizeTag)
+                .toList();
+    }
+
+    private String normalizeTag(String tag) {
+        String trimmed = tag.trim();
+        if (trimmed.startsWith("#")) {
+            trimmed = trimmed.substring(1).trim();
+        }
+        return trimmed;
     }
 
     public void validateOwner(Post post, Long memberId) {
