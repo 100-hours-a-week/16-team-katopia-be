@@ -12,5 +12,12 @@ public record MemberSignupRequest(
                 maxLength = 20,
                 pattern = "^[\\p{L}\\p{N}._]+$"
         )
-        String nickname
+        String nickname,
+        @Schema(
+                description = "성별 (M/F)",
+                example = SwaggerExamples.GENDER_M,
+                requiredMode = Schema.RequiredMode.REQUIRED,
+                allowableValues = {"M", "F"}
+        )
+        String gender
 ) { }

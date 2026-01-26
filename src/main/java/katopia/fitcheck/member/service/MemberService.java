@@ -14,9 +14,9 @@ public class MemberService {
     private final MemberProfileService memberProfileService;
 
     @Transactional
-    public SignupWithCookie signup(Long registrationMemberId, String nickname) {
+    public SignupWithCookie signup(Long registrationMemberId, String nickname, String gender) {
         MemberRegistrationService.SignupResult signupResult =
-                memberRegistrationService.signup(registrationMemberId, nickname);
+                memberRegistrationService.signup(registrationMemberId, nickname, gender);
         ResponseCookie cookie = memberRegistrationService.buildRefreshCookie(signupResult.refreshToken());
         return new SignupWithCookie(signupResult, cookie);
     }

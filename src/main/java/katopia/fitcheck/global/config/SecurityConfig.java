@@ -53,12 +53,6 @@ public class SecurityConfig {
                         ).permitAll()
                         // 공개 API { 사용자 공개 프로필, 닉네임 중복 검증 }
                         .requestMatchers(HttpMethod.GET, "/api/members/check").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/members/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/members/*/posts").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/dev/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/members").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/members/me").authenticated()

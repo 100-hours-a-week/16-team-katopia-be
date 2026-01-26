@@ -30,13 +30,10 @@ public class SearchController implements SearchApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal,
             @RequestParam(value = "query", required = false) String query,
             @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after,
-            @RequestParam(value = "height", required = false) String height,
-            @RequestParam(value = "weight", required = false) String weight,
-            @RequestParam(value = "gender", required = false) String gender
+            @RequestParam(value = "after", required = false) String after
     ) {
-        Long memberId = securitySupport.findMemberIdOrNull(principal);
-        MemberSearchResponse body = searchService.searchUsers(memberId, query, size, after, height, weight, gender);
+        Long memberId = securitySupport.requireMemberId(principal);
+        MemberSearchResponse body = searchService.searchUsers(memberId, query, size, after);
         return APIResponse.ok(CommonSuccessCode.SEARCH_COMPLETED, body);
     }
 
@@ -46,13 +43,10 @@ public class SearchController implements SearchApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal,
             @RequestParam(value = "query", required = false) String query,
             @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after,
-            @RequestParam(value = "height", required = false) String height,
-            @RequestParam(value = "weight", required = false) String weight,
-            @RequestParam(value = "gender", required = false) String gender
+            @RequestParam(value = "after", required = false) String after
     ) {
-        Long memberId = securitySupport.findMemberIdOrNull(principal);
-        PostSearchResponse body = searchService.searchPosts(memberId, query, size, after, height, weight, gender);
+        securitySupport.requireMemberId(principal);
+        PostSearchResponse body = searchService.searchPosts(query, size, after);
         return APIResponse.ok(CommonSuccessCode.SEARCH_COMPLETED, body);
     }
 }

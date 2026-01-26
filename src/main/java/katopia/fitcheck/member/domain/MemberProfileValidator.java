@@ -51,6 +51,13 @@ public class MemberProfileValidator {
         }
     }
 
+    public Gender requireGender(String genderValue) {
+        if (!StringUtils.hasText(genderValue)) {
+            throw new BusinessException(requiredValue("성별"));
+        }
+        return parseGender(genderValue);
+    }
+
     public Short parseHeight(String height) {
         if (!StringUtils.hasText(height)) {
             return null;

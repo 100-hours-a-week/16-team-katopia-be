@@ -38,6 +38,12 @@ spring:
       file: docker-compose.yml
       lifecycle-management: start_only
 
+
+  cloud:
+    aws:
+      secretsmanager:
+        enabled: false
+
 server:
   error:
     include-message: always # 로컬 편의 디버깅
