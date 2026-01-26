@@ -1,7 +1,6 @@
 package katopia.fitcheck.post.repository;
 
 import katopia.fitcheck.member.domain.AccountStatus;
-import katopia.fitcheck.member.domain.Gender;
 import katopia.fitcheck.post.domain.Post;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -107,49 +106,62 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Long> findIdsByMemberId(@Param("memberId") Long memberId);
 
     @Query("""
-            select distinct p from Post p
+            select p from Post p
             join p.member m
-            left join p.postTags pt
-            left join pt.tag t
             where m.accountStatus = :status
-              and (p.content like concat(:query, '%') or t.name like concat(:query, '%'))
-              and (:gender is null or m.gender = :gender)
-              and (:minHeight is null or (m.height is not null and m.height between :minHeight and :maxHeight))
-              and (:minWeight is null or (m.weight is not null and m.weight between :minWeight and :maxWeight))
+              and p.content like concat(:query, '%')
             order by p.createdAt desc, p.id desc
             """)
-    List<Post> searchLatestByContentOrTag(
+    List<Post> searchLatestByContent(
             @Param("query") String query,
             @Param("status") AccountStatus status,
-            @Param("minHeight") Short minHeight,
-            @Param("maxHeight") Short maxHeight,
-            @Param("minWeight") Short minWeight,
-            @Param("maxWeight") Short maxWeight,
-            @Param("gender") Gender gender,
+            Pageable pageable
+    );
+
+    @Query("""
+            select p from Post p
+            join p.member m
+            where m.accountStatus = :status
+              and p.content like concat(:query, '%')
+              and ((p.createdAt < :createdAt) or (p.createdAt = :createdAt and p.id < :id))
+            order by p.createdAt desc, p.id desc
+            """)
+    List<Post> searchPageAfterByContent(
+            @Param("query") String query,
+            @Param("status") AccountStatus status,
+            @Param("createdAt") LocalDateTime createdAt,
+            @Param("id") Long id,
             Pageable pageable
     );
 
     @Query("""
             select distinct p from Post p
             join p.member m
-            left join p.postTags pt
-            left join pt.tag t
+            join p.postTags pt
+            join pt.tag t
             where m.accountStatus = :status
-              and (p.content like concat(:query, '%') or t.name like concat(:query, '%'))
-              and (:gender is null or m.gender = :gender)
-              and (:minHeight is null or (m.height is not null and m.height between :minHeight and :maxHeight))
-              and (:minWeight is null or (m.weight is not null and m.weight between :minWeight and :maxWeight))
+              and t.name like concat(:query, '%')
+            order by p.createdAt desc, p.id desc
+            """)
+    List<Post> searchLatestByTag(
+            @Param("query") String query,
+            @Param("status") AccountStatus status,
+            Pageable pageable
+    );
+
+    @Query("""
+            select distinct p from Post p
+            join p.member m
+            join p.postTags pt
+            join pt.tag t
+            where m.accountStatus = :status
+              and t.name like concat(:query, '%')
               and ((p.createdAt < :createdAt) or (p.createdAt = :createdAt and p.id < :id))
             order by p.createdAt desc, p.id desc
             """)
-    List<Post> searchPageAfterByContentOrTag(
+    List<Post> searchPageAfterByTag(
             @Param("query") String query,
             @Param("status") AccountStatus status,
-            @Param("minHeight") Short minHeight,
-            @Param("maxHeight") Short maxHeight,
-            @Param("minWeight") Short minWeight,
-            @Param("maxWeight") Short maxWeight,
-            @Param("gender") Gender gender,
             @Param("createdAt") LocalDateTime createdAt,
             @Param("id") Long id,
             Pageable pageable

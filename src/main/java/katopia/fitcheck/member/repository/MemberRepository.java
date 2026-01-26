@@ -3,7 +3,6 @@ package katopia.fitcheck.member.repository;
 import katopia.fitcheck.global.security.oauth2.SocialProvider;
 import katopia.fitcheck.member.domain.AccountStatus;
 import katopia.fitcheck.member.domain.Member;
-import katopia.fitcheck.member.domain.Gender;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,20 +25,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             select m from Member m
             where m.accountStatus = :status
               and m.nickname like concat(:nickname, '%')
-              and (:gender is null or m.gender = :gender)
-              and (:minHeight is null or (m.height is not null and m.height between :minHeight and :maxHeight))
-              and (:minWeight is null or (m.weight is not null and m.weight between :minWeight and :maxWeight))
               and (:excludeId is null or m.id <> :excludeId)
             order by m.createdAt desc, m.id desc
             """)
     List<Member> searchLatestByNickname(
             @Param("nickname") String nickname,
             @Param("status") AccountStatus status,
-            @Param("minHeight") Short minHeight,
-            @Param("maxHeight") Short maxHeight,
-            @Param("minWeight") Short minWeight,
-            @Param("maxWeight") Short maxWeight,
-            @Param("gender") Gender gender,
             @Param("excludeId") Long excludeId,
             Pageable pageable
     );
@@ -48,9 +39,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             select m from Member m
             where m.accountStatus = :status
               and m.nickname like concat(:nickname, '%')
-              and (:gender is null or m.gender = :gender)
-              and (:minHeight is null or (m.height is not null and m.height between :minHeight and :maxHeight))
-              and (:minWeight is null or (m.weight is not null and m.weight between :minWeight and :maxWeight))
               and (:excludeId is null or m.id <> :excludeId)
               and ((m.createdAt < :createdAt) or (m.createdAt = :createdAt and m.id < :id))
             order by m.createdAt desc, m.id desc
@@ -58,11 +46,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> searchPageAfterByNickname(
             @Param("nickname") String nickname,
             @Param("status") AccountStatus status,
-            @Param("minHeight") Short minHeight,
-            @Param("maxHeight") Short maxHeight,
-            @Param("minWeight") Short minWeight,
-            @Param("maxWeight") Short maxWeight,
-            @Param("gender") Gender gender,
             @Param("excludeId") Long excludeId,
             @Param("createdAt") LocalDateTime createdAt,
             @Param("id") Long id,
