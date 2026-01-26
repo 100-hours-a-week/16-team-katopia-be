@@ -41,9 +41,9 @@ public class SearchService {
                                           String weight,
                                           String gender) {
         String keyword = searchValidator.requireQuery(query);
-        SearchFilter filter = resolveFilter(requesterId, height, weight, gender);
+        SearchFilter filter = resolveFilter(requesterId, height, weight, gender, true);
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
-        List<Member> members = loadUsers(keyword, filter, size, after);
+        List<Member> members = loadUsers(keyword, filter, size, after, requesterId);
         List<MemberSummary> summaries = members.stream()
                 .map(MemberSummary::of)
                 .toList();
@@ -60,7 +60,7 @@ public class SearchService {
                                           String weight,
                                           String gender) {
         String keyword = searchValidator.requireQuery(query);
-        SearchFilter filter = resolveFilter(requesterId, height, weight, gender);
+        SearchFilter filter = resolveFilter(requesterId, height, weight, gender, true);
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<Post> posts = loadPosts(keyword, filter, size, after);
         List<PostSummary> summaries = posts.stream()
@@ -74,20 +74,33 @@ public class SearchService {
         return PostSearchResponse.of(summaries, nextCursor);
     }
 
-    private SearchFilter resolveFilter(Long requesterId, String height, String weight, String gender) {
+    private SearchFilter resolveFilter(Long requesterId, String height, String weight, String gender, boolean useRequesterProfile) {
         boolean hasExplicit = StringUtils.hasText(height) || StringUtils.hasText(weight) || StringUtils.hasText(gender);
-        if (hasExplicit) {
+        if (!useRequesterProfile || requesterId == null) {
+            if (!hasExplicit) {
+                return new SearchFilter(null, null, null, null, null);
+            }
             Short parsedHeight = profileValidator.parseHeight(height);
             Short parsedWeight = profileValidator.parseWeight(weight);
             Gender parsedGender = profileValidator.parseGender(gender);
             return buildFilter(parsedHeight, parsedWeight, parsedGender);
         }
-        if (requesterId == null) {
-            return new SearchFilter(null, null, null, null, null);
-        }
         return memberRepository.findByIdAndAccountStatus(requesterId, AccountStatus.ACTIVE)
-                .map(member -> buildFilter(member.getHeight(), member.getWeight(), member.getGender()))
-                .orElseGet(() -> new SearchFilter(null, null, null, null, null));
+                .map(member -> {
+                    Short resolvedHeight = StringUtils.hasText(height) ? profileValidator.parseHeight(height) : member.getHeight();
+                    Short resolvedWeight = StringUtils.hasText(weight) ? profileValidator.parseWeight(weight) : member.getWeight();
+                    Gender resolvedGender = StringUtils.hasText(gender) ? profileValidator.parseGender(gender) : member.getGender();
+                    return buildFilter(resolvedHeight, resolvedWeight, resolvedGender);
+                })
+                .orElseGet(() -> {
+                    if (!hasExplicit) {
+                        return new SearchFilter(null, null, null, null, null);
+                    }
+                    Short parsedHeight = profileValidator.parseHeight(height);
+                    Short parsedWeight = profileValidator.parseWeight(weight);
+                    Gender parsedGender = profileValidator.parseGender(gender);
+                    return buildFilter(parsedHeight, parsedWeight, parsedGender);
+                });
     }
 
     private SearchFilter buildFilter(Short height, Short weight, Gender gender) {
@@ -106,7 +119,7 @@ public class SearchService {
         return new SearchFilter(minHeight, maxHeight, minWeight, maxWeight, gender);
     }
 
-    private List<Member> loadUsers(String nickname, SearchFilter filter, int size, String after) {
+    private List<Member> loadUsers(String nickname, SearchFilter filter, int size, String after, Long excludeMemberId) {
         PageRequest pageRequest = PageRequest.of(0, size);
         if (!StringUtils.hasText(after)) {
             return memberRepository.searchLatestByNickname(
@@ -117,6 +130,7 @@ public class SearchService {
                     filter.minWeight(),
                     filter.maxWeight(),
                     filter.gender(),
+                    excludeMemberId,
                     pageRequest
             );
         }
@@ -129,6 +143,7 @@ public class SearchService {
                 filter.minWeight(),
                 filter.maxWeight(),
                 filter.gender(),
+                excludeMemberId,
                 cursor.createdAt(),
                 cursor.id(),
                 pageRequest
