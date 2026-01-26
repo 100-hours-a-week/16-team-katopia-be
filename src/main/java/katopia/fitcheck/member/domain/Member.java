@@ -148,8 +148,15 @@ public class Member {
                 .build();
     }
 
-    public void completeRegistration(String nickname) {
+    public void completeRegistration(String nickname, Gender gender) {
         this.nickname = nickname;
+        this.gender = gender;
+        if (this.height == null) {
+            this.height = 0;
+        }
+        if (this.weight == null) {
+            this.weight = 0;
+        }
         this.accountStatus = AccountStatus.ACTIVE;
         this.termsAgreedAt = LocalDateTime.now();
     }

@@ -9,6 +9,7 @@ import katopia.fitcheck.global.security.jwt.JwtProvider.Token;
 import katopia.fitcheck.global.security.jwt.JwtProvider.TokenPair;
 import katopia.fitcheck.member.repository.MemberRepository;
 import katopia.fitcheck.member.domain.AccountStatus;
+import katopia.fitcheck.member.domain.Gender;
 import katopia.fitcheck.member.domain.Member;
 import katopia.fitcheck.member.domain.MemberProfileValidator;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class MemberRegistrationService {
     private final MemberProfileValidator profileValidator;
 
     @Transactional
-    public SignupResult signup(Long memberId, String nickname) {
+    public SignupResult signup(Long memberId, String nickname, String gender) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN));
 
@@ -38,13 +39,14 @@ public class MemberRegistrationService {
         }
 
         String normalized = profileValidator.normalizeNickname(nickname);
+        Gender parsedGender = profileValidator.requireGender(gender);
         boolean nicknameChanged = !normalized.equals(member.getNickname());
         if (nicknameChanged && memberRepository.existsByNickname(normalized)) {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
 
         try {
-            member.completeRegistration(normalized);
+            member.completeRegistration(normalized, parsedGender);
             memberRepository.flush();
         } catch (DataIntegrityViolationException ex) {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);

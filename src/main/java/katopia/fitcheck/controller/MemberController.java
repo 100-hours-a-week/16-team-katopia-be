@@ -50,7 +50,8 @@ public class MemberController implements MemberApiSpec {
             throw new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN);
         }
 
-        MemberService.SignupWithCookie payload = memberService.signup(registrationMemberId, request.nickname());
+        MemberService.SignupWithCookie payload =
+                memberService.signup(registrationMemberId, request.nickname(), request.gender());
         response.addHeader(HttpHeaders.SET_COOKIE, payload.refreshCookie().toString());
         response.addHeader(HttpHeaders.SET_COOKIE, memberService.clearRegistrationCookie().toString());
         return APIResponse.ok(AuthSuccessCode.LOGIN_SUCCESS, MemberSignupResponse.from(payload.signupResult()));
