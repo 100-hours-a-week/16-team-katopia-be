@@ -8,11 +8,18 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
+    private final String swaggerServerUrl;
+
+    public SwaggerConfig(@Value("${app.swagger.server-url}") String swaggerServerUrl) {
+        this.swaggerServerUrl = swaggerServerUrl;
+    }
+
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
@@ -22,7 +29,7 @@ public class SwaggerConfig {
                         .version("1.0.0")
                 )
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("개발 서버")
+                        new Server().url(swaggerServerUrl).description("API 서버")
                 ))
                 .components(new Components()
                         .addSecuritySchemes("Authorization",
