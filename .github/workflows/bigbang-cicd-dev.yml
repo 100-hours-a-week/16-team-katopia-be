@@ -297,12 +297,12 @@ jobs:
 #          fi
 #
 #          payload=$(jq -n --arg content "❌ CD 실패: ${{ job.name }}
-#Repo: ${{ github.repository }}
-#Branch: ${BRANCH}
-#Commit: ${{ github.sha }} (${COMMIT_URL})
-#Run: ${RUN_URL}
-#
-#Failed step(s):
-#${FAILED_TEXT}" '{content: $content}')
-#
-#          curl -sS -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK_URL"
+        #Repo: ${{ github.repository }}
+        #Branch: ${BRANCH}
+        #Commit: ${{ github.sha }} (${COMMIT_URL})
+        #Run: ${RUN_URL}
+        #
+        #Failed step(s):
+        #${FAILED_TEXT}" '{content: $content}')
+        #
+        #          curl -sS -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK_URL"
