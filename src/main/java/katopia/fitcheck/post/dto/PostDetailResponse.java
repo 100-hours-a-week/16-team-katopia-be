@@ -17,14 +17,11 @@ public record PostDetailResponse(
         PostAggregateResponse aggregate,
         LocalDateTime createdAt
 ) {
-    public static PostDetailResponse of (Post post, Member author) {
+    public static PostDetailResponse of (Post post, Member author, List<String> tags) {
         return PostDetailResponse.builder()
                 .imageUrls(post.getImageUrls())
                 .content(post.getContent())
-                .tags(post.getPostTags().stream()
-                        .map(postTag -> postTag.getTag().getName())
-                        .distinct()
-                        .toList())
+                .tags(tags)
                 .author(PostAuthorResponse.of(author))
                 .aggregate(PostAggregateResponse.of(post))
                 .createdAt(post.getCreatedAt())
