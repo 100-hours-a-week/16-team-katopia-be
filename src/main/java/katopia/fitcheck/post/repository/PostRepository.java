@@ -22,11 +22,35 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("""
             select p from Post p
+            where p.member.id = :memberId
+            order by p.createdAt desc, p.id desc
+            """)
+    List<Post> findLatestByMemberId(
+            @Param("memberId") Long memberId,
+            Pageable pageable
+    );
+
+    @Query("""
+            select p from Post p
             where (p.createdAt < :createdAt)
                or (p.createdAt = :createdAt and p.id < :id)
             order by p.createdAt desc, p.id desc
             """)
     List<Post> findPageAfter(
+            @Param("createdAt") LocalDateTime createdAt,
+            @Param("id") Long id,
+            Pageable pageable
+    );
+
+    @Query("""
+            select p from Post p
+            where p.member.id = :memberId
+              and ((p.createdAt < :createdAt)
+                or (p.createdAt = :createdAt and p.id < :id))
+            order by p.createdAt desc, p.id desc
+            """)
+    List<Post> findPageAfterByMemberId(
+            @Param("memberId") Long memberId,
             @Param("createdAt") LocalDateTime createdAt,
             @Param("id") Long id,
             Pageable pageable

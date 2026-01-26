@@ -26,6 +26,10 @@ public class PostService {
         return postSearchService.list(sizeValue, after);
     }
 
+    public PostListResponse listByMember(Long memberId, String sizeValue, String after) {
+        return postSearchService.listByMember(memberId, sizeValue, after);
+    }
+
     public PostDetailResponse getDetail(Long postId) {
         return postSearchService.getDetail(postId);
     }
