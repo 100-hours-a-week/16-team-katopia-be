@@ -8,6 +8,7 @@ import katopia.fitcheck.post.dto.PostDetailResponse;
 import katopia.fitcheck.post.dto.PostListResponse;
 import katopia.fitcheck.post.dto.PostSummary;
 import katopia.fitcheck.post.repository.PostRepository;
+import katopia.fitcheck.post.repository.PostTagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class PostSearchService {
     private final PostRepository postRepository;
     private final PostFinder postFinder;
     private final MemberFinder memberFinder;
+    private final PostTagRepository postTagRepository;
 
     @Transactional(readOnly = true)
     public PostListResponse list(String sizeValue, String after) {
@@ -71,7 +73,8 @@ public class PostSearchService {
         Post post = postFinder.findDetailByIdOrThrow(postId);
         Member author = post.getMember();
 
-        return PostDetailResponse.of(post, author);
+        List<String> tags = postTagRepository.findTagNamesByPostId(postId);
+        return PostDetailResponse.of(post, author, tags);
     }
 
     private List<Post> loadPosts(int size, String after) {
