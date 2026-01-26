@@ -29,6 +29,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
               and (:gender is null or m.gender = :gender)
               and (:minHeight is null or (m.height is not null and m.height between :minHeight and :maxHeight))
               and (:minWeight is null or (m.weight is not null and m.weight between :minWeight and :maxWeight))
+              and (:excludeId is null or m.id <> :excludeId)
             order by m.createdAt desc, m.id desc
             """)
     List<Member> searchLatestByNickname(
@@ -39,6 +40,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             @Param("minWeight") Short minWeight,
             @Param("maxWeight") Short maxWeight,
             @Param("gender") Gender gender,
+            @Param("excludeId") Long excludeId,
             Pageable pageable
     );
 
@@ -49,6 +51,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
               and (:gender is null or m.gender = :gender)
               and (:minHeight is null or (m.height is not null and m.height between :minHeight and :maxHeight))
               and (:minWeight is null or (m.weight is not null and m.weight between :minWeight and :maxWeight))
+              and (:excludeId is null or m.id <> :excludeId)
               and ((m.createdAt < :createdAt) or (m.createdAt = :createdAt and m.id < :id))
             order by m.createdAt desc, m.id desc
             """)
@@ -60,6 +63,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             @Param("minWeight") Short minWeight,
             @Param("maxWeight") Short maxWeight,
             @Param("gender") Gender gender,
+            @Param("excludeId") Long excludeId,
             @Param("createdAt") LocalDateTime createdAt,
             @Param("id") Long id,
             Pageable pageable
