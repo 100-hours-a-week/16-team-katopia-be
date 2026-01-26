@@ -42,6 +42,8 @@ logging:
     org.springframework.security.oauth2: TRACE
 
 app:
+  swagger:
+    server-url: http://localhost:8080
   security:
     cors:
       allowed-origins:
