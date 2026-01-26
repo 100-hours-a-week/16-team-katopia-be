@@ -41,7 +41,7 @@ public class SearchService {
                                           String weight,
                                           String gender) {
         String keyword = searchValidator.requireQuery(query);
-        SearchFilter filter = resolveFilter(requesterId, height, weight, gender, true);
+        SearchFilter filter = resolveFilter(requesterId, height, weight, gender, false);
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<Member> members = loadUsers(keyword, filter, size, after, requesterId);
         List<MemberSummary> summaries = members.stream()
