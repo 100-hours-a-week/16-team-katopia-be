@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/swagger-ui/**",
                                 "/api/v3/api-docs/**",
+                                "/presign-test.html",
                                 "/oauth2/**",
                                 "/login/**",
                                 "/error",
