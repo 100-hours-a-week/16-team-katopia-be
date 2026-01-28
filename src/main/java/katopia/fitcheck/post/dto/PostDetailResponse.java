@@ -13,15 +13,17 @@ public record PostDetailResponse(
         List<PostImage> imageUrls,
         String content,
         List<String> tags,
+        boolean isLiked,
         PostAuthorResponse author,
         PostAggregateResponse aggregate,
         LocalDateTime createdAt
 ) {
-    public static PostDetailResponse of (Post post, Member author, List<String> tags) {
+    public static PostDetailResponse of (Post post, Member author, List<String> tags, boolean isLiked) {
         return PostDetailResponse.builder()
                 .imageUrls(post.getImageUrls())
                 .content(post.getContent())
                 .tags(tags)
+                .isLiked(isLiked)
                 .author(PostAuthorResponse.of(author))
                 .aggregate(PostAggregateResponse.of(post))
                 .createdAt(post.getCreatedAt())

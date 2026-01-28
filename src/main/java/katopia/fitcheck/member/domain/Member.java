@@ -66,10 +66,10 @@ public class Member {
     @Column(length = 1)
     private Gender gender;
 
-    @Column(columnDefinition = "smallint default 0")
+    @Column
     private Short height;
 
-    @Column(columnDefinition = "smallint default 0")
+    @Column
     private Short weight;
 
     @Column(name = "enable_realtime_notification", nullable = false)
@@ -151,12 +151,6 @@ public class Member {
     public void completeRegistration(String nickname, Gender gender) {
         this.nickname = nickname;
         this.gender = gender;
-        if (this.height == null) {
-            this.height = 0;
-        }
-        if (this.weight == null) {
-            this.weight = 0;
-        }
         this.accountStatus = AccountStatus.ACTIVE;
         this.termsAgreedAt = LocalDateTime.now();
     }

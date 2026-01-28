@@ -10,6 +10,7 @@ import katopia.fitcheck.post.dto.PostCreateRequest;
 import katopia.fitcheck.post.dto.PostCreateResponse;
 import katopia.fitcheck.post.dto.PostUpdateRequest;
 import katopia.fitcheck.post.dto.PostUpdateResponse;
+import katopia.fitcheck.comment.repository.CommentRepository;
 import katopia.fitcheck.post.repository.PostLikeRepository;
 import katopia.fitcheck.post.repository.PostRepository;
 import katopia.fitcheck.post.repository.PostTagRepository;
@@ -31,6 +32,7 @@ public class PostCommandService {
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
     private final PostLikeRepository postLikeRepository;
+    private final CommentRepository commentRepository;
     private final PostValidator postValidator;
     private final MemberFinder memberFinder;
     private final PostFinder postFinder;
@@ -69,6 +71,7 @@ public class PostCommandService {
     public void delete(Long memberId, Long postId) {
         Post post = postFinder.findByIdOrThrow(postId);
         postValidator.validateOwner(post, memberId);
+        commentRepository.deleteByPostId(postId);
         postLikeRepository.deleteByPostId(postId);
         postTagRepository.deleteByPostId(postId);
         postRepository.delete(post);

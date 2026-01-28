@@ -16,6 +16,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import katopia.fitcheck.comment.domain.Comment;
 import katopia.fitcheck.member.domain.Member;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -30,7 +31,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @Entity
@@ -48,9 +48,6 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /*
-    회원탈퇴 시 게시글 하드삭제
-     */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -91,6 +88,9 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PostLike> postLikes = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> commentList = new ArrayList<>();
 
     @Builder
     private Post(Member member,
@@ -139,14 +139,6 @@ public class Post {
         if (tags != null) {
             this.postTags.addAll(tags);
         }
-    }
-
-    public void increaseLikeCount() {
-        this.likeCount += 1; // TODO UPDATE 쿼리로 동시성 문제 해결
-    }
-
-    public void decreaseLikeCount() {
-        this.likeCount = Math.max(0, this.likeCount - 1); // TODO UPDATE 쿼리로 동시성 문제 해결
     }
 
     public List<PostImage> getImageUrls() {
