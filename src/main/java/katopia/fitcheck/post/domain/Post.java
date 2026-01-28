@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @Entity
@@ -140,14 +139,6 @@ public class Post {
         if (tags != null) {
             this.postTags.addAll(tags);
         }
-    }
-
-    public void increaseLikeCount() {
-        this.likeCount += 1; // TODO UPDATE 쿼리로 동시성 문제 해결
-    }
-
-    public void decreaseLikeCount() {
-        this.likeCount = Math.max(0, this.likeCount - 1); // TODO UPDATE 쿼리로 동시성 문제 해결
     }
 
     public List<PostImage> getImageUrls() {
