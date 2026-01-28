@@ -30,8 +30,8 @@ public class PostService {
         return postSearchService.listByMember(memberId, sizeValue, after);
     }
 
-    public PostDetailResponse getDetail(Long postId) {
-        return postSearchService.getDetail(postId);
+    public PostDetailResponse getDetail(Long memberId, Long postId) {
+        return postSearchService.getDetail(memberId, postId);
     }
 
     public PostUpdateResponse update(Long memberId, Long postId, PostUpdateRequest request) {

@@ -49,6 +49,7 @@ public interface PostApiSpec {
     @ApiResponse(responseCode = "200", description = "게시글 상세 조회 성공", content = @Content(schema = @Schema(implementation = PostDetailResponse.class)))
     @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     ResponseEntity<APIResponse<PostDetailResponse>> getPost(
+            @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long id
     );
 

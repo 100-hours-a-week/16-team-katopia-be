@@ -62,9 +62,11 @@ public class PostController implements PostApiSpec {
     @GetMapping("/{id}")
     @Override
     public ResponseEntity<APIResponse<PostDetailResponse>> getPost(
+            @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long id
     ) {
-        PostDetailResponse body = postService.getDetail(id);
+        Long memberId = securitySupport.requireMemberId(principal);
+        PostDetailResponse body = postService.getDetail(memberId, id);
         return APIResponse.ok(PostSuccessCode.POST_FETCHED, body);
     }
 
