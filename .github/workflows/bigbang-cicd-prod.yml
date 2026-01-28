@@ -1,8 +1,8 @@
-name: BE CI/CD (dev) - Spring
+name: BE CI/CD (main) - Spring
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -104,12 +104,12 @@ jobs:
         if: success()
         shell: bash
         env:
-          EC2_PUBLIC_IP: ${{ secrets.DEV_EC2_PUBLIC_IP }}
+          EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
         run: |
           set -euo pipefail
 
           mkdir -p ~/.ssh
-          printf "%s" "${{ secrets.DEV_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
+          printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
           chmod 600 ~/.ssh/katopia.pem
 
           ARTIFACT_PATH="${{ steps.prep_jar.outputs.artifact_path }}"
@@ -194,14 +194,14 @@ jobs:
         if: success()
         shell: bash
         env:
-          EC2_PUBLIC_IP: ${{ secrets.DEV_EC2_PUBLIC_IP }}
+          EC2_PUBLIC_IP: ${{ secrets.PROD_EC2_PUBLIC_IP }}
           SERVICE_NAME: spring-app
           APP_DIR: /home/ec2-user/spring
         run: |
           set -euo pipefail
 
           mkdir -p ~/.ssh
-          printf "%s" "${{ secrets.DEV_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
+          printf "%s" "${{ secrets.PROD_EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/katopia.pem
           chmod 600 ~/.ssh/katopia.pem
 
           ssh -o StrictHostKeyChecking=no \
@@ -244,50 +244,50 @@ jobs:
             exit 1
           fi
 
-          echo "Cleaning up old jar files (keeping 2 most recent)..."
-          ls -1t "${APP_DIR}"/*.jar | grep -v app.jar | tail -n +3 | xargs -r rm -f
+          echo "Cleaning up old jar files (keeping 7 most recent)..."
+          ls -1t "${APP_DIR}"/*.jar | grep -v app.jar | tail -n +8 | xargs -r rm -f
           echo "✅ Deployed ${LATEST_JAR} via ${SERVICE_NAME}"
 
           EOF
 
-      # 실패 시 디스코드 알림 (실패 step name 포함)
+        # 실패 시 디스코드 알림 (실패 step name 포함)
 
-#      - name: Notify Discord on failure
-#        id: notify_discord
-#        if: failure()
-#        env:
-#          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-#          STEPS_JSON: ${{ toJson(steps) }}
-#        shell: bash
-#        run: |
-#          set -euo pipefail
-#
-#          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-#          COMMIT_URL="${{ github.event.head_commit.url }}"
-#          BRANCH="${{ github.ref_name }}"
-#
-#          FAILED_IDS=$(echo "$STEPS_JSON" | jq -r '
-#            to_entries[]
-#            | select((.value.outcome == "failure") or (.value.conclusion == "failure"))
-#            | .key
-#          ' | tr '\n' ' ')
-#
-#          declare -A STEP_NAMES=(
-#            [checkout]="Checkout"
-#            [deploy_ec2]="Deploy on EC2 (stop/start systemd)"
-#          )
-#
-#          if [ -z "$FAILED_IDS" ]; then
-#            FAILED_TEXT="(failed step unknown)"
-#          else
-#            FAILED_TEXT=""
-#            for id in $FAILED_IDS; do
-#              name="${STEP_NAMES[$id]:-$id}"
-#              FAILED_TEXT="${FAILED_TEXT}- ${name}"$'\n'
-#            done
-#          fi
-#
-#          payload=$(jq -n --arg content "❌ CD 실패: ${{ job.name }}
+        #      - name: Notify Discord on failure
+        #        id: notify_discord
+        #        if: failure()
+        #        env:
+        #          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        #          STEPS_JSON: ${{ toJson(steps) }}
+        #        shell: bash
+        #        run: |
+        #          set -euo pipefail
+        #
+        #          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        #          COMMIT_URL="${{ github.event.head_commit.url }}"
+        #          BRANCH="${{ github.ref_name }}"
+        #
+        #          FAILED_IDS=$(echo "$STEPS_JSON" | jq -r '
+        #            to_entries[]
+        #            | select((.value.outcome == "failure") or (.value.conclusion == "failure"))
+        #            | .key
+        #          ' | tr '\n' ' ')
+        #
+        #          declare -A STEP_NAMES=(
+        #            [checkout]="Checkout"
+        #            [deploy_ec2]="Deploy on EC2 (stop/start systemd)"
+        #          )
+        #
+        #          if [ -z "$FAILED_IDS" ]; then
+        #            FAILED_TEXT="(failed step unknown)"
+        #          else
+        #            FAILED_TEXT=""
+        #            for id in $FAILED_IDS; do
+        #              name="${STEP_NAMES[$id]:-$id}"
+        #              FAILED_TEXT="${FAILED_TEXT}- ${name}"$'\n'
+        #            done
+        #          fi
+        #
+        #          payload=$(jq -n --arg content "❌ CD 실패: ${{ job.name }}
         #Repo: ${{ github.repository }}
         #Branch: ${BRANCH}
         #Commit: ${{ github.sha }} (${COMMIT_URL})
