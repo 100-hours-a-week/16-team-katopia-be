@@ -56,6 +56,7 @@ public class PostController implements PostApiSpec {
             @RequestParam(value = "after", required = false) String after
     ) {
         PostListResponse body = postService.list(size, after);
+
         return APIResponse.ok(PostSuccessCode.POST_LISTED, body);
     }
 
@@ -65,8 +66,10 @@ public class PostController implements PostApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long id
     ) {
-        Long memberId = securitySupport.requireMemberId(principal);
+        Long memberId = securitySupport.findMemberIdOrNull(principal);
+
         PostDetailResponse body = postService.getDetail(memberId, id);
+
         return APIResponse.ok(PostSuccessCode.POST_FETCHED, body);
     }
 
@@ -79,7 +82,9 @@ public class PostController implements PostApiSpec {
             @RequestBody PostUpdateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         PostUpdateResponse body = postService.update(memberId, id, request);
+
         return APIResponse.ok(PostSuccessCode.POST_UPDATED, body);
     }
 
@@ -90,7 +95,9 @@ public class PostController implements PostApiSpec {
             @PathVariable("id") Long id
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         postService.delete(memberId, id);
+
         return APIResponse.noContent(PostSuccessCode.POST_DELETED);
     }
 
@@ -101,7 +108,9 @@ public class PostController implements PostApiSpec {
             @PathVariable("id") Long id
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         PostLikeResponse body = postService.like(memberId, id);
+
         return APIResponse.ok(PostLikeSuccessCode.POST_LIKED, body);
     }
 
@@ -112,7 +121,9 @@ public class PostController implements PostApiSpec {
             @PathVariable("id") Long id
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         postService.unlike(memberId, id);
+
         return APIResponse.noContent(PostLikeSuccessCode.POST_UNLIKED);
     }
 }

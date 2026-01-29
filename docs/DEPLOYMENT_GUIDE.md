@@ -1,11 +1,10 @@
-
 # FitCheck – Local & Deployment Guide
 
 ## 1. Health Check (Actuator)
 
 ### 기본 헬스체크 API
-- **GET /actuator/health**
-- **GET /actuator/metrics**
+- **GET /api/actuator/health**
+- **GET /api/actuator/metrics**
 
 본 프로젝트는 Spring Boot Actuator를 사용하며, 다음 설정을 전제로 합니다.
 
@@ -13,6 +12,7 @@
 management:
   endpoints:
     web:
+      base-path: /api/actuator
       exposure:
         include: health, metrics, prometheus
   endpoint:
@@ -23,8 +23,8 @@ management:
 
 - 인증되지 않은 사용자는 `{"status":"UP"}` 수준의 요약 정보만 확인할 수 있습니다.
 - ADMIN 권한이 있는 사용자는 DB, Redis 등 세부 컴포넌트 상태를 확인할 수 있습니다.
-- 운영 환경에서는 로드밸런서(ALB/NLB) 헬스체크 용도로 `/actuator/health`만 외부에 노출하는 구성을 권장합니다.
-- `/actuator/prometheus`가 기본 노출되므로 모니터링 스택과 연계 시 추가 설정 없이 사용할 수 있습니다.
+- 운영 환경에서는 로드밸런서(ALB/NLB) 헬스체크 용도로 `/api/actuator/health`만 외부에 노출하는 구성을 권장합니다.
+- `/api/actuator/prometheus`가 기본 노출되므로 모니터링 스택과 연계 시 추가 설정 없이 사용할 수 있습니다.
 
 ---
 
@@ -74,11 +74,15 @@ Spring Boot 3.5 + `spring-boot-docker-compose` 의존성으로 `./gradlew bootRu
       port: ${RABBIT_PORT:5672}
       username: ${RABBIT_USERNAME:guest}
       password: ${RABBIT_PASSWORD:guest}
+    cloud:
+      aws:
+        secretsmanager:
+          enabled: false
     docker:
       compose:
         enabled: true
         file: docker-compose.yml
-        lifecycle-management: start_and_stop
+        lifecycle-management: start_only
   server:
     error:
       include-message: always
@@ -129,6 +133,19 @@ app:
   jwt:
     access-token-secret: ${JWT_ACCESS_TOKEN_SECRET}
     refresh-token-secret: ${JWT_REFRESH_TOKEN_SECRET}
+
+cloud:
+  aws:
+    region: ${AWS_REGION:ap-northeast-2}
+    s3:
+      bucket: ${S3_BUCKET:katopia-s3-bucket}
+    credentials:
+      access-key-id: ${AWS_ACCESS_KEY_ID}
+      secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+    presign:
+      expire-minutes: 10
+    cloudfront-base-url: ${CLOUDFRONT_BASE_URL}
+    max-size-bytes: ${S3_MAX_SIZE_BYTES:31457280}
 ```
 
 > 주의: 해당 파일은 반드시 `.gitignore`에 포함되어야 합니다.
@@ -144,6 +161,14 @@ JWT_REFRESH_TOKEN_SECRET=...
 KAKAO_CLIENT_ID=...
 KAKAO_CLIENT_SECRET=...
 KAKAO_REDIRECT_URI=http://localhost:8080/login/oauth2/code/kakao
+
+# (선택) S3 presign
+AWS_REGION=ap-northeast-2
+S3_BUCKET=...
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+CLOUDFRONT_BASE_URL=...
+S3_MAX_SIZE_BYTES=31457280
 
 # (선택) 로컬 기본값을 바꿔야 할 때만 지정
 # DB_USERNAME=root
@@ -177,6 +202,14 @@ KAKAO_REDIRECT_URI=http://localhost:8080/login/oauth2/code/kakao
 - KAKAO_CLIENT_SECRET
 - KAKAO_REDIRECT_URI (운영 도메인 기준)
 
+#### AWS S3 / CloudFront
+- AWS_REGION
+- S3_BUCKET
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- CLOUDFRONT_BASE_URL
+- S3_MAX_SIZE_BYTES
+
 > 주의: `application-prod.yml`에는 RabbitMQ 설정이 포함되어 있지 않습니다. 운영 환경에서 메시지 브로커가 필요하다면 별도 프로필 혹은 환경변수로 `spring.rabbitmq.*`을 추가해야 합니다.
 
 ---
@@ -192,7 +225,7 @@ KAKAO_REDIRECT_URI=http://localhost:8080/login/oauth2/code/kakao
 
 ## 5. 운영 보안 가이드
 
-- Swagger UI는 운영 환경에서 비활성화 권장
+- Swagger UI 노출 정책은 운영 환경에 맞게 결정
 - Actuator Endpoint는 내부망 또는 관리자 권한으로만 접근 허용
 - JWT Secret은 반드시 32바이트 이상 랜덤 문자열 사용
 
@@ -200,9 +233,9 @@ KAKAO_REDIRECT_URI=http://localhost:8080/login/oauth2/code/kakao
 
 ## 6. Swagger(OpenAPI) 사용 안내
 
-- 개발/스테이징 환경에서만 Swagger UI 활성화 권장
-- 로컬 기본 경로: `http://localhost:8080/swagger-ui/index.html`
-- 운영에서는 `springdoc.swagger-ui.enabled=false` 설정 권장
+- 로컬 경로: `http://localhost:8080/api/swagger-ui/index.html`
+- API Docs 경로: `http://localhost:8080/api/v3/api-docs`
+- 운영 경로: `https://dev.fitcheck.kr/api/swagger-ui/index.html`
 
 ---
 

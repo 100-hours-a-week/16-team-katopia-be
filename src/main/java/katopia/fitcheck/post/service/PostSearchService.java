@@ -76,7 +76,7 @@ public class PostSearchService {
         Member author = post.getMember();
 
         List<String> tags = postTagRepository.findTagNamesByPostId(postId);
-        boolean isLiked = postLikeRepository.existsByMemberIdAndPostId(memberId, postId);
+        boolean isLiked = memberId != null && postLikeRepository.existsByMemberIdAndPostId(memberId, postId);
         return PostDetailResponse.of(post, author, tags, isLiked);
     }
 
