@@ -61,9 +61,9 @@ app:
     access-token-secret: ${JWT_ACCESS_TOKEN_SECRET}
     refresh-token-secret: ${JWT_REFRESH_TOKEN_SECRET}
   swagger:
-    server-url: https://dev.fitcheck.kr
+    server-url: https://fitcheck.kr
   frontend:
-    base-url: https://dev.fitcheck.kr
+    base-url: https://fitcheck.kr
 
 cloud:
   aws:
