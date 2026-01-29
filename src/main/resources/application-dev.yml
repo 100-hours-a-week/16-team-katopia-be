@@ -1,0 +1,87 @@
+spring:
+  config:
+    import: optional:aws-secretsmanager:dev/spring/secret
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update # 수동 DDL 필요
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: Asia/Seoul
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+            client-name: Kakao
+            scope:
+              - account_email
+              - profile_nickname
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+
+
+logging:
+  level:
+    org.springframework.security: info
+
+app:
+  jwt:
+    access-token-secret: ${JWT_ACCESS_TOKEN_SECRET}
+    refresh-token-secret: ${JWT_REFRESH_TOKEN_SECRET}
+  swagger:
+    server-url: https://dev.fitcheck.kr
+  frontend:
+    base-url: https://dev.fitcheck.kr
+
+cloud:
+  aws:
+    region: ${AWS_REGION}
+    s3:
+      bucket: ${S3_BUCKET}
+    credentials:
+      access-key-id: ${AWS_ACCESS_KEY_ID}
+      secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+    presign:
+      expire-minutes: 10
+    cloudfront-base-url: ${CLOUDFRONT_BASE_URL}
+    max-size-bytes: ${S3_MAX_SIZE_BYTES:31457280}
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /api/swagger-ui
