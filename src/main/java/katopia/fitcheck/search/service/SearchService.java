@@ -33,7 +33,7 @@ public class SearchService {
                                           String after) {
         String keyword = searchValidator.requireQuery(query);
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
-        List<Member> members = loadUsers(keyword, size, after, requesterId);
+        List<Member> members = loadUsers(keyword, size, after, null);
         List<MemberSummary> summaries = members.stream()
                 .map(MemberSummary::of)
                 .toList();
