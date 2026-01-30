@@ -1,7 +1,6 @@
 package katopia.fitcheck.global.validation;
 
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import katopia.fitcheck.dto.s3.PresignRequest;
@@ -104,13 +103,13 @@ class PresignRequestValidatorTest {
         assertThat(violations.iterator().next().getMessage()).isEqualTo(message);
     }
 
-    @ValidPresignRequest
     static class Wrapper {
-        @Valid
+        @ValidPresignRequest
         PresignRequest request;
 
         Wrapper(PresignRequest request) {
             this.request = request;
         }
     }
+
 }

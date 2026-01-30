@@ -214,6 +214,15 @@
 | TC-POST-TAG-05 | ✅ | Medium | 태그 길이 위반 | tags=[\"a\"*21] | 검증 수행 | POST-E-020 반환 |
 | TC-POST-TAG-06 | ✅ | Medium | 태그 유효성 성공 | tags=[\"DAILY\",\"MINIMAL\"] | 검증 수행 | 오류 없음 |
 
+### 11) 이미지 URL 유효성(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-IMAGE-01 | ✅ | Medium | 이미지 리스트 null | imageUrls=null | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-02 | ✅ | Medium | 이미지 리스트 빈 값 | imageUrls=[] | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-03 | ✅ | Medium | 이미지 개수 초과 | imageUrls=4개 | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-04 | ✅ | Medium | 이미지 URL 공백 | imageUrls=[\" \"] | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-05 | ✅ | Medium | 이미지 유효성 성공 | imageUrls=1~3개 | 검증 수행 | 오류 없음 |
+
 ### 7) 보안/예외(경계)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
