@@ -3,6 +3,12 @@ package katopia.fitcheck.dto.member.request;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.validation.GenderValue;
+import katopia.fitcheck.global.validation.HeightValue;
+import katopia.fitcheck.global.validation.Nickname;
+import katopia.fitcheck.global.validation.NotificationFlag;
+import katopia.fitcheck.global.validation.StyleList;
+import katopia.fitcheck.global.validation.WeightValue;
 
 import java.util.List;
 
@@ -12,9 +18,11 @@ public record MemberProfileUpdateRequest(
                 description = SwaggerExamples.NICKNAME_DES,
                 example = SwaggerExamples.NICKNAME,
                 requiredMode = Schema.RequiredMode.REQUIRED,
+                minLength = 2,
                 maxLength = 20,
                 pattern = "^[\\p{L}\\p{N}._]+$"
         )
+        @Nickname
         String nickname,
 
         @Schema(
@@ -28,6 +36,7 @@ public record MemberProfileUpdateRequest(
                 example = SwaggerExamples.GENDER_M,
                 allowableValues = {"M", "F"}
         )
+        @GenderValue(required = false)
         String gender,
 
         @Schema(
@@ -35,6 +44,7 @@ public record MemberProfileUpdateRequest(
                 example = SwaggerExamples.HEIGHT_175,
                 pattern = "^[0-9]+$"
         )
+        @HeightValue(required = false)
         String height,
 
         @Schema(
@@ -42,6 +52,7 @@ public record MemberProfileUpdateRequest(
                 example = SwaggerExamples.WEIGHT_70,
                 pattern = "^[0-9]+$"
         )
+        @WeightValue(required = false)
         String weight,
 
         @Schema(
@@ -49,6 +60,7 @@ public record MemberProfileUpdateRequest(
                 example = SwaggerExamples.NOTIFICATION_TRUE,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
+        @NotificationFlag
         Boolean enableRealtimeNotification,
 
         @ArraySchema(
@@ -60,5 +72,6 @@ public record MemberProfileUpdateRequest(
                         allowableValues = {"MINIMAL", "FEMININE", "STREET", "CASUAL", "CLASSIC", "SPORTY", "VINTAGE"}
                 )
         )
+        @StyleList
         List<String> style
 ) { }

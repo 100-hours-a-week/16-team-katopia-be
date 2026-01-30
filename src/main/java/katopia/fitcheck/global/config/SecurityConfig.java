@@ -52,6 +52,7 @@ public class SecurityConfig {
                         auth.requestMatchers(EndpointRequest.to("prometheus", "metrics")).permitAll();
                     }
                     auth.requestMatchers(
+                            "/bookmarks.*",
                             "/oauth2/**",
                             "/login/**",
                             "/error",

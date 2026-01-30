@@ -5,7 +5,7 @@ import katopia.fitcheck.dto.member.request.MemberProfileUpdate;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdateRequest;
 import katopia.fitcheck.dto.member.response.MemberProfileDetailResponse;
 import katopia.fitcheck.dto.member.response.MemberProfileResponse;
-import katopia.fitcheck.dto.member.response.NicknameDuplicateCheckResponse;
+import katopia.fitcheck.dto.member.response.NicknameCheckResponse;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.repository.member.MemberRepository;
@@ -43,13 +43,13 @@ public class MemberProfileService {
     public MemberProfileDetailResponse updateProfile(Long memberId, MemberProfileUpdateRequest request) {
         Member member = memberFinder.findByIdOrThrow(memberId);
         if (member.getAccountStatus() == AccountStatus.WITHDRAWN) {
-            throw new BusinessException(MemberErrorCode.ALREADY_WITHDRAWN_MEMBER);
+            throw new BusinessException(MemberErrorCode.NOT_FOUND_WITHDRAWN_MEMBER);
         }
 
         // nickname
-        String normalizedNickname = profileValidator.normalizeNickname(request.nickname());
-        boolean nicknameChanged = !normalizedNickname.equals(member.getNickname());
-        if (nicknameChanged && memberRepository.existsByNickname(normalizedNickname)) {
+        String nickname = request.nickname();
+        boolean nicknameChanged = !nickname.equals(member.getNickname());
+        if (nicknameChanged && memberRepository.existsByNickname(nickname)) {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
 
@@ -58,10 +58,10 @@ public class MemberProfileService {
         Short height = profileValidator.parseHeight(request.height());
         Short weight = profileValidator.parseWeight(request.weight());
         Set<StyleType> styles = resolveStyles(request);
-        boolean notification = profileValidator.validateNotificationFlag(request.enableRealtimeNotification());
+        boolean notification = request.enableRealtimeNotification();
 
         member.updateProfile(new MemberProfileUpdate(
-                normalizedNickname,
+                nickname,
                 normalizeImageUrl(request.profileImageUrl()),
                 gender,
                 height,
@@ -77,7 +77,7 @@ public class MemberProfileService {
     public void withdraw(Long memberId) {
         Member member = memberFinder.findByIdOrThrow(memberId);
         if (member.getAccountStatus() == AccountStatus.WITHDRAWN) {
-            throw new BusinessException(MemberErrorCode.ALREADY_WITHDRAWN_MEMBER);
+            throw new BusinessException(MemberErrorCode.NOT_FOUND_WITHDRAWN_MEMBER);
         }
         member.markAsWithdrawn(String.format("withdrawn_%d", member.getId()));
         memberRepository.flush();
@@ -97,9 +97,8 @@ public class MemberProfileService {
     }
 
     @Transactional(readOnly = true)
-    public NicknameDuplicateCheckResponse checkNickname(String nickname) {
-        String normalized = profileValidator.normalizeNickname(nickname);
-        boolean duplicated = memberRepository.existsByNickname(normalized);
-        return NicknameDuplicateCheckResponse.of(duplicated);
+    public NicknameCheckResponse checkNickname(String nickname) {
+        boolean duplicated = memberRepository.existsByNickname(nickname);
+        return NicknameCheckResponse.of(duplicated);
     }
 }

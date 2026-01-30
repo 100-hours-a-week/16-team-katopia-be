@@ -10,7 +10,7 @@ public record MemberSignupResponse(
     public static MemberSignupResponse from(SignupResult result) {
         return new MemberSignupResponse(
                 result.member().getAccountStatus().name(),
-                result.accessToken().token()
+                result.accessToken()
         );
     }
 }

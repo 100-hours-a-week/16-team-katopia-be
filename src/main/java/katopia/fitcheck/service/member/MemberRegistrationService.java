@@ -27,7 +27,7 @@ public class MemberRegistrationService {
     private final MemberProfileValidator profileValidator;
 
     @Transactional
-    public SignupResult signup(Long memberId, String nickname, String gender) {
+    public SignupResult signup(Long memberId, String normalizedNickname, String gender) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN));
 
@@ -38,33 +38,32 @@ public class MemberRegistrationService {
             throw new AuthException(AuthErrorCode.WITHDRAWN_MEMBER);
         }
 
-        String normalized = profileValidator.normalizeNickname(nickname);
-        Gender parsedGender = profileValidator.requireGender(gender);
-        boolean nicknameChanged = !normalized.equals(member.getNickname());
-        if (nicknameChanged && memberRepository.existsByNickname(normalized)) {
+        Gender parsedGender = profileValidator.parseGender(gender);
+        boolean nicknameChanged = !normalizedNickname.equals(member.getNickname());
+        if (nicknameChanged && memberRepository.existsByNickname(normalizedNickname)) {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
 
         try {
-            member.completeRegistration(normalized, parsedGender);
+            member.completeRegistration(normalizedNickname, parsedGender);
             memberRepository.flush();
         } catch (DataIntegrityViolationException ex) {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
         TokenPair tokenPair = jwtProvider.issueTokens(member.getId());
-        return new SignupResult(member, tokenPair.accessToken(), tokenPair.refreshToken());
+        return buildSignupResult(member, tokenPair);
     }
 
-    public ResponseCookie buildRefreshCookie(Token refreshToken) {
-        return jwtProvider.buildRefreshCookie(refreshToken);
-    }
-
-    public ResponseCookie clearRegistrationCookie() {
-        return jwtProvider.clearRegistrationCookie();
+    private SignupResult buildSignupResult(Member member, TokenPair tokenPair) {
+        return new SignupResult(member, tokenPair.accessToken().token(),
+                jwtProvider.buildRefreshCookie(tokenPair.refreshToken()),
+                jwtProvider.clearRegistrationCookie()
+        );
     }
 
     public record SignupResult(Member member,
-                               JwtProvider.Token accessToken,
-                               JwtProvider.Token refreshToken) {
-    }
+                               String accessToken,
+                               ResponseCookie refreshCookie,
+                               ResponseCookie clearRegistrationCookie
+    ) { }
 }

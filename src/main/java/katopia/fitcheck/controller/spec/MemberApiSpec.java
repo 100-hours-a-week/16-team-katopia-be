@@ -6,15 +6,17 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.global.security.jwt.RegistrationTokenFilter;
+import katopia.fitcheck.global.validation.Nickname;
 import katopia.fitcheck.dto.member.response.MemberProfileDetailResponse;
 import katopia.fitcheck.dto.member.response.MemberProfileResponse;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdateRequest;
 import katopia.fitcheck.dto.member.request.MemberSignupRequest;
 import katopia.fitcheck.dto.member.response.MemberSignupResponse;
-import katopia.fitcheck.dto.member.response.NicknameDuplicateCheckResponse;
+import katopia.fitcheck.dto.member.response.NicknameCheckResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -41,19 +43,21 @@ public interface MemberApiSpec {
     @PostMapping
     ResponseEntity<APIResponse<MemberSignupResponse>> signup(
             @RequestAttribute(value = RegistrationTokenFilter.REGISTRATION_MEMBER_ID, required = false) Long registrationMemberId,
-            @RequestBody MemberSignupRequest request,
+            @Valid @RequestBody MemberSignupRequest request,
             HttpServletResponse response
     );
 
 
     // READ
     @Operation(
-            summary = "닉네임 중복 검증",
-            description = "nickname 쿼리 파라미터로 전달된 닉네임이 사용 가능한지 검사하여 `isDuplicated` 값을 반환합니다."
+            summary = "닉네임 유효성/중복 확인",
+            description = "nickname 쿼리 파라미터의 형식을 검증한 뒤, 사용 가능하면 `isAvailable=true`를 반환합니다."
     )
+    @ApiResponse(responseCode = "200", description = "닉네임 사용 가능 여부 반환", content = @Content(schema = @Schema(implementation = NicknameCheckResponse.class)))
+    @ApiResponse(responseCode = "400", description = "닉네임 형식 오류", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @GetMapping("/check")
-    ResponseEntity<APIResponse<NicknameDuplicateCheckResponse>> checkNickname(
-            @RequestParam("nickname") String nickname
+    ResponseEntity<APIResponse<NicknameCheckResponse>> checkNickname(
+            @Nickname @RequestParam("nickname") String nickname
     );
 
 
@@ -104,7 +108,7 @@ public interface MemberApiSpec {
     @PatchMapping
     ResponseEntity<APIResponse<MemberProfileDetailResponse>> updateProfile(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestBody MemberProfileUpdateRequest request
+            @Valid @RequestBody MemberProfileUpdateRequest request
     );
 
 
