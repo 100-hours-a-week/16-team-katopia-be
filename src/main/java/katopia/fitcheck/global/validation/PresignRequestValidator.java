@@ -1,0 +1,61 @@
+package katopia.fitcheck.global.validation;
+
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import katopia.fitcheck.dto.s3.PresignRequest;
+import katopia.fitcheck.global.exception.code.CommonErrorCode;
+import katopia.fitcheck.service.s3.UploadCategory;
+import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Locale;
+
+public class PresignRequestValidator implements ConstraintValidator<ValidPresignRequest, PresignRequest> {
+    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "heic", "webp");
+
+    @Override
+    public boolean isValid(PresignRequest value, ConstraintValidatorContext context) {
+        if (value == null) {
+            addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
+            return false;
+        }
+        UploadCategory category = value.category();
+        List<String> extensions = value.extensions();
+        if (category == null || extensions == null || extensions.isEmpty()) {
+            addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
+            return false;
+        }
+        if (!isCountAllowed(category, extensions.size())) {
+            addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
+            return false;
+        }
+        for (String ext : extensions) {
+            String normalized = normalizeExtension(ext);
+            if (!ALLOWED_EXTENSIONS.contains(normalized)) {
+                addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String normalizeExtension(String extension) {
+        if (!StringUtils.hasText(extension)) {
+            return "";
+        }
+        String trimmed = extension.trim().toLowerCase(Locale.ROOT);
+        if (trimmed.startsWith(".")) {
+            trimmed = trimmed.substring(1);
+        }
+        return trimmed;
+    }
+
+    private void addViolation(ConstraintValidatorContext context, String message) {
+        context.disableDefaultConstraintViolation();
+        context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
+    }
+
+    private boolean isCountAllowed(UploadCategory category, int size) {
+        return size >= 1 && size <= category.getMaxCount();
+    }
+}

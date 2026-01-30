@@ -28,7 +28,7 @@ public final class SwaggerExamples {
     public static final String IMAGE_URL_LIST_DES = "이미지 URL 목록";
     public static final String IMAGE_URL_LIST = "[\"https://df1ez4kkj7703.cloudfront.net/sample.png\"]";
     public static final String IMAGE_URL_DES = "이미지 URL";
-    public static final String TAG_LIST_DES = "태그 목록";
+    public static final String TAG_LIST_DES = "태그 목록(최대 10개)";
     public static final String TAG_LIST = "[\"DAILY\", \"MINIMAL\"]";
     public static final String TAG_DES = "태그";
     public static final String PRESIGN_CATEGORY_DES = "업로드 유형 (PROFILE/POST/VOTE)";

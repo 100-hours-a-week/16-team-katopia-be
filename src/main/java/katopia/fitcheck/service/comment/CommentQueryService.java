@@ -1,8 +1,8 @@
 package katopia.fitcheck.service.comment;
 
 import katopia.fitcheck.domain.comment.Comment;
-import katopia.fitcheck.dto.comment.CommentListResponse;
-import katopia.fitcheck.dto.comment.CommentSummary;
+import katopia.fitcheck.dto.comment.response.CommentListResponse;
+import katopia.fitcheck.dto.comment.response.CommentSummary;
 import katopia.fitcheck.repository.comment.CommentRepository;
 import katopia.fitcheck.global.pagination.CursorPagingHelper;
 import katopia.fitcheck.service.post.PostFinder;

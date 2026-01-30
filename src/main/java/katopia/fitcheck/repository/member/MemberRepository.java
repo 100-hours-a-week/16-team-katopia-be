@@ -23,13 +23,11 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             select m from Member m
             where m.accountStatus = :status
               and m.nickname like concat(:nickname, '%')
-              and (:excludeId is null or m.id <> :excludeId)
             order by m.createdAt desc, m.id desc
             """)
     List<Member> searchLatestByNickname(
             @Param("nickname") String nickname,
             @Param("status") AccountStatus status,
-            @Param("excludeId") Long excludeId,
             Pageable pageable
     );
 
@@ -37,14 +35,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             select m from Member m
             where m.accountStatus = :status
               and m.nickname like concat(:nickname, '%')
-              and (:excludeId is null or m.id <> :excludeId)
               and ((m.createdAt < :createdAt) or (m.createdAt = :createdAt and m.id < :id))
             order by m.createdAt desc, m.id desc
             """)
     List<Member> searchPageAfterByNickname(
             @Param("nickname") String nickname,
             @Param("status") AccountStatus status,
-            @Param("excludeId") Long excludeId,
             @Param("createdAt") LocalDateTime createdAt,
             @Param("id") Long id,
             Pageable pageable

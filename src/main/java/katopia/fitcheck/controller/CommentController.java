@@ -1,16 +1,17 @@
 package katopia.fitcheck.controller;
 
-import katopia.fitcheck.dto.comment.CommentCreateRequest;
-import katopia.fitcheck.dto.comment.CommentCreateResponse;
-import katopia.fitcheck.dto.comment.CommentListResponse;
-import katopia.fitcheck.dto.comment.CommentUpdateRequest;
-import katopia.fitcheck.dto.comment.CommentUpdateResponse;
+import katopia.fitcheck.dto.comment.request.CommentCreateRequest;
+import katopia.fitcheck.dto.comment.response.CommentCreateResponse;
+import katopia.fitcheck.dto.comment.response.CommentListResponse;
+import katopia.fitcheck.dto.comment.request.CommentUpdateRequest;
+import katopia.fitcheck.dto.comment.response.CommentUpdateResponse;
 import katopia.fitcheck.service.comment.CommentService;
 import katopia.fitcheck.controller.spec.CommentApiSpec;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.CommentSuccessCode;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -37,7 +38,7 @@ public class CommentController implements CommentApiSpec {
     public ResponseEntity<APIResponse<CommentCreateResponse>> createComment(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
-            @RequestBody CommentCreateRequest request
+            @Valid @RequestBody CommentCreateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
 
@@ -64,7 +65,7 @@ public class CommentController implements CommentApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
             @PathVariable("id") Long commentId,
-            @RequestBody CommentUpdateRequest request
+            @Valid @RequestBody CommentUpdateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
 

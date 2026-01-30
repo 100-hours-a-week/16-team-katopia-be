@@ -6,7 +6,7 @@ import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.service.member.MemberFinder;
 import katopia.fitcheck.domain.post.Post;
 import katopia.fitcheck.domain.post.PostLike;
-import katopia.fitcheck.dto.post.PostLikeResponse;
+import katopia.fitcheck.dto.post.response.PostLikeResponse;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
 import lombok.RequiredArgsConstructor;

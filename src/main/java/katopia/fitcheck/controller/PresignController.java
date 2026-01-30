@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,7 +35,7 @@ public class PresignController {
     @ApiResponse(responseCode = "401", description = "인증 정보 부재", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     public ResponseEntity<APIResponse<PresignResponse>> presign(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestBody PresignRequest request
+            @Valid @RequestBody PresignRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
         PresignResponse response = presignService.createPresignedUrls(memberId, request);

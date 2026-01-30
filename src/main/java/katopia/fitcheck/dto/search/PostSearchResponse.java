@@ -1,6 +1,6 @@
 package katopia.fitcheck.dto.search;
 
-import katopia.fitcheck.dto.post.PostSummary;
+import katopia.fitcheck.dto.post.response.PostSummary;
 import lombok.Builder;
 
 import java.util.List;

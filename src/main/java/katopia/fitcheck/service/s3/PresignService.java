@@ -25,14 +25,13 @@ import java.util.stream.Collectors;
 public class PresignService {
 
     private static final long MAX_SIZE_BYTES = 30L * 1024 * 1024;
-    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "heic", "webp");
 
     private final S3Presigner s3Presigner;
     private final S3PresignProperties props;
 
     @Transactional(readOnly = true)
     public PresignResponse createPresignedUrls(Long memberId, PresignRequest request) {
-        validateRequest(request);
+        validateConfig();
 
         List<PresignResponse.PresignUrl> files = request.extensions().stream()
                 .map(this::normalizeExtension)
@@ -82,24 +81,9 @@ public class PresignService {
         return base;
     }
 
-    private void validateRequest(PresignRequest request) {
-        if (request == null || request.category() == null) {
-            throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
-        }
-        if (request.extensions() == null || request.extensions().isEmpty()) {
-            throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
-        }
+    private void validateConfig() {
         if (props.s3() == null || !StringUtils.hasText(props.s3().bucket())) {
             throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
-        }
-        if (request.extensions().size() > request.category().getMaxCount()) {
-            throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
-        }
-        for (String ext : request.extensions()) {
-            String normalized = normalizeExtension(ext);
-            if (!ALLOWED_EXTENSIONS.contains(normalized)) {
-                throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
-            }
         }
         long maxSize = props.maxSizeBytes() != null ? props.maxSizeBytes() : MAX_SIZE_BYTES;
         if (maxSize > MAX_SIZE_BYTES) {

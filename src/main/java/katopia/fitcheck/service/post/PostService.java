@@ -1,12 +1,12 @@
 package katopia.fitcheck.service.post;
 
-import katopia.fitcheck.dto.post.PostCreateRequest;
-import katopia.fitcheck.dto.post.PostCreateResponse;
-import katopia.fitcheck.dto.post.PostDetailResponse;
-import katopia.fitcheck.dto.post.PostLikeResponse;
-import katopia.fitcheck.dto.post.PostListResponse;
-import katopia.fitcheck.dto.post.PostUpdateRequest;
-import katopia.fitcheck.dto.post.PostUpdateResponse;
+import katopia.fitcheck.dto.post.request.PostCreateRequest;
+import katopia.fitcheck.dto.post.response.PostCreateResponse;
+import katopia.fitcheck.dto.post.response.PostDetailResponse;
+import katopia.fitcheck.dto.post.response.PostLikeResponse;
+import katopia.fitcheck.dto.post.response.PostListResponse;
+import katopia.fitcheck.dto.post.request.PostUpdateRequest;
+import katopia.fitcheck.dto.post.response.PostUpdateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
