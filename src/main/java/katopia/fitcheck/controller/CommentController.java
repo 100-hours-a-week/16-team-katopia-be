@@ -1,11 +1,11 @@
 package katopia.fitcheck.controller;
 
-import katopia.fitcheck.comment.dto.CommentCreateRequest;
-import katopia.fitcheck.comment.dto.CommentCreateResponse;
-import katopia.fitcheck.comment.dto.CommentListResponse;
-import katopia.fitcheck.comment.dto.CommentUpdateRequest;
-import katopia.fitcheck.comment.dto.CommentUpdateResponse;
-import katopia.fitcheck.comment.service.CommentService;
+import katopia.fitcheck.dto.comment.CommentCreateRequest;
+import katopia.fitcheck.dto.comment.CommentCreateResponse;
+import katopia.fitcheck.dto.comment.CommentListResponse;
+import katopia.fitcheck.dto.comment.CommentUpdateRequest;
+import katopia.fitcheck.dto.comment.CommentUpdateResponse;
+import katopia.fitcheck.service.comment.CommentService;
 import katopia.fitcheck.controller.spec.CommentApiSpec;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.CommentSuccessCode;

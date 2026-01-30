@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
-import katopia.fitcheck.auth.dto.TokenRefreshResponse;
+import katopia.fitcheck.dto.auth.TokenRefreshResponse;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
 import org.springframework.http.ResponseEntity;

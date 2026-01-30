@@ -1,7 +1,7 @@
 package katopia.fitcheck.controller;
 
 import katopia.fitcheck.controller.spec.DevApiSpec;
-import katopia.fitcheck.dev.service.DevMemberService;
+import katopia.fitcheck.service.dev.DevMemberService;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.MemberSuccessCode;
 import lombok.RequiredArgsConstructor;
