@@ -2,11 +2,11 @@ package katopia.fitcheck.dto.member.request;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jdk.jfr.BooleanFlag;
 import katopia.fitcheck.global.docs.SwaggerExamples;
 import katopia.fitcheck.global.validation.GenderValue;
 import katopia.fitcheck.global.validation.HeightValue;
 import katopia.fitcheck.global.validation.Nickname;
-import katopia.fitcheck.global.validation.NotificationFlag;
 import katopia.fitcheck.global.validation.StyleList;
 import katopia.fitcheck.global.validation.WeightValue;
 
@@ -60,7 +60,7 @@ public record MemberProfileUpdateRequest(
                 example = SwaggerExamples.NOTIFICATION_TRUE,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
-        @NotificationFlag
+
         Boolean enableRealtimeNotification,
 
         @ArraySchema(

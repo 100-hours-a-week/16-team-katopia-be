@@ -78,6 +78,16 @@
 | TC-WEIGHT-05 | ✅ | Medium | 범위 상한 위반 | weight="501" | 검증 수행 | MEMBER-E-024 반환 |
 | TC-WEIGHT-06 | ✅ | Medium | 유효성 성공 | weight="70" | 검증 수행 | 오류 없음 |
 
+#### 1-5) 스타일 유효성(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-STYLE-01 | ✅ | Medium | 스타일 없음(null) | style=null | 검증 수행 | 오류 없음 |
+| TC-STYLE-02 | ✅ | Medium | 스타일 빈 리스트 | style=[] | 검증 수행 | 오류 없음 |
+| TC-STYLE-03 | ✅ | Medium | 스타일 개수 초과 | style=3개 | 검증 수행 | MEMBER-E-031 반환 |
+| TC-STYLE-04 | ✅ | Medium | 공백 포함 스타일 실패 | style=[" "] | 검증 수행 | MEMBER-E-030 반환 |
+| TC-STYLE-05 | ✅ | Medium | 유효하지 않은 값 | style=["UNKNOWN"] | 검증 수행 | MEMBER-E-030 반환 |
+| TC-STYLE-06 | ✅ | Medium | 유효성 성공 | style=["MINIMAL","CASUAL"] | 검증 수행 | 오류 없음 |
+
 ### 2) 게시글(Post)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
@@ -85,7 +95,7 @@
 | TC-POST-02 | ⬜ | Medium | 게시글 작성 실패(본문 없음) | 인증된 사용자 | 빈 본문 | 400 오류 반환 |
 | TC-POST-03 | ⬜ | Medium | 게시글 작성 실패(본문 200자 초과) | 인증된 사용자 | 긴 본문 | 400 오류 반환 |
 | TC-POST-04 | ⬜ | Medium | 게시글 작성 실패(이미지 수량 오류) | 인증된 사용자 | 이미지 0장/4장 | 400 오류 반환 |
-| TC-POST-05 | ⬜ | Medium | 게시글 작성 실패(태그 길이 오류) | 인증된 사용자 | 태그 길이 위반 | 400 오류 반환 |
+| TC-POST-05 | ⬜ | Medium | 게시글 작성 실패(태그 길이/개수 오류) | 인증된 사용자 | 태그 길이 또는 개수 위반 | 400 오류 반환 |
 | TC-POST-06 | ⬜ | High | 게시글 목록 조회(커서) | 인증된 사용자, 게시글 존재 | size/after로 조회 | 최신순 목록 + nextCursor |
 | TC-POST-07 | ⬜ | High | 게시글 상세 조회 성공 | 게시글 존재 | 상세 조회 | 상세 응답 반환 |
 | TC-POST-08 | ⬜ | High | 게시글 수정 성공 | 작성자 본인 | 유효 수정 요청 | 수정 응답 반환 |
@@ -152,6 +162,57 @@
 | TC-JWT-16 | ✅ | Low | Registration 쿠키 생성 | registration token | buildRegistrationCookie | name/path/maxAge 확인 |
 | TC-JWT-17 | ✅ | Low | Refresh 쿠키 삭제 | - | clearRefreshCookie | maxAge=0 확인 |
 | TC-JWT-18 | ✅ | Low | Registration 쿠키 삭제 | - | clearRegistrationCookie | maxAge=0 확인 |
+
+### 7) Presign (Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-PRESIGN-01 | ✅ | Medium | 확장자 정규화 | extension=\".PNG\" | createPresignedUrls | contentType=image/png |
+| TC-PRESIGN-02 | ✅ | Medium | 확장자 누락 실패 | extension=null | createPresignedUrls | COMMON-E-007 반환 |
+| TC-PRESIGN-03 | ✅ | Medium | cloudfrontBaseUrl 누락 | cloudfrontBaseUrl=null | createPresignedUrls | COMMON-E-007 반환 |
+| TC-PRESIGN-04 | ✅ | Medium | 버킷 누락 | bucket=null | createPresignedUrls | COMMON-E-007 반환 |
+| TC-PRESIGN-05 | ✅ | Medium | maxSize 초과 | maxSizeBytes>30MB | createPresignedUrls | COMMON-E-007 반환 |
+| TC-PRESIGN-06 | ✅ | Medium | 업로드/접근 URL 생성 | 유효 설정 | createPresignedUrls | uploadUrl/accessUrl 반환 |
+| TC-PRESIGN-07 | ✅ | Low | contentType 매핑 | extension=\".PNG\" | createPresignedUrls | contentType=image/png |
+
+#### 7-1) Presign 요청 유효성(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-PRESIGN-VAL-01 | ✅ | Medium | 요청 null | request=null | validate | COMMON-E-007 반환 |
+| TC-PRESIGN-VAL-02 | ✅ | Medium | category 누락 | category=null | validate | COMMON-E-007 반환 |
+| TC-PRESIGN-VAL-03 | ✅ | Medium | extensions 누락 | extensions=null | validate | COMMON-E-007 반환 |
+| TC-PRESIGN-VAL-04 | ✅ | Medium | extensions 빈 리스트 | extensions=[] | validate | COMMON-E-007 반환 |
+| TC-PRESIGN-VAL-05 | ✅ | Medium | 개수 초과 | size>maxCount | validate | COMMON-E-007 반환 |
+| TC-PRESIGN-VAL-06 | ✅ | Medium | 허용되지 않는 확장자 | extensions=[\"exe\"] | validate | COMMON-E-007 반환 |
+| TC-PRESIGN-VAL-07 | ✅ | Low | 확장자 정규화 허용 | extensions=[\".PNG\"] | validate | 오류 없음 |
+| TC-PRESIGN-VAL-08 | ✅ | Low | 최대 개수 허용 | category=POST, size=max | validate | 오류 없음 |
+
+### 8) 댓글 유효성(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-COMMENT-VAL-01 | ✅ | Medium | 본문 누락(null) | content=null | 검증 수행 | COMMENT-E-001 반환 |
+| TC-COMMENT-VAL-02 | ✅ | Medium | 본문 누락(빈 문자열) | content=\"\" | 검증 수행 | COMMENT-E-001 반환 |
+| TC-COMMENT-VAL-03 | ✅ | Medium | 본문 공백만 | content=\"   \" | 검증 수행 | COMMENT-E-001 반환 |
+| TC-COMMENT-VAL-04 | ✅ | Medium | 본문 길이 초과 | content=201자 | 검증 수행 | COMMENT-E-002 반환 |
+| TC-COMMENT-VAL-05 | ✅ | Medium | 본문 유효성 성공 | content=유효문자열 | 검증 수행 | 오류 없음 |
+
+### 9) 게시글 본문 유효성(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-POST-CONTENT-01 | ✅ | Medium | 본문 누락(null) | content=null | 검증 수행 | POST-E-000 반환 |
+| TC-POST-CONTENT-02 | ✅ | Medium | 본문 누락(빈 문자열) | content=\"\" | 검증 수행 | POST-E-000 반환 |
+| TC-POST-CONTENT-03 | ✅ | Medium | 본문 공백만 | content=\"   \" | 검증 수행 | POST-E-000 반환 |
+| TC-POST-CONTENT-04 | ✅ | Medium | 본문 길이 초과 | content=201자 | 검증 수행 | POST-E-001 반환 |
+| TC-POST-CONTENT-05 | ✅ | Medium | 본문 유효성 성공 | content=유효문자열 | 검증 수행 | 오류 없음 |
+
+### 10) 게시글 태그 유효성(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-POST-TAG-01 | ✅ | Medium | 태그 null | tags=null | 검증 수행 | 오류 없음 |
+| TC-POST-TAG-02 | ✅ | Medium | 태그 빈 리스트 | tags=[] | 검증 수행 | 오류 없음 |
+| TC-POST-TAG-03 | ✅ | Medium | 태그 개수 초과 | tags=11개 | 검증 수행 | POST-E-021 반환 |
+| TC-POST-TAG-04 | ✅ | Medium | 태그 공백 실패 | tags=[\" \"] | 검증 수행 | POST-E-020 반환 |
+| TC-POST-TAG-05 | ✅ | Medium | 태그 길이 위반 | tags=[\"a\"*21] | 검증 수행 | POST-E-020 반환 |
+| TC-POST-TAG-06 | ✅ | Medium | 태그 유효성 성공 | tags=[\"DAILY\",\"MINIMAL\"] | 검증 수행 | 오류 없음 |
 
 ### 7) 보안/예외(경계)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
