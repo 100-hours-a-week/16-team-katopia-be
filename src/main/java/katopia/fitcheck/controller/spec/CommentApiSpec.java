@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import katopia.fitcheck.dto.comment.request.CommentCreateRequest;
 import katopia.fitcheck.dto.comment.response.CommentCreateResponse;
 import katopia.fitcheck.dto.comment.response.CommentListResponse;
@@ -30,7 +31,7 @@ public interface CommentApiSpec {
     ResponseEntity<APIResponse<CommentCreateResponse>> createComment(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
-            @RequestBody CommentCreateRequest request
+            @Valid @RequestBody CommentCreateRequest request
     );
 
     @Operation(summary = "댓글 목록 조회", description = "커서 기반 인피니티 스크롤을 지원합니다.")
@@ -59,7 +60,7 @@ public interface CommentApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
             @PathVariable("id") Long commentId,
-            @RequestBody CommentUpdateRequest request
+            @Valid @RequestBody CommentUpdateRequest request
     );
 
     @Operation(summary = "댓글 삭제", description = "댓글 삭제 API 입니다.")

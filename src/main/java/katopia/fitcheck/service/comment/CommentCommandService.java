@@ -31,9 +31,8 @@ public class CommentCommandService {
         postFinder.requireExists(postId);
         Post post = postFinder.getReferenceById(postId);
         Member member = memberFinder.getReferenceById(memberId);
-        String content = commentValidator.validateContent(request.content());
 
-        Comment comment = Comment.create(post, member, content);
+        Comment comment = Comment.create(post, member, request.content());
         Comment saved = commentRepository.save(comment);
         postRepository.incrementCommentCount(postId);
         return CommentCreateResponse.of(saved);
@@ -45,8 +44,7 @@ public class CommentCommandService {
         Comment comment = commentFinder.findByIdAndPostIdOrThrow(commentId, postId);
         commentValidator.validateOwner(comment, memberId);
 
-        String content = commentValidator.validateContent(request.content());
-        comment.updateContent(content);
+        comment.updateContent(request.content());
         return CommentUpdateResponse.of(comment);
     }
 
