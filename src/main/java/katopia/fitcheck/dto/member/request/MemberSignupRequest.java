@@ -1,4 +1,4 @@
-package katopia.fitcheck.dto.member;
+package katopia.fitcheck.dto.member.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.global.docs.SwaggerExamples;

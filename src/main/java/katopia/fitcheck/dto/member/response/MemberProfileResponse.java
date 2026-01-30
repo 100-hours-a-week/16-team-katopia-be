@@ -1,4 +1,4 @@
-package katopia.fitcheck.dto.member;
+package katopia.fitcheck.dto.member.response;
 
 import katopia.fitcheck.domain.member.Member;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record MemberProfileResponse(
     Long id,
     MemberProfile profile,
-    MemberAggregateDto aggregate,
+    MemberAggregate aggregate,
     LocalDateTime updatedAt
 ) {
     public static MemberProfileResponse of(Member member) {

@@ -1,4 +1,4 @@
-package katopia.fitcheck.dto.comment;
+package katopia.fitcheck.dto.comment.response;
 
 import katopia.fitcheck.domain.comment.Comment;
 import lombok.Builder;
@@ -6,16 +6,16 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record CommentUpdateResponse(
+public record CommentCreateResponse(
         Long id,
         String content,
-        LocalDateTime updatedAt
+        LocalDateTime createdAt
 ) {
-    public static CommentUpdateResponse of(Comment comment) {
-        return CommentUpdateResponse.builder()
+    public static CommentCreateResponse of(Comment comment) {
+        return CommentCreateResponse.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
-                .updatedAt(comment.getUpdatedAt())
+                .createdAt(comment.getCreatedAt())
                 .build();
     }
 }

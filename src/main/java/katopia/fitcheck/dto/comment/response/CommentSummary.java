@@ -1,4 +1,4 @@
-package katopia.fitcheck.dto.comment;
+package katopia.fitcheck.dto.comment.response;
 
 import katopia.fitcheck.domain.comment.Comment;
 import lombok.Builder;

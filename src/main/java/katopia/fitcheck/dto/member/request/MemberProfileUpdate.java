@@ -1,4 +1,4 @@
-package katopia.fitcheck.dto.member;
+package katopia.fitcheck.dto.member.request;
 
 import katopia.fitcheck.domain.member.Gender;
 import katopia.fitcheck.domain.member.StyleType;

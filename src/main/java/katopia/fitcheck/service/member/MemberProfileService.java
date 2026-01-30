@@ -1,7 +1,11 @@
 package katopia.fitcheck.service.member;
 
 import katopia.fitcheck.domain.member.*;
-import katopia.fitcheck.dto.member.*;
+import katopia.fitcheck.dto.member.request.MemberProfileUpdate;
+import katopia.fitcheck.dto.member.request.MemberProfileUpdateRequest;
+import katopia.fitcheck.dto.member.response.MemberProfileDetailResponse;
+import katopia.fitcheck.dto.member.response.MemberProfileResponse;
+import katopia.fitcheck.dto.member.response.NicknameDuplicateCheckResponse;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.repository.member.MemberRepository;

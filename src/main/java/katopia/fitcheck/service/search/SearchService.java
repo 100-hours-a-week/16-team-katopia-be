@@ -5,7 +5,7 @@ import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.repository.member.MemberRepository;
 import katopia.fitcheck.domain.post.Post;
-import katopia.fitcheck.dto.post.PostSummary;
+import katopia.fitcheck.dto.post.response.PostSummary;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.dto.search.PostSearchResponse;
 import katopia.fitcheck.dto.search.MemberSearchResponse;
@@ -33,7 +33,7 @@ public class SearchService {
                                           String after) {
         String keyword = searchValidator.requireQuery(query);
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
-        List<Member> members = loadUsers(keyword, size, after, null);
+        List<Member> members = loadUsers(keyword, size, after);
         List<MemberSummary> summaries = members.stream()
                 .map(MemberSummary::of)
                 .toList();
@@ -58,13 +58,12 @@ public class SearchService {
         return PostSearchResponse.of(summaries, nextCursor);
     }
 
-    private List<Member> loadUsers(String nickname, int size, String after, Long excludeMemberId) {
+    private List<Member> loadUsers(String nickname, int size, String after) {
         PageRequest pageRequest = PageRequest.of(0, size);
         if (!StringUtils.hasText(after)) {
             return memberRepository.searchLatestByNickname(
                     nickname,
                     AccountStatus.ACTIVE,
-                    excludeMemberId,
                     pageRequest
             );
         }
@@ -72,7 +71,6 @@ public class SearchService {
         return memberRepository.searchPageAfterByNickname(
                 nickname,
                 AccountStatus.ACTIVE,
-                excludeMemberId,
                 cursor.createdAt(),
                 cursor.id(),
                 pageRequest

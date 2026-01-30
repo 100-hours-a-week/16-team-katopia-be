@@ -1,4 +1,4 @@
-package katopia.fitcheck.dto.post;
+package katopia.fitcheck.dto.post.response;
 
 import katopia.fitcheck.domain.post.Post;
 import lombok.Builder;

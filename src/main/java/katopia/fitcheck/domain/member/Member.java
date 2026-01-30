@@ -14,7 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import katopia.fitcheck.global.security.oauth2.SocialProvider;
-import katopia.fitcheck.dto.member.MemberProfileUpdate;
+import katopia.fitcheck.dto.member.request.MemberProfileUpdate;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

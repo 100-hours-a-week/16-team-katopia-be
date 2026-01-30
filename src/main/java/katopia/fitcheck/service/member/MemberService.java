@@ -1,9 +1,9 @@
 package katopia.fitcheck.service.member;
 
-import katopia.fitcheck.dto.member.MemberProfileDetailResponse;
-import katopia.fitcheck.dto.member.MemberProfileResponse;
-import katopia.fitcheck.dto.member.MemberProfileUpdateRequest;
-import katopia.fitcheck.dto.member.NicknameDuplicateCheckResponse;
+import katopia.fitcheck.dto.member.response.MemberProfileDetailResponse;
+import katopia.fitcheck.dto.member.response.MemberProfileResponse;
+import katopia.fitcheck.dto.member.request.MemberProfileUpdateRequest;
+import katopia.fitcheck.dto.member.response.NicknameDuplicateCheckResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package katopia.fitcheck.dto.member;
+package katopia.fitcheck.dto.member.response;
 
 import katopia.fitcheck.service.member.MemberRegistrationService.SignupResult;
 
