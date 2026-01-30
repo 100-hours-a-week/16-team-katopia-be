@@ -1,11 +1,11 @@
 package katopia.fitcheck.controller;
 
-import katopia.fitcheck.comment.dto.CommentCreateRequest;
-import katopia.fitcheck.comment.dto.CommentCreateResponse;
-import katopia.fitcheck.comment.dto.CommentListResponse;
-import katopia.fitcheck.comment.dto.CommentUpdateRequest;
-import katopia.fitcheck.comment.dto.CommentUpdateResponse;
-import katopia.fitcheck.comment.service.CommentService;
+import katopia.fitcheck.dto.comment.CommentCreateRequest;
+import katopia.fitcheck.dto.comment.CommentCreateResponse;
+import katopia.fitcheck.dto.comment.CommentListResponse;
+import katopia.fitcheck.dto.comment.CommentUpdateRequest;
+import katopia.fitcheck.dto.comment.CommentUpdateResponse;
+import katopia.fitcheck.service.comment.CommentService;
 import katopia.fitcheck.controller.spec.CommentApiSpec;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.CommentSuccessCode;
@@ -40,7 +40,9 @@ public class CommentController implements CommentApiSpec {
             @RequestBody CommentCreateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         CommentCreateResponse body = commentService.create(memberId, postId, request);
+
         return APIResponse.ok(CommentSuccessCode.COMMENT_CREATED, body);
     }
 
@@ -52,6 +54,7 @@ public class CommentController implements CommentApiSpec {
             @RequestParam(value = "after", required = false) String after
     ) {
         CommentListResponse body = commentService.list(postId, size, after);
+
         return APIResponse.ok(CommentSuccessCode.COMMENT_LISTED, body);
     }
 
@@ -64,7 +67,9 @@ public class CommentController implements CommentApiSpec {
             @RequestBody CommentUpdateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         CommentUpdateResponse body = commentService.update(memberId, postId, commentId, request);
+
         return APIResponse.ok(CommentSuccessCode.COMMENT_UPDATED, body);
     }
 
@@ -76,7 +81,9 @@ public class CommentController implements CommentApiSpec {
             @PathVariable("id") Long commentId
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         commentService.delete(memberId, postId, commentId);
+
         return APIResponse.noContent(CommentSuccessCode.COMMENT_DELETED);
     }
 }
