@@ -40,9 +40,9 @@ public class PostCommandService {
     @Transactional
     public PostCreateResponse create(Long memberId, PostCreateRequest request) {
         Member proxyMember = memberFinder.getReferenceById(memberId);
-        String content = postValidator.validateContent(request.content());
-        List<String> imageUrls = postValidator.validateImages(request.imageUrls());
-        List<String> tags = postValidator.validateTags(request.tags());
+        String content = normalizeContent(request.content());
+        List<String> imageUrls = normalizeImages(request.imageUrls());
+        List<String> tags = normalizeTags(request.tags());
 
         List<PostImage> images = toImages(imageUrls);
         Set<Tag> tagEntities = resolveTags(tags);
@@ -58,8 +58,8 @@ public class PostCommandService {
         Post post = postFinder.findByIdOrThrow(postId);
         postValidator.validateOwner(post, memberId);
 
-        String content = postValidator.validateContent(request.content());
-        List<String> tags = postValidator.validateTags(request.tags());
+        String content = normalizeContent(request.content());
+        List<String> tags = normalizeTags(request.tags());
 
         post.updateContent(content);
         syncTags(post, resolveTags(tags));
@@ -85,6 +85,34 @@ public class PostCommandService {
             order += 1;
         }
         return images;
+    }
+
+    private String normalizeContent(String content) {
+        return content == null ? null : content.trim();
+    }
+
+    private List<String> normalizeImages(List<String> imageUrls) {
+        if (imageUrls == null) {
+            return List.of();
+        }
+        return imageUrls.stream().map(String::trim).toList();
+    }
+
+    private List<String> normalizeTags(List<String> tags) {
+        if (tags == null) {
+            return List.of();
+        }
+        return tags.stream()
+                .map(this::normalizeTag)
+                .toList();
+    }
+
+    private String normalizeTag(String tag) {
+        String trimmed = tag.trim();
+        if (trimmed.startsWith("#")) {
+            trimmed = trimmed.substring(1).trim();
+        }
+        return trimmed;
     }
 
     private Set<Tag> resolveTags(List<String> tags) {

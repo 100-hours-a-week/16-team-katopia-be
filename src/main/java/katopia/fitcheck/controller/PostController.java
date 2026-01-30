@@ -14,6 +14,7 @@ import katopia.fitcheck.dto.post.response.PostListResponse;
 import katopia.fitcheck.dto.post.request.PostUpdateRequest;
 import katopia.fitcheck.dto.post.response.PostUpdateResponse;
 import katopia.fitcheck.service.post.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +40,7 @@ public class PostController implements PostApiSpec {
     @Override
     public ResponseEntity<APIResponse<PostCreateResponse>> createPost(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestBody PostCreateRequest request
+            @Valid @RequestBody PostCreateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
 
@@ -79,7 +80,7 @@ public class PostController implements PostApiSpec {
     public ResponseEntity<APIResponse<PostUpdateResponse>> updatePost(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long id,
-            @RequestBody PostUpdateRequest request
+            @Valid @RequestBody PostUpdateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
 

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.dto.post.request.PostCreateRequest;
@@ -32,7 +33,7 @@ public interface PostApiSpec {
     @ApiResponse(responseCode = "401", description = "AT 만료/위조", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     ResponseEntity<APIResponse<PostCreateResponse>> createPost(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestBody PostCreateRequest request
+            @Valid @RequestBody PostCreateRequest request
     );
 
     @Operation(summary = "게시글 목록 조회", description = "커서 기반 인피니티 스크롤을 지원합니다.")
@@ -65,7 +66,7 @@ public interface PostApiSpec {
     ResponseEntity<APIResponse<PostUpdateResponse>> updatePost(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long id,
-            @RequestBody PostUpdateRequest request
+            @Valid @RequestBody PostUpdateRequest request
     );
 
     @Operation(summary = "게시글 삭제", description = "게시글 삭제 API 입니다.")
