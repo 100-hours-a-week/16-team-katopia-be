@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -33,33 +35,49 @@ public class SecurityConfig {
     private final RestAccessDeniedHandler restAccessDeniedHandler;
     private final RegistrationTokenFilter registrationTokenFilter;
     private final JwtFilter jwtFilter;
+    private final Environment environment;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        boolean allowSwagger = environment.acceptsProfiles(Profiles.of("dev", "local"));
+        boolean allowDevOnly = environment.acceptsProfiles(Profiles.of("dev", "local"));
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(EndpointRequest.to("health", "prometheus", "metrics")).permitAll()
-                        .requestMatchers(
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(EndpointRequest.to("health")).permitAll();
+                    if (allowDevOnly) {
+                        auth.requestMatchers(EndpointRequest.to("prometheus", "metrics")).permitAll();
+                    }
+                    auth.requestMatchers(
+                            "/bookmarks.*",
+                            "/oauth2/**",
+                            "/login/**",
+                            "/error",
+                            "/.well-known/**"
+                    ).permitAll();
+                    if (allowSwagger) {
+                        auth.requestMatchers(
                                 "/api/swagger-ui/**",
-                                "/api/v3/api-docs/**",
-                                "/presign-test.html",
-                                "/oauth2/**",
-                                "/login/**",
-                                "/error",
-                                "/.well-known/**"
-                        ).permitAll()
-                        // 공개 API { 사용자 공개 프로필, 닉네임 중복 검증 }
-                        .requestMatchers(HttpMethod.GET, "/api/members/check").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/dev/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/members").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/members/me").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/tokens").permitAll()
-                        .anyRequest().authenticated()
-                )
+                                "/api/v3/api-docs/**"
+                        ).permitAll();
+                    }
+                    if (allowDevOnly) {
+                        auth.requestMatchers("/api/dev/**").permitAll();
+                    }
+                    // 공개 API { 사용자 공개 프로필, 닉네임 중복 검증 }
+                    auth.requestMatchers(HttpMethod.GET, "/api/members/check").permitAll();
+                    auth.requestMatchers(HttpMethod.POST, "/api/members").permitAll();       // 회원가입
+                    auth.requestMatchers(HttpMethod.GET, "/api/members/*").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/members/*/posts").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/members/me").authenticated();
+                    auth.requestMatchers(HttpMethod.POST, "/api/auth/tokens").permitAll();   // RTR
+                    auth.anyRequest().authenticated();
+                })
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(user -> user.userService(customOAuth2UserService))
                         .successHandler(oAuth2RegistrationSuccessHandler)

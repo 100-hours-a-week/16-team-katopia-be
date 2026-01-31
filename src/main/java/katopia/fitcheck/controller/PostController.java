@@ -6,14 +6,15 @@ import katopia.fitcheck.global.exception.code.PostLikeSuccessCode;
 import katopia.fitcheck.global.exception.code.PostSuccessCode;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
-import katopia.fitcheck.post.dto.PostCreateRequest;
-import katopia.fitcheck.post.dto.PostCreateResponse;
-import katopia.fitcheck.post.dto.PostDetailResponse;
-import katopia.fitcheck.post.dto.PostLikeResponse;
-import katopia.fitcheck.post.dto.PostListResponse;
-import katopia.fitcheck.post.dto.PostUpdateRequest;
-import katopia.fitcheck.post.dto.PostUpdateResponse;
-import katopia.fitcheck.post.service.PostService;
+import katopia.fitcheck.dto.post.request.PostCreateRequest;
+import katopia.fitcheck.dto.post.response.PostCreateResponse;
+import katopia.fitcheck.dto.post.response.PostDetailResponse;
+import katopia.fitcheck.dto.post.response.PostLikeResponse;
+import katopia.fitcheck.dto.post.response.PostListResponse;
+import katopia.fitcheck.dto.post.request.PostUpdateRequest;
+import katopia.fitcheck.dto.post.response.PostUpdateResponse;
+import katopia.fitcheck.service.post.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +40,7 @@ public class PostController implements PostApiSpec {
     @Override
     public ResponseEntity<APIResponse<PostCreateResponse>> createPost(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestBody PostCreateRequest request
+            @Valid @RequestBody PostCreateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
 
@@ -56,6 +57,7 @@ public class PostController implements PostApiSpec {
             @RequestParam(value = "after", required = false) String after
     ) {
         PostListResponse body = postService.list(size, after);
+
         return APIResponse.ok(PostSuccessCode.POST_LISTED, body);
     }
 
@@ -65,8 +67,10 @@ public class PostController implements PostApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long id
     ) {
-        Long memberId = securitySupport.requireMemberId(principal);
+        Long memberId = securitySupport.findMemberIdOrNull(principal);
+
         PostDetailResponse body = postService.getDetail(memberId, id);
+
         return APIResponse.ok(PostSuccessCode.POST_FETCHED, body);
     }
 
@@ -76,10 +80,12 @@ public class PostController implements PostApiSpec {
     public ResponseEntity<APIResponse<PostUpdateResponse>> updatePost(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long id,
-            @RequestBody PostUpdateRequest request
+            @Valid @RequestBody PostUpdateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         PostUpdateResponse body = postService.update(memberId, id, request);
+
         return APIResponse.ok(PostSuccessCode.POST_UPDATED, body);
     }
 
@@ -90,7 +96,9 @@ public class PostController implements PostApiSpec {
             @PathVariable("id") Long id
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         postService.delete(memberId, id);
+
         return APIResponse.noContent(PostSuccessCode.POST_DELETED);
     }
 
@@ -101,7 +109,9 @@ public class PostController implements PostApiSpec {
             @PathVariable("id") Long id
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         PostLikeResponse body = postService.like(memberId, id);
+
         return APIResponse.ok(PostLikeSuccessCode.POST_LIKED, body);
     }
 
@@ -112,7 +122,9 @@ public class PostController implements PostApiSpec {
             @PathVariable("id") Long id
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         postService.unlike(memberId, id);
+
         return APIResponse.noContent(PostLikeSuccessCode.POST_UNLIKED);
     }
 }

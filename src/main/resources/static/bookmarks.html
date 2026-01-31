@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FitCheck 로컬 북마크</title>
+    <base href="http://localhost:8080/" />
+    <link rel="stylesheet" href="bookmarks.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="header">
+        <div class="eyebrow">localhost:8080</div>
+        <h1>FitCheck 로컬 북마크</h1>
+        <p>자주 쓰는 로컬 도구/페이지 바로가기.</p>
+      </header>
+
+      <section class="grid">
+        <a class="card" href="api/swagger-ui/index.html">
+          <div class="card-title">Swagger UI</div>
+          <div class="card-desc">OpenAPI 테스트</div>
+          <div class="card-link">/api/swagger-ui/index.html</div>
+        </a>
+
+        <a class="card" href="api/v3/api-docs">
+          <div class="card-title">OpenAPI JSON</div>
+          <div class="card-desc">문서 원본</div>
+          <div class="card-link">/api/v3/api-docs</div>
+        </a>
+
+        <a class="card" href="api/actuator/health">
+          <div class="card-title">Actuator Health</div>
+          <div class="card-desc">헬스 체크</div>
+          <div class="card-link">/api/actuator/health</div>
+        </a>
+
+        <a class="card" href="api/actuator/metrics">
+          <div class="card-title">Actuator Metrics</div>
+          <div class="card-desc">메트릭 목록</div>
+          <div class="card-link">/api/actuator/metrics</div>
+        </a>
+
+        <a class="card" href="api/actuator/prometheus">
+          <div class="card-title">Prometheus</div>
+          <div class="card-desc">스크랩 엔드포인트</div>
+          <div class="card-link">/api/actuator/prometheus</div>
+        </a>
+
+        <a class="card" href="http://localhost:63342/fitcheck/build/reports/jacoco/test/html/index.html">
+          <div class="card-title">JaCoCo</div>
+          <div class="card-desc">로컬 커버리지 페이지</div>
+          <div class="card-link">/jacoco.html</div>
+        </a>
+      </section>
+
+      <footer class="footer">
+        <span>경로는 로컬 환경 기준으로만 작성됨.</span>
+      </footer>
+    </main>
+    <script src="bookmarks.js"></script>
+  </body>
+</html>

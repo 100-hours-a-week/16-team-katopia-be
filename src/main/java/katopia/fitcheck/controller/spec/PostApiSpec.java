@@ -5,15 +5,16 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
-import katopia.fitcheck.post.dto.PostCreateRequest;
-import katopia.fitcheck.post.dto.PostCreateResponse;
-import katopia.fitcheck.post.dto.PostDetailResponse;
-import katopia.fitcheck.post.dto.PostLikeResponse;
-import katopia.fitcheck.post.dto.PostListResponse;
-import katopia.fitcheck.post.dto.PostUpdateRequest;
-import katopia.fitcheck.post.dto.PostUpdateResponse;
+import katopia.fitcheck.dto.post.request.PostCreateRequest;
+import katopia.fitcheck.dto.post.response.PostCreateResponse;
+import katopia.fitcheck.dto.post.response.PostDetailResponse;
+import katopia.fitcheck.dto.post.response.PostLikeResponse;
+import katopia.fitcheck.dto.post.response.PostListResponse;
+import katopia.fitcheck.dto.post.request.PostUpdateRequest;
+import katopia.fitcheck.dto.post.response.PostUpdateResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,7 +33,7 @@ public interface PostApiSpec {
     @ApiResponse(responseCode = "401", description = "AT 만료/위조", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     ResponseEntity<APIResponse<PostCreateResponse>> createPost(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestBody PostCreateRequest request
+            @Valid @RequestBody PostCreateRequest request
     );
 
     @Operation(summary = "게시글 목록 조회", description = "커서 기반 인피니티 스크롤을 지원합니다.")
@@ -65,7 +66,7 @@ public interface PostApiSpec {
     ResponseEntity<APIResponse<PostUpdateResponse>> updatePost(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long id,
-            @RequestBody PostUpdateRequest request
+            @Valid @RequestBody PostUpdateRequest request
     );
 
     @Operation(summary = "게시글 삭제", description = "게시글 삭제 API 입니다.")

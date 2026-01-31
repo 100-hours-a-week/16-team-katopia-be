@@ -1,12 +1,11 @@
 package katopia.fitcheck.global.security.oauth2;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
 import katopia.fitcheck.global.security.jwt.JwtProvider.Token;
-import katopia.fitcheck.member.domain.AccountStatus;
-import katopia.fitcheck.member.domain.Member;
+import katopia.fitcheck.domain.member.AccountStatus;
+import katopia.fitcheck.domain.member.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
@@ -32,7 +31,7 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request, HttpServletResponse response, Authentication authentication
-    ) throws IOException, ServletException {
+    ) throws IOException {
 
         // 소셜로그인만 지원. CustomOAuth2User가 아니라면 비정상 상태
         if (!(authentication.getPrincipal() instanceof CustomOAuth2User memberOAuth2User)) {

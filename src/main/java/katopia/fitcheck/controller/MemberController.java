@@ -1,7 +1,14 @@
 package katopia.fitcheck.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import katopia.fitcheck.controller.spec.MemberApiSpec;
+import katopia.fitcheck.dto.member.request.MemberProfileUpdateRequest;
+import katopia.fitcheck.dto.member.request.MemberSignupRequest;
+import katopia.fitcheck.dto.member.response.MemberProfileDetailResponse;
+import katopia.fitcheck.dto.member.response.MemberProfileResponse;
+import katopia.fitcheck.dto.member.response.MemberSignupResponse;
+import katopia.fitcheck.dto.member.response.NicknameCheckResponse;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.AuthException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
@@ -11,10 +18,12 @@ import katopia.fitcheck.global.exception.code.PostSuccessCode;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.global.security.jwt.RegistrationTokenFilter;
-import katopia.fitcheck.member.dto.*;
-import katopia.fitcheck.member.service.MemberService;
-import katopia.fitcheck.post.dto.PostListResponse;
-import katopia.fitcheck.post.service.PostService;
+import katopia.fitcheck.global.validation.Nickname;
+import katopia.fitcheck.service.member.MemberRegistrationService;
+import katopia.fitcheck.service.member.MemberService;
+import katopia.fitcheck.dto.post.response.PostListResponse;
+import katopia.fitcheck.service.post.PostService;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
+@Validated
 public class MemberController implements MemberApiSpec {
 
     private final MemberService memberService;
@@ -43,27 +53,28 @@ public class MemberController implements MemberApiSpec {
     @Override
     public ResponseEntity<APIResponse<MemberSignupResponse>> signup(
             @RequestAttribute(value = RegistrationTokenFilter.REGISTRATION_MEMBER_ID, required = false) Long registrationMemberId,
-            @RequestBody MemberSignupRequest request,
+            @Valid @RequestBody MemberSignupRequest request,
             HttpServletResponse response
     ) {
         if (registrationMemberId == null) {
             throw new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN);
         }
 
-        MemberService.SignupWithCookie payload =
+        MemberRegistrationService.SignupResult payload =
                 memberService.signup(registrationMemberId, request.nickname(), request.gender());
+
         response.addHeader(HttpHeaders.SET_COOKIE, payload.refreshCookie().toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, memberService.clearRegistrationCookie().toString());
-        return APIResponse.ok(AuthSuccessCode.LOGIN_SUCCESS, MemberSignupResponse.from(payload.signupResult()));
+        response.addHeader(HttpHeaders.SET_COOKIE, payload.clearRegistrationCookie().toString());
+        return APIResponse.ok(AuthSuccessCode.SIGNUP_SUCCESS, MemberSignupResponse.from(payload));
     }
 
 
     @Override
     @GetMapping("/check")
-    public ResponseEntity<APIResponse<NicknameDuplicateCheckResponse>> checkNickname(
-            @RequestParam("nickname") String nickname
+    public ResponseEntity<APIResponse<NicknameCheckResponse>> checkNickname(
+            @Nickname @RequestParam("nickname") String nickname
     ) {
-        NicknameDuplicateCheckResponse body = memberService.checkNickname(nickname);
+        NicknameCheckResponse body = memberService.checkNickname(nickname);
         return APIResponse.ok(MemberSuccessCode.NICKNAME_AVAILABLE, body);
     }
 
@@ -104,7 +115,7 @@ public class MemberController implements MemberApiSpec {
     @Override
     public ResponseEntity<APIResponse<MemberProfileDetailResponse>> updateProfile(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestBody MemberProfileUpdateRequest request
+            @Valid @RequestBody MemberProfileUpdateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
         MemberProfileDetailResponse responseBody = memberService.updateProfile(memberId, request);

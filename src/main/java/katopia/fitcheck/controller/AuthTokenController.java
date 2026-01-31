@@ -1,9 +1,9 @@
 package katopia.fitcheck.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
-import katopia.fitcheck.auth.AuthTokenService;
-import katopia.fitcheck.auth.AuthTokenService.TokenRefreshResult;
-import katopia.fitcheck.auth.dto.TokenRefreshResponse;
+import katopia.fitcheck.service.auth.AuthTokenService;
+import katopia.fitcheck.service.auth.AuthTokenService.TokenRefreshResult;
+import katopia.fitcheck.dto.auth.TokenRefreshResponse;
 import katopia.fitcheck.controller.spec.AuthApiSpec;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.AuthException;

@@ -5,9 +5,9 @@ import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.CommonSuccessCode;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.global.security.SecuritySupport;
-import katopia.fitcheck.search.dto.PostSearchResponse;
-import katopia.fitcheck.search.dto.MemberSearchResponse;
-import katopia.fitcheck.search.service.SearchService;
+import katopia.fitcheck.dto.search.PostSearchResponse;
+import katopia.fitcheck.dto.search.MemberSearchResponse;
+import katopia.fitcheck.service.search.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,8 +32,8 @@ public class SearchController implements SearchApiSpec {
             @RequestParam(value = "size", required = false) String size,
             @RequestParam(value = "after", required = false) String after
     ) {
-        Long memberId = securitySupport.requireMemberId(principal);
-        MemberSearchResponse body = searchService.searchUsers(memberId, query, size, after);
+        securitySupport.requireMemberId(principal);
+        MemberSearchResponse body = searchService.searchUsers(query, size, after);
         return APIResponse.ok(CommonSuccessCode.SEARCH_COMPLETED, body);
     }
 

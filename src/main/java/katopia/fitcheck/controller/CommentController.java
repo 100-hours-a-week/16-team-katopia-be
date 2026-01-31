@@ -1,16 +1,17 @@
 package katopia.fitcheck.controller;
 
-import katopia.fitcheck.comment.dto.CommentCreateRequest;
-import katopia.fitcheck.comment.dto.CommentCreateResponse;
-import katopia.fitcheck.comment.dto.CommentListResponse;
-import katopia.fitcheck.comment.dto.CommentUpdateRequest;
-import katopia.fitcheck.comment.dto.CommentUpdateResponse;
-import katopia.fitcheck.comment.service.CommentService;
+import katopia.fitcheck.dto.comment.request.CommentCreateRequest;
+import katopia.fitcheck.dto.comment.response.CommentCreateResponse;
+import katopia.fitcheck.dto.comment.response.CommentListResponse;
+import katopia.fitcheck.dto.comment.request.CommentUpdateRequest;
+import katopia.fitcheck.dto.comment.response.CommentUpdateResponse;
+import katopia.fitcheck.service.comment.CommentService;
 import katopia.fitcheck.controller.spec.CommentApiSpec;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.CommentSuccessCode;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -37,10 +38,12 @@ public class CommentController implements CommentApiSpec {
     public ResponseEntity<APIResponse<CommentCreateResponse>> createComment(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
-            @RequestBody CommentCreateRequest request
+            @Valid @RequestBody CommentCreateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         CommentCreateResponse body = commentService.create(memberId, postId, request);
+
         return APIResponse.ok(CommentSuccessCode.COMMENT_CREATED, body);
     }
 
@@ -52,6 +55,7 @@ public class CommentController implements CommentApiSpec {
             @RequestParam(value = "after", required = false) String after
     ) {
         CommentListResponse body = commentService.list(postId, size, after);
+
         return APIResponse.ok(CommentSuccessCode.COMMENT_LISTED, body);
     }
 
@@ -61,10 +65,12 @@ public class CommentController implements CommentApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
             @PathVariable("id") Long commentId,
-            @RequestBody CommentUpdateRequest request
+            @Valid @RequestBody CommentUpdateRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         CommentUpdateResponse body = commentService.update(memberId, postId, commentId, request);
+
         return APIResponse.ok(CommentSuccessCode.COMMENT_UPDATED, body);
     }
 
@@ -76,7 +82,9 @@ public class CommentController implements CommentApiSpec {
             @PathVariable("id") Long commentId
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
+
         commentService.delete(memberId, postId, commentId);
+
         return APIResponse.noContent(CommentSuccessCode.COMMENT_DELETED);
     }
 }

@@ -1,8 +1,8 @@
 package katopia.fitcheck.global.security.oauth2;
 
-import katopia.fitcheck.member.service.MemberFinder;
-import katopia.fitcheck.member.repository.MemberRepository;
-import katopia.fitcheck.member.domain.Member;
+import katopia.fitcheck.service.member.MemberFinder;
+import katopia.fitcheck.repository.member.MemberRepository;
+import katopia.fitcheck.domain.member.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
