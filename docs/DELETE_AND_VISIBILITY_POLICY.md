@@ -19,8 +19,8 @@
   - deletedAt: now
 - 데이터 유지: 게시글/댓글은 삭제하지 않음
 
-### 2.2 회원 하드 삭제 (dev 전용)
-- 엔드포인트: `/api/dev/members/{id}`
+### 2.2 회원 하드 삭제 (local 프로필 전용)
+- 엔드포인트: `/api/dev/members/{id}` 
 - 처리(DevMemberService):
   - 회원 게시글 전부 삭제
   - 해당 게시글의 댓글/좋아요/태그 매핑 삭제

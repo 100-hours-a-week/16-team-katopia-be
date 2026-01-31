@@ -39,6 +39,11 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
             if (accessToken != null && jwtProvider.isTokenType(accessToken, TokenType.REGISTRATION)) {
                 throw new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN_PATH);
             }
+            // 회원가입 API 요청이 아닌데, 회원가입 쿠키가 포함된 경우
+            if (registrationToken != null) {
+                response.addHeader("Set-Cookie", jwtProvider.clearRegistrationCookie().toString());
+                throw new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN_PATH);
+            }
             filterChain.doFilter(request, response);
             return;
         }

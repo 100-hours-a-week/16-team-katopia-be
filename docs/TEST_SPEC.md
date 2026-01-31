@@ -140,6 +140,7 @@
 | TC-AUTH-02 | ⬜ | Medium | 토큰 재발급 실패(RT 없음) | RT 쿠키 없음 | POST /api/auth/tokens | 401 오류 반환 |
 | TC-AUTH-03 | ⬜ | Medium | 토큰 재발급 실패(RT 만료/위조) | 유효하지 않은 RT | POST /api/auth/tokens | 401 오류 반환 |
 | TC-AUTH-04 | ⬜ | Medium | 로그아웃 성공 | 인증 상태 | DELETE /api/auth/tokens | RT 쿠키 만료 응답 |
+| TC-AUTH-05 | ✅ | Medium | 회원가입 완료 시 등록 쿠키 만료 | 유효 등록 토큰 | 회원가입 완료 | 등록 쿠키 maxAge=0 |
 
 ### 6) JWT Provider (Unit)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
@@ -223,7 +224,14 @@
 | TC-IMAGE-04 | ✅ | Medium | 이미지 URL 공백 | imageUrls=[\" \"] | 검증 수행 | POST-E-010 반환 |
 | TC-IMAGE-05 | ✅ | Medium | 이미지 유효성 성공 | imageUrls=1~3개 | 검증 수행 | 오류 없음 |
 
-### 7) 보안/예외(경계)
+### 12) 가입 필터(RegistrationTokenFilter)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-REG-FILTER-01 | ✅ | Medium | 등록 쿠키로 리프레시 요청 차단 | registration_token 존재 | POST /api/auth/tokens | AUTH-E-001 반환 |
+| TC-REG-FILTER-02 | ✅ | Medium | 등록 요청 쿠키 누락 | registration_token 없음 | POST /api/members | AUTH-E-010 반환 |
+| TC-REG-FILTER-03 | ✅ | Medium | 등록 요청 쿠키 정상 처리 | 유효 등록 쿠키 | POST /api/members | request attribute 설정 |
+
+### 13) 보안/예외(경계)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
 | TC-SEC-01 | 🔴 | High | 인증 필요 API 접근 차단 | 인증 없음 | 보호 리소스 접근 | 401 응답 |

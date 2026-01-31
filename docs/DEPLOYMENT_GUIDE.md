@@ -4,7 +4,7 @@
 
 ### 기본 헬스체크 API
 - **GET /api/actuator/health**
-- **GET /api/actuator/metrics**
+- **GET /api/actuator/metrics** (dev/local)
 
 본 프로젝트는 Spring Boot Actuator를 사용하며, 다음 설정을 전제로 합니다.
 
@@ -24,7 +24,7 @@ management:
 - 인증되지 않은 사용자는 `{"status":"UP"}` 수준의 요약 정보만 확인할 수 있습니다.
 - ADMIN 권한이 있는 사용자는 DB, Redis 등 세부 컴포넌트 상태를 확인할 수 있습니다.
 - 운영 환경에서는 로드밸런서(ALB/NLB) 헬스체크 용도로 `/api/actuator/health`만 외부에 노출하는 구성을 권장합니다.
-- `/api/actuator/prometheus`가 기본 노출되므로 모니터링 스택과 연계 시 추가 설정 없이 사용할 수 있습니다.
+- `/api/actuator/prometheus`는 dev/local에서만 노출됩니다.
 
 ---
 
@@ -89,6 +89,9 @@ Spring Boot 3.5 + `spring-boot-docker-compose` 의존성으로 `./gradlew bootRu
   ```
 
 `spring.data.redis`는 인증 없이 접속하도록 구성되어 있으므로 docker-compose 기본 Redis 설정과 바로 맞물립니다. 비밀번호/ACL을 적용할 경우 `application-local.yml` 또는 환경변수에서 직접 추가해야 합니다.
+
+로컬 프로필에서 프런트 리디렉션 기준 URL:
+- `app.frontend.base-url: http://localhost:3000`
 
 ---
 
@@ -225,8 +228,8 @@ S3_MAX_SIZE_BYTES=31457280
 
 ## 5. 운영 보안 가이드
 
-- Swagger UI 노출 정책은 운영 환경에 맞게 결정
-- Actuator Endpoint는 내부망 또는 관리자 권한으로만 접근 허용
+- Swagger UI는 dev/local에서만 노출 (prod 차단)
+- Actuator metrics/prometheus는 dev/local에서만 노출
 - JWT Secret은 반드시 32바이트 이상 랜덤 문자열 사용
 
 ---
@@ -235,7 +238,8 @@ S3_MAX_SIZE_BYTES=31457280
 
 - 로컬 경로: `http://localhost:8080/api/swagger-ui/index.html`
 - API Docs 경로: `http://localhost:8080/api/v3/api-docs`
-- 운영 경로: `https://dev.fitcheck.kr/api/swagger-ui/index.html`
+- dev 경로: `https://dev.fitcheck.kr/api/swagger-ui/index.html`
+- prod 경로: `https://fitcheck.kr/api/swagger-ui/index.html` (보안 정책에 따라 차단 가능)
 
 ---
 
