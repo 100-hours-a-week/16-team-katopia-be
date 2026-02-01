@@ -169,11 +169,10 @@
 |---|---|---|---|---|---|---|
 | TC-PRESIGN-01 | ✅ | Medium | 확장자 정규화 | extension=\".PNG\" | createPresignedUrls | contentType=image/png |
 | TC-PRESIGN-02 | ✅ | Medium | 확장자 누락 실패 | extension=null | createPresignedUrls | COMMON-E-007 반환 |
-| TC-PRESIGN-03 | ✅ | Medium | cloudfrontBaseUrl 누락 | cloudfrontBaseUrl=null | createPresignedUrls | COMMON-E-007 반환 |
-| TC-PRESIGN-04 | ✅ | Medium | 버킷 누락 | bucket=null | createPresignedUrls | COMMON-E-007 반환 |
-| TC-PRESIGN-05 | ✅ | Medium | maxSize 초과 | maxSizeBytes>30MB | createPresignedUrls | COMMON-E-007 반환 |
-| TC-PRESIGN-06 | ✅ | Medium | 업로드/접근 URL 생성 | 유효 설정 | createPresignedUrls | uploadUrl/accessUrl 반환 |
-| TC-PRESIGN-07 | ✅ | Low | contentType 매핑 | extension=\".PNG\" | createPresignedUrls | contentType=image/png |
+| TC-PRESIGN-03 | ✅ | Medium | 버킷 누락 | bucket=null | createPresignedUrls | COMMON-E-007 반환 |
+| TC-PRESIGN-04 | ✅ | Medium | maxSize 초과 | maxSizeBytes>30MB | createPresignedUrls | COMMON-E-007 반환 |
+| TC-PRESIGN-05 | ✅ | Medium | 업로드 URL/오브젝트 키 생성 | 유효 설정 | createPresignedUrls | uploadUrl/imageObjectKey 반환 |
+| TC-PRESIGN-06 | ✅ | Low | contentType 매핑 | extension=\".PNG\" | createPresignedUrls | contentType=image/png |
 
 #### 7-1) Presign 요청 유효성(Unit)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
@@ -215,14 +214,14 @@
 | TC-POST-TAG-05 | ✅ | Medium | 태그 길이 위반 | tags=[\"a\"*21] | 검증 수행 | POST-E-020 반환 |
 | TC-POST-TAG-06 | ✅ | Medium | 태그 유효성 성공 | tags=[\"DAILY\",\"MINIMAL\"] | 검증 수행 | 오류 없음 |
 
-### 11) 이미지 URL 유효성(Unit)
+### 11) 이미지 오브젝트 키 유효성(Unit)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
-| TC-IMAGE-01 | ✅ | Medium | 이미지 리스트 null | imageUrls=null | 검증 수행 | POST-E-010 반환 |
-| TC-IMAGE-02 | ✅ | Medium | 이미지 리스트 빈 값 | imageUrls=[] | 검증 수행 | POST-E-010 반환 |
-| TC-IMAGE-03 | ✅ | Medium | 이미지 개수 초과 | imageUrls=4개 | 검증 수행 | POST-E-010 반환 |
-| TC-IMAGE-04 | ✅ | Medium | 이미지 URL 공백 | imageUrls=[\" \"] | 검증 수행 | POST-E-010 반환 |
-| TC-IMAGE-05 | ✅ | Medium | 이미지 유효성 성공 | imageUrls=1~3개 | 검증 수행 | 오류 없음 |
+| TC-IMAGE-01 | ✅ | Medium | 이미지 리스트 null | imageObjectKeys=null | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-02 | ✅ | Medium | 이미지 리스트 빈 값 | imageObjectKeys=[] | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-03 | ✅ | Medium | 이미지 개수 초과 | imageObjectKeys=4개 | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-04 | ✅ | Medium | 이미지 오브젝트 키 공백 | imageObjectKeys=[\" \"] | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-05 | ✅ | Medium | 이미지 유효성 성공 | imageObjectKeys=1~3개 | 검증 수행 | 오류 없음 |
 
 ### 12) 가입 필터(RegistrationTokenFilter)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |

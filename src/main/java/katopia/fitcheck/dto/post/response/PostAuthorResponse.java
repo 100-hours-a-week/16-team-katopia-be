@@ -8,7 +8,7 @@ import lombok.Builder;
 public record PostAuthorResponse(
         Long id,
         String nickname,
-        String profileImageUrl,
+        String profileImageObjectKey,
         String gender,
         Short height,
         Short weight
@@ -18,7 +18,7 @@ public record PostAuthorResponse(
             return PostAuthorResponse.builder()
                     .id(null)
                     .nickname("알 수 없음")
-                    .profileImageUrl(null)
+                    .profileImageObjectKey(null)
                     .gender(null)
                     .height(null)
                     .weight(null)
@@ -27,7 +27,7 @@ public record PostAuthorResponse(
         return PostAuthorResponse.builder()
                 .id(author.getId())
                 .nickname(author.getNickname())
-                .profileImageUrl(author.getProfileImageUrl())
+                .profileImageObjectKey(author.getProfileImageObjectKey())
                 .gender(author.getGender() != null ? author.getGender().name() : null)
                 .height(author.getHeight())
                 .weight(author.getWeight())

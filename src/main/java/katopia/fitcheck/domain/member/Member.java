@@ -59,8 +59,8 @@ public class Member {
     @Column(name = "oauth2_user_id", nullable = false)
     private String oauth2UserId;
 
-    @Column(name = "profile_image_url", length = 1024)
-    private String profileImageUrl;
+    @Column(name = "profile_image_object_key", length = 1024)
+    private String profileImageObjectKey;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 1)
@@ -105,7 +105,7 @@ public class Member {
                    String nickname,
                    SocialProvider oauth2Provider,
                    String oauth2UserId,
-                   String profileImageUrl,
+                   String profileImageObjectKey,
                    Gender gender,
                    Short height,
                    Short weight,
@@ -119,7 +119,7 @@ public class Member {
         this.nickname = nickname;
         this.oauth2Provider = oauth2Provider;
         this.oauth2UserId = oauth2UserId;
-        this.profileImageUrl = profileImageUrl;
+        this.profileImageObjectKey = profileImageObjectKey;
         this.gender = gender;
         this.height = height;
         this.weight = weight;
@@ -157,7 +157,7 @@ public class Member {
 
     public void markAsWithdrawn(String anonymizedNickname) {
         this.nickname = anonymizedNickname;
-        this.profileImageUrl = null;
+        this.profileImageObjectKey = null;
         this.enableRealtimeNotification = false;
         this.styles.clear();
         this.accountStatus = AccountStatus.WITHDRAWN;
@@ -193,7 +193,7 @@ public class Member {
     public void updateProfile(MemberProfileUpdate update) {
         Objects.requireNonNull(update, "update must not be null");
         this.nickname = update.nickname();
-        this.profileImageUrl = update.profileImageUrl();
+        this.profileImageObjectKey = update.profileImageObjectKey();
         this.gender = update.gender();
         this.height = update.height();
         this.weight = update.weight();

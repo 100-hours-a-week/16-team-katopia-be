@@ -10,7 +10,7 @@ import java.util.List;
 
 @Builder
 public record PostDetailResponse(
-        List<PostImage> imageUrls,
+        List<PostImage> imageObjectKeys,
         String content,
         List<String> tags,
         boolean isLiked,
@@ -20,7 +20,7 @@ public record PostDetailResponse(
 ) {
     public static PostDetailResponse of (Post post, Member author, List<String> tags, boolean isLiked) {
         return PostDetailResponse.builder()
-                .imageUrls(post.getImageUrls())
+                .imageObjectKeys(post.getImageObjectKeys())
                 .content(post.getContent())
                 .tags(tags)
                 .isLiked(isLiked)

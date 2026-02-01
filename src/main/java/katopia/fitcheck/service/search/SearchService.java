@@ -50,7 +50,7 @@ public class SearchService {
         List<PostSummary> summaries = posts.stream()
                 .map(post -> PostSummary.builder()
                         .id(post.getId())
-                        .imageUrls(post.getImageUrls().getFirst().getImageUrl())
+                        .imageObjectKey(post.getImageObjectKeys().getFirst().getImageObjectKey())
                         .createdAt(post.getCreatedAt())
                         .build())
                 .toList();

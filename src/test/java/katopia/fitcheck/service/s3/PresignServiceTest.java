@@ -73,29 +73,8 @@ class PresignServiceTest {
     }
 
     @Test
-    @DisplayName("TC-PRESIGN-03 cloudfrontBaseUrl 누락 실패")
-    void tcPresign03_missingCloudfront_throws() {
-        props = new S3PresignProperties(
-                "ap-northeast-2",
-                new S3PresignProperties.S3("bucket"),
-                new S3PresignProperties.Credentials("ak", "sk"),
-                new S3PresignProperties.Presign(600, null),
-                null,
-                30L * 1024 * 1024,
-                null
-        );
-        presignService = new PresignService(presigner, props);
-        PresignRequest request = new PresignRequest(UploadCategory.PROFILE, List.of("png"));
-
-        assertThatThrownBy(() -> presignService.createPresignedUrls(1L, request))
-                .isInstanceOf(BusinessException.class)
-                .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                .isEqualTo(CommonErrorCode.INVALID_INPUT_VALUE);
-    }
-
-    @Test
-    @DisplayName("TC-PRESIGN-04 버킷 누락 실패")
-    void tcPresign04_missingBucket_throws() {
+    @DisplayName("TC-PRESIGN-03 버킷 누락 실패")
+    void tcPresign03_missingBucket_throws() {
         props = new S3PresignProperties(
                 "ap-northeast-2",
                 new S3PresignProperties.S3(null),
@@ -115,8 +94,8 @@ class PresignServiceTest {
     }
 
     @Test
-    @DisplayName("TC-PRESIGN-05 maxSize 초과 실패")
-    void tcPresign05_exceedMaxSize_throws() {
+    @DisplayName("TC-PRESIGN-04 maxSize 초과 실패")
+    void tcPresign04_exceedMaxSize_throws() {
         props = new S3PresignProperties(
                 "ap-northeast-2",
                 new S3PresignProperties.S3("bucket"),
@@ -136,20 +115,21 @@ class PresignServiceTest {
     }
 
     @Test
-    @DisplayName("TC-PRESIGN-06 업로드/접근 URL 생성")
-    void tcPresign06_buildsUrls() {
+    @DisplayName("TC-PRESIGN-05 업로드 URL/오브젝트 키 생성")
+    void tcPresign05_buildsUrls() {
         PresignRequest request = new PresignRequest(UploadCategory.PROFILE, List.of("png"));
 
         PresignResponse response = presignService.createPresignedUrls(1L, request);
 
         assertThat(response.files()).hasSize(1);
         assertThat(response.files().getFirst().uploadUrl()).isEqualTo("https://s3.example.com/upload");
-        assertThat(response.files().getFirst().accessUrl()).startsWith("https://cdn.example.com/");
+        assertThat(response.files().getFirst().imageObjectKey()).startsWith("profiles/1/");
+        assertThat(response.files().getFirst().imageObjectKey()).endsWith(".png");
     }
 
     @Test
-    @DisplayName("TC-PRESIGN-07 contentType 매핑")
-    void tcPresign07_contentTypeMapping() {
+    @DisplayName("TC-PRESIGN-06 contentType 매핑")
+    void tcPresign06_contentTypeMapping() {
         PresignRequest request = new PresignRequest(UploadCategory.PROFILE, List.of(".PNG"));
 
         presignService.createPresignedUrls(1L, request);

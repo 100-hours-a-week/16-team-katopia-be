@@ -12,10 +12,10 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Documented
-@Constraint(validatedBy = ImageUrlsValidator.class)
+@Constraint(validatedBy = ImageObjectKeysValidator.class)
 @Target({FIELD, PARAMETER})
 @Retention(RUNTIME)
-public @interface ImageUrls {
+public @interface ImageObjectKeys {
     String message() default "";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

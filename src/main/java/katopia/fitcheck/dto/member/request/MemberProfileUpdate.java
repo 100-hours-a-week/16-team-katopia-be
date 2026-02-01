@@ -7,7 +7,7 @@ import java.util.Set;
 
 public record MemberProfileUpdate(
         String nickname,
-        String profileImageUrl,
+        String profileImageObjectKey,
         Gender gender,
         Short height,
         Short weight,

@@ -62,7 +62,7 @@ public class MemberProfileService {
 
         member.updateProfile(new MemberProfileUpdate(
                 nickname,
-                normalizeImageUrl(request.profileImageUrl()),
+                normalizeImageObjectKey(request.profileImageObjectKey()),
                 gender,
                 height,
                 weight,
@@ -92,8 +92,8 @@ public class MemberProfileService {
         return parsed.isEmpty() ? Collections.emptySet() : Set.copyOf(parsed);
     }
 
-    private String normalizeImageUrl(String profileImageUrl) {
-        return StringUtils.hasText(profileImageUrl) ? profileImageUrl.trim() : null;
+    private String normalizeImageObjectKey(String profileImageObjectKey) {
+        return StringUtils.hasText(profileImageObjectKey) ? profileImageObjectKey.trim() : null;
     }
 
     @Transactional(readOnly = true)

@@ -26,10 +26,10 @@ public record MemberProfileUpdateRequest(
         String nickname,
 
         @Schema(
-                description = SwaggerExamples.PROFILE_IMAGE_URL_DES,
-                example = SwaggerExamples.PROFILE_IMAGE_URL
+                description = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY_DES,
+                example = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY
         )
-        String profileImageUrl,
+        String profileImageObjectKey,
 
         @Schema(
                 description = SwaggerExamples.GENDER_DES,

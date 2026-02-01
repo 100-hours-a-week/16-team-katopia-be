@@ -13,7 +13,7 @@
 ### 2.1 회원 탈퇴 (소프트 삭제)
 - 처리: `Member.markAsWithdrawn`
   - nickname: `withdrawn_{id}`로 변경
-  - profileImageUrl: null
+  - profileImageObjectKey: null
   - styles: clear
   - accountStatus: WITHDRAWN
   - deletedAt: now
