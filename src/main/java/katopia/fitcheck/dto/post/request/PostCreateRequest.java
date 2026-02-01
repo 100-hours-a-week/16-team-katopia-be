@@ -3,7 +3,7 @@ package katopia.fitcheck.dto.post.request;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.global.docs.SwaggerExamples;
-import katopia.fitcheck.global.validation.ImageUrls;
+import katopia.fitcheck.global.validation.ImageObjectKeys;
 import katopia.fitcheck.global.validation.PostContent;
 import katopia.fitcheck.global.validation.TagList;
 
@@ -15,11 +15,11 @@ public record PostCreateRequest(
         String content,
 
         @ArraySchema(
-                arraySchema = @Schema(description = SwaggerExamples.IMAGE_URL_LIST_DES, example = SwaggerExamples.IMAGE_URL_LIST),
-                schema = @Schema(description = SwaggerExamples.IMAGE_URL_DES)
+                arraySchema = @Schema(description = SwaggerExamples.IMAGE_OBJECT_KEY_LIST_DES, example = SwaggerExamples.IMAGE_OBJECT_KEY_LIST),
+                schema = @Schema(description = SwaggerExamples.IMAGE_OBJECT_KEY_DES)
         )
-        @ImageUrls(category = "POST")
-        List<String> imageUrls,
+        @ImageObjectKeys(category = "POST")
+        List<String> imageObjectKeys,
 
         @ArraySchema(
                 arraySchema = @Schema(description = SwaggerExamples.TAG_LIST_DES, example = SwaggerExamples.TAG_LIST),

@@ -11,8 +11,8 @@ public record PresignResponse(
     public record PresignUrl(
             @Schema(description = "업로드용 presigned URL")
             String uploadUrl,
-            @Schema(description = "접근용 URL")
-            String accessUrl
+            @Schema(description = "이미지 오브젝트 키")
+            String imageObjectKey
     ) {
     }
 }

@@ -41,10 +41,10 @@ public class PostCommandService {
     public PostCreateResponse create(Long memberId, PostCreateRequest request) {
         Member proxyMember = memberFinder.getReferenceById(memberId);
         String content = normalizeContent(request.content());
-        List<String> imageUrls = normalizeImages(request.imageUrls());
+        List<String> imageObjectKeys = normalizeImages(request.imageObjectKeys());
         List<String> tags = normalizeTags(request.tags());
 
-        List<PostImage> images = toImages(imageUrls);
+        List<PostImage> images = toImages(imageObjectKeys);
         Set<Tag> tagEntities = resolveTags(tags);
         Post post = Post.create(proxyMember, content, images);
         post.replaceTags(buildPostTags(post, tagEntities));
@@ -77,11 +77,11 @@ public class PostCommandService {
         postRepository.delete(post);
     }
 
-    private List<PostImage> toImages(List<String> imageUrls) {
+    private List<PostImage> toImages(List<String> imageObjectKeys) {
         List<PostImage> images = new ArrayList<>();
         int order = 1;
-        for (String url : imageUrls) {
-            images.add(PostImage.of(order, url));
+        for (String objectKey : imageObjectKeys) {
+            images.add(PostImage.of(order, objectKey));
             order += 1;
         }
         return images;
@@ -91,11 +91,11 @@ public class PostCommandService {
         return content == null ? null : content.trim();
     }
 
-    private List<String> normalizeImages(List<String> imageUrls) {
-        if (imageUrls == null) {
+    private List<String> normalizeImages(List<String> imageObjectKeys) {
+        if (imageObjectKeys == null) {
             return List.of();
         }
-        return imageUrls.stream().map(String::trim).toList();
+        return imageObjectKeys.stream().map(String::trim).toList();
     }
 
     private List<String> normalizeTags(List<String> tags) {

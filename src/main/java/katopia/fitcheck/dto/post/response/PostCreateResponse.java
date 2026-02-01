@@ -11,14 +11,14 @@ import java.util.List;
 public record PostCreateResponse(
         Long id,
         String content,
-        List<PostImage> imageUrls,
+        List<PostImage> imageObjectKeys,
         LocalDateTime createdAt
 ) {
     public static PostCreateResponse of(Post post) {
         return PostCreateResponse.builder()
                 .id(post.getId())
                 .content(post.getContent())
-                .imageUrls(post.getImages())
+                .imageObjectKeys(post.getImages())
                 .createdAt(post.getCreatedAt())
                 .build();
     }

@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ImageUrlsValidatorTest {
+class ImageObjectKeysValidatorTest {
 
     private static Validator validator;
 
@@ -49,7 +49,7 @@ class ImageUrlsValidatorTest {
     }
 
     @Test
-    @DisplayName("TC-IMAGE-04 이미지 URL 공백")
+    @DisplayName("TC-IMAGE-04 이미지 오브젝트 키 공백")
     void tcImage04_blankUrl_returnsError() {
         Set<ConstraintViolation<ImageRequest>> violations = validator.validate(new ImageRequest(List.of(" ")));
 
@@ -70,11 +70,11 @@ class ImageUrlsValidatorTest {
     }
 
     static class ImageRequest {
-        @ImageUrls(category = "POST")
-        List<String> imageUrls;
+        @ImageObjectKeys(category = "POST")
+        List<String> imageObjectKeys;
 
-        ImageRequest(List<String> imageUrls) {
-            this.imageUrls = imageUrls;
+        ImageRequest(List<String> imageObjectKeys) {
+            this.imageObjectKeys = imageObjectKeys;
         }
     }
 }

@@ -140,6 +140,7 @@
 | TC-AUTH-02 | ⬜ | Medium | 토큰 재발급 실패(RT 없음) | RT 쿠키 없음 | POST /api/auth/tokens | 401 오류 반환 |
 | TC-AUTH-03 | ⬜ | Medium | 토큰 재발급 실패(RT 만료/위조) | 유효하지 않은 RT | POST /api/auth/tokens | 401 오류 반환 |
 | TC-AUTH-04 | ⬜ | Medium | 로그아웃 성공 | 인증 상태 | DELETE /api/auth/tokens | RT 쿠키 만료 응답 |
+| TC-AUTH-05 | ✅ | Medium | 회원가입 완료 시 등록 쿠키 만료 | 유효 등록 토큰 | 회원가입 완료 | 등록 쿠키 maxAge=0 |
 
 ### 6) JWT Provider (Unit)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
@@ -168,11 +169,10 @@
 |---|---|---|---|---|---|---|
 | TC-PRESIGN-01 | ✅ | Medium | 확장자 정규화 | extension=\".PNG\" | createPresignedUrls | contentType=image/png |
 | TC-PRESIGN-02 | ✅ | Medium | 확장자 누락 실패 | extension=null | createPresignedUrls | COMMON-E-007 반환 |
-| TC-PRESIGN-03 | ✅ | Medium | cloudfrontBaseUrl 누락 | cloudfrontBaseUrl=null | createPresignedUrls | COMMON-E-007 반환 |
-| TC-PRESIGN-04 | ✅ | Medium | 버킷 누락 | bucket=null | createPresignedUrls | COMMON-E-007 반환 |
-| TC-PRESIGN-05 | ✅ | Medium | maxSize 초과 | maxSizeBytes>30MB | createPresignedUrls | COMMON-E-007 반환 |
-| TC-PRESIGN-06 | ✅ | Medium | 업로드/접근 URL 생성 | 유효 설정 | createPresignedUrls | uploadUrl/accessUrl 반환 |
-| TC-PRESIGN-07 | ✅ | Low | contentType 매핑 | extension=\".PNG\" | createPresignedUrls | contentType=image/png |
+| TC-PRESIGN-03 | ✅ | Medium | 버킷 누락 | bucket=null | createPresignedUrls | COMMON-E-007 반환 |
+| TC-PRESIGN-04 | ✅ | Medium | maxSize 초과 | maxSizeBytes>30MB | createPresignedUrls | COMMON-E-007 반환 |
+| TC-PRESIGN-05 | ✅ | Medium | 업로드 URL/오브젝트 키 생성 | 유효 설정 | createPresignedUrls | uploadUrl/imageObjectKey 반환 |
+| TC-PRESIGN-06 | ✅ | Low | contentType 매핑 | extension=\".PNG\" | createPresignedUrls | contentType=image/png |
 
 #### 7-1) Presign 요청 유효성(Unit)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
@@ -214,16 +214,23 @@
 | TC-POST-TAG-05 | ✅ | Medium | 태그 길이 위반 | tags=[\"a\"*21] | 검증 수행 | POST-E-020 반환 |
 | TC-POST-TAG-06 | ✅ | Medium | 태그 유효성 성공 | tags=[\"DAILY\",\"MINIMAL\"] | 검증 수행 | 오류 없음 |
 
-### 11) 이미지 URL 유효성(Unit)
+### 11) 이미지 오브젝트 키 유효성(Unit)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
-| TC-IMAGE-01 | ✅ | Medium | 이미지 리스트 null | imageUrls=null | 검증 수행 | POST-E-010 반환 |
-| TC-IMAGE-02 | ✅ | Medium | 이미지 리스트 빈 값 | imageUrls=[] | 검증 수행 | POST-E-010 반환 |
-| TC-IMAGE-03 | ✅ | Medium | 이미지 개수 초과 | imageUrls=4개 | 검증 수행 | POST-E-010 반환 |
-| TC-IMAGE-04 | ✅ | Medium | 이미지 URL 공백 | imageUrls=[\" \"] | 검증 수행 | POST-E-010 반환 |
-| TC-IMAGE-05 | ✅ | Medium | 이미지 유효성 성공 | imageUrls=1~3개 | 검증 수행 | 오류 없음 |
+| TC-IMAGE-01 | ✅ | Medium | 이미지 리스트 null | imageObjectKeys=null | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-02 | ✅ | Medium | 이미지 리스트 빈 값 | imageObjectKeys=[] | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-03 | ✅ | Medium | 이미지 개수 초과 | imageObjectKeys=4개 | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-04 | ✅ | Medium | 이미지 오브젝트 키 공백 | imageObjectKeys=[\" \"] | 검증 수행 | POST-E-010 반환 |
+| TC-IMAGE-05 | ✅ | Medium | 이미지 유효성 성공 | imageObjectKeys=1~3개 | 검증 수행 | 오류 없음 |
 
-### 7) 보안/예외(경계)
+### 12) 가입 필터(RegistrationTokenFilter)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-REG-FILTER-01 | ✅ | Medium | 등록 쿠키로 리프레시 요청 차단 | registration_token 존재 | POST /api/auth/tokens | AUTH-E-001 반환 |
+| TC-REG-FILTER-02 | ✅ | Medium | 등록 요청 쿠키 누락 | registration_token 없음 | POST /api/members | AUTH-E-010 반환 |
+| TC-REG-FILTER-03 | ✅ | Medium | 등록 요청 쿠키 정상 처리 | 유효 등록 쿠키 | POST /api/members | request attribute 설정 |
+
+### 13) 보안/예외(경계)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
 | TC-SEC-01 | 🔴 | High | 인증 필요 API 접근 차단 | 인증 없음 | 보호 리소스 접근 | 401 응답 |
