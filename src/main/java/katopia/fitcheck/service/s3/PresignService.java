@@ -57,7 +57,7 @@ public class PresignService {
         PresignedPutObjectRequest presigned = s3Presigner.presignPutObject(presignRequest);
         return new PresignResponse.PresignUrl(
                 presigned.url().toString(),
-                buildAccessUrl(objectKey)
+                objectKey
         );
     }
 
@@ -65,20 +65,6 @@ public class PresignService {
         String uuid = UUID.randomUUID().toString();
         long epoch = Instant.now().toEpochMilli();
         return String.format("%s/%d/%d-%s.%s", category.getFolder(), memberId, epoch, uuid, extension);
-    }
-
-    private String buildAccessUrl(String objectKey) {
-        if (!StringUtils.hasText(props.cloudfrontBaseUrl())) {
-            throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
-        }
-        return String.format("%s/%s", trimTrailingSlash(props.cloudfrontBaseUrl()), objectKey);
-    }
-
-    private String trimTrailingSlash(String base) {
-        if (base.endsWith("/")) {
-            return base.substring(0, base.length() - 1);
-        }
-        return base;
     }
 
     private void validateConfig() {

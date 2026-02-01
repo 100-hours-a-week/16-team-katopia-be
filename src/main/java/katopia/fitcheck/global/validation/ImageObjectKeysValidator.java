@@ -8,11 +8,11 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 
-public class ImageUrlsValidator implements ConstraintValidator<ImageUrls, List<String>> {
+public class ImageObjectKeysValidator implements ConstraintValidator<ImageObjectKeys, List<String>> {
     private UploadCategory category;
 
     @Override
-    public void initialize(ImageUrls annotation) {
+    public void initialize(ImageObjectKeys annotation) {
         this.category = UploadCategory.valueOf(annotation.category());
     }
 

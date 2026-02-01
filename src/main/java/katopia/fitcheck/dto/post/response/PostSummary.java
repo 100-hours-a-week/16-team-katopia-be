@@ -7,6 +7,6 @@ import java.time.LocalDateTime;
 @Builder
 public record PostSummary(
         Long id,
-        String imageUrls,
+        String imageObjectKey,
         LocalDateTime createdAt
 ) { }

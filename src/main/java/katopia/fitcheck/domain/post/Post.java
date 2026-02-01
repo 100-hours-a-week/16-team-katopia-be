@@ -141,7 +141,7 @@ public class Post {
         }
     }
 
-    public List<PostImage> getImageUrls() {
+    public List<PostImage> getImageObjectKeys() {
         if (images == null) {
             return Collections.emptyList();
         }

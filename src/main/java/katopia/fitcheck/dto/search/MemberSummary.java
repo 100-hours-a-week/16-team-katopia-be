@@ -7,13 +7,13 @@ import lombok.Builder;
 public record MemberSummary(
         Long id,
         String nickname,
-        String profileImageUrl
+        String profileImageObjectKey
 ) {
     public static MemberSummary of(Member member) {
         return MemberSummary.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
-                .profileImageUrl(member.getProfileImageUrl())
+                .profileImageObjectKey(member.getProfileImageObjectKey())
                 .build();
     }
 }

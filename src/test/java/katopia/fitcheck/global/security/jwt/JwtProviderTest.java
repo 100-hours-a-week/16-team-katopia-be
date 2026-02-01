@@ -1,10 +1,13 @@
 package katopia.fitcheck.global.security.jwt;
 
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import katopia.fitcheck.global.security.oauth2.FrontendProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseCookie;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.crypto.SecretKey;
@@ -48,15 +51,6 @@ class JwtProviderTest {
     }
 
     @Test
-    @org.junit.jupiter.api.DisplayName("TC-JWT-04 토큰 타입 불일치 실패")
-    void tcJwt04_extractMemberId_returnsNull_forWrongTokenType() {
-        JwtProvider.Token token = jwtProvider.createAccessToken(1L);
-
-        assertThat(jwtProvider.isTokenType(token.token(), JwtProvider.TokenType.REFRESH)).isFalse();
-        assertThat(jwtProvider.extractMemberId(token.token(), JwtProvider.TokenType.REFRESH)).isNull();
-    }
-
-    @Test
     @org.junit.jupiter.api.DisplayName("TC-JWT-02 만료 토큰 검증 실패")
     void tcJwt02_extractMemberId_returnsNull_forExpiredToken() {
         String token = buildToken(1L, JwtProvider.TokenType.ACCESS, ACCESS_SECRET,
@@ -74,6 +68,15 @@ class JwtProviderTest {
 
         assertThat(jwtProvider.isTokenType(token, JwtProvider.TokenType.ACCESS)).isFalse();
         assertThat(jwtProvider.extractMemberId(token, JwtProvider.TokenType.ACCESS)).isNull();
+    }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("TC-JWT-04 토큰 타입 불일치 실패")
+    void tcJwt04_extractMemberId_returnsNull_forWrongTokenType() {
+        JwtProvider.Token token = jwtProvider.createAccessToken(1L);
+
+        assertThat(jwtProvider.isTokenType(token.token(), JwtProvider.TokenType.REFRESH)).isFalse();
+        assertThat(jwtProvider.extractMemberId(token.token(), JwtProvider.TokenType.REFRESH)).isNull();
     }
 
     @Test
@@ -127,7 +130,7 @@ class JwtProviderTest {
     @org.junit.jupiter.api.DisplayName("TC-JWT-10 쿠키 값 추출 성공/실패")
     void tcJwt10_extractCookieValue_returnsCookieValue_whenPresent() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setCookies(new jakarta.servlet.http.Cookie("refresh_token", "value"));
+        request.setCookies(new Cookie("refresh_token", "value"));
 
         assertThat(jwtProvider.extractCookieValue(request, "refresh_token")).isEqualTo("value");
         assertThat(jwtProvider.extractCookieValue(request, "missing")).isNull();
@@ -174,7 +177,7 @@ class JwtProviderTest {
     void tcJwt15_buildRefreshCookie_buildsCookie() {
         JwtProvider.Token refreshToken = jwtProvider.createRefreshToken(1L);
 
-        var cookie = jwtProvider.buildRefreshCookie(refreshToken);
+        ResponseCookie cookie = jwtProvider.buildRefreshCookie(refreshToken);
 
         assertThat(cookie.getName()).isEqualTo(JwtProvider.REFRESH_COOKIE);
         assertThat(cookie.getPath()).isEqualTo(JwtProvider.REFRESH_PATH);
@@ -186,7 +189,7 @@ class JwtProviderTest {
     void tcJwt16_buildRegistrationCookie_buildsCookie() {
         JwtProvider.Token registrationToken = jwtProvider.createRegistrationToken(1L);
 
-        var cookie = jwtProvider.buildRegistrationCookie(registrationToken);
+        ResponseCookie cookie = jwtProvider.buildRegistrationCookie(registrationToken);
 
         assertThat(cookie.getName()).isEqualTo(JwtProvider.REGISTRATION_COOKIE);
         assertThat(cookie.getPath()).isEqualTo(JwtProvider.REGISTRATION_PATH);
@@ -196,7 +199,7 @@ class JwtProviderTest {
     @Test
     @org.junit.jupiter.api.DisplayName("TC-JWT-17 Refresh 쿠키 삭제")
     void tcJwt17_clearRefreshCookie_expiresCookie() {
-        var cookie = jwtProvider.clearRefreshCookie();
+        ResponseCookie cookie = jwtProvider.clearRefreshCookie();
 
         assertThat(cookie.getName()).isEqualTo(JwtProvider.REFRESH_COOKIE);
         assertThat(cookie.getMaxAge()).isZero();
@@ -205,7 +208,7 @@ class JwtProviderTest {
     @Test
     @org.junit.jupiter.api.DisplayName("TC-JWT-18 Registration 쿠키 삭제")
     void tcJwt18_clearRegistrationCookie_expiresCookie() {
-        var cookie = jwtProvider.clearRegistrationCookie();
+        ResponseCookie cookie = jwtProvider.clearRegistrationCookie();
 
         assertThat(cookie.getName()).isEqualTo(JwtProvider.REGISTRATION_COOKIE);
         assertThat(cookie.getMaxAge()).isZero();
@@ -219,7 +222,7 @@ class JwtProviderTest {
                               boolean includeTyp,
                               boolean includeMemberId) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        var builder = Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .issuer("fit-check")
                 .subject(memberId != null ? String.valueOf(memberId) : "0")
                 .issuedAt(Date.from(issuedAt))

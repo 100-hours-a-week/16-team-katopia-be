@@ -9,7 +9,7 @@ import java.util.Set;
 @Builder
 public record MemberProfile(
         String nickname,
-        String profileImageUrl,
+        String profileImageObjectKey,
         String gender,
         Short height,
         Short weight,
@@ -18,7 +18,7 @@ public record MemberProfile(
     public static MemberProfile of(Member member) {
         return MemberProfile.builder()
                 .nickname(member.getNickname())
-                .profileImageUrl(member.getProfileImageUrl())
+                .profileImageObjectKey(member.getProfileImageObjectKey())
                 .gender(member.getGender() != null ? member.getGender().name() : null)
                 .height(member.getHeight())
                 .weight(member.getWeight())
