@@ -13,18 +13,31 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class AuthTokenService {
 
     private final JwtProvider jwtProvider;
     private final MemberRepository memberRepository;
+    private final RefreshTokenService refreshTokenService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public TokenRefreshResult refreshTokens(String refreshToken) {
+        LocalDateTime now = LocalDateTime.now();
         Long memberId = jwtProvider.extractMemberId(refreshToken, JwtProvider.TokenType.REFRESH);
 
         if (memberId == null) {
+            throw new AuthException(AuthErrorCode.INVALID_RT);
+        }
+
+        String tokenHash = refreshTokenService.hash(refreshToken);
+        var tokenEntity = refreshTokenService.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_RT));
+
+        if (tokenEntity.isRevoked() || tokenEntity.isExpired(now)) {
+            refreshTokenService.revokeAllByMemberId(memberId, now);
             throw new AuthException(AuthErrorCode.INVALID_RT);
         }
 
@@ -32,10 +45,20 @@ public class AuthTokenService {
             throw new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER);
         }
 
+        refreshTokenService.revoke(tokenEntity, now);
         TokenPair pair = jwtProvider.issueTokens(memberId);
-        // TODO : RTR 관리 작업 필요 (테이블 또는 redis 관리 예정)
+        refreshTokenService.issue(memberId, pair.refreshToken());
 
         return new TokenRefreshResult(pair.accessToken().token(), jwtProvider.buildRefreshCookie(pair.refreshToken()));
+    }
+
+    @Transactional
+    public void revokeByRefreshToken(String refreshToken) {
+        Long memberId = jwtProvider.extractMemberId(refreshToken, JwtProvider.TokenType.REFRESH);
+        if (memberId == null) {
+            return;
+        }
+        refreshTokenService.revokeAllByMemberId(memberId, LocalDateTime.now());
     }
 
     public record TokenRefreshResult(

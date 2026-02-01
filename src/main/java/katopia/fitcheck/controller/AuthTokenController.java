@@ -38,16 +38,25 @@ public class AuthTokenController implements AuthApiSpec {
             throw new AuthException(AuthErrorCode.NOT_FOUND_RT);
         }
 
-        TokenRefreshResult result = authTokenService.refreshTokens(refreshToken);
-
-        response.addHeader(HttpHeaders.SET_COOKIE, result.refreshToken().toString());
-
-        return APIResponse.ok(AuthSuccessCode.TOKEN_REFRESH_SUCCESS, new TokenRefreshResponse(result.accessToken()));
+        try {
+            TokenRefreshResult result = authTokenService.refreshTokens(refreshToken);
+            response.addHeader(HttpHeaders.SET_COOKIE, result.refreshToken().toString());
+            return APIResponse.ok(AuthSuccessCode.TOKEN_REFRESH_SUCCESS, new TokenRefreshResponse(result.accessToken()));
+        } catch (AuthException ex) {
+            response.addHeader(HttpHeaders.SET_COOKIE, jwtProvider.clearRefreshCookie().toString());
+            throw ex;
+        }
     }
 
     @DeleteMapping("/tokens")
     @Override
-    public ResponseEntity<APIResponse<Void>> logout(HttpServletResponse response) {
+    public ResponseEntity<APIResponse<Void>> logout(
+            @CookieValue(value = JwtProvider.REFRESH_COOKIE, required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
+        if (StringUtils.hasText(refreshToken)) {
+            authTokenService.revokeByRefreshToken(refreshToken);
+        }
         response.addHeader(HttpHeaders.SET_COOKIE, jwtProvider.clearRefreshCookie().toString());
         return APIResponse.ok(AuthSuccessCode.LOGOUT_SUCCESS);
     }
