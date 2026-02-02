@@ -5,8 +5,8 @@ import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
-import katopia.fitcheck.global.security.jwt.JwtProvider.Token;
 import katopia.fitcheck.global.security.jwt.JwtProvider.TokenPair;
+import katopia.fitcheck.service.auth.RefreshTokenService;
 import katopia.fitcheck.repository.member.MemberRepository;
 import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Gender;
@@ -25,6 +25,7 @@ public class MemberRegistrationService {
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
     private final MemberProfileValidator profileValidator;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public SignupResult signup(Long memberId, String normalizedNickname, String gender) {
@@ -51,6 +52,7 @@ public class MemberRegistrationService {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
         TokenPair tokenPair = jwtProvider.issueTokens(member.getId());
+        refreshTokenService.issue(member.getId(), tokenPair.refreshToken());
         return buildSignupResult(member, tokenPair);
     }
 

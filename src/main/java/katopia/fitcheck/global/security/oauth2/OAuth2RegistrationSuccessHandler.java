@@ -6,6 +6,7 @@ import katopia.fitcheck.global.security.jwt.JwtProvider;
 import katopia.fitcheck.global.security.jwt.JwtProvider.Token;
 import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Member;
+import katopia.fitcheck.service.auth.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,7 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
 
     private final JwtProvider jwtProvider;
     private final FrontendProperties frontendProperties;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public void onAuthenticationSuccess(
@@ -64,6 +66,7 @@ public class OAuth2RegistrationSuccessHandler extends SimpleUrlAuthenticationSuc
         // 활성 사용자 처리
         if (!memberOAuth2User.registrationRequired()) {
             var tokens = jwtProvider.issueTokens(member.getId());
+            refreshTokenService.issue(member.getId(), tokens.refreshToken());
             response.addHeader(HttpHeaders.SET_COOKIE,
                     jwtProvider.buildRefreshCookie(tokens.refreshToken()).toString());
             clearAuthenticationAttributes(request);
