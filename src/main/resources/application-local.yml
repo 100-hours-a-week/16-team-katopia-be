@@ -15,9 +15,10 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        generate_statistics: true
+#        generate_statistics: true
         format_sql: false
         show_sql: true
+        highlight_sql: true
         jdbc:
           time_zone: Asia/Seoul
 
@@ -52,3 +53,11 @@ server:
 app:
   frontend:
     base-url: http://localhost:3000
+
+logging:
+  level:
+    root: info
+    org.springframework.web: info
+    org.springframework.security: debug
+    org.springframework.security.oauth2: TRACE
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
