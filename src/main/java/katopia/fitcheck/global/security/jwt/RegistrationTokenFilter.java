@@ -22,6 +22,7 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
 
     private static final String REGISTRATION_ENDPOINT = "/api/members";
     private static final String REGISTRATION_CHECK_ENDPOINT = "/api/members/check";
+    private static final String MEMBER_ME_ENDPOINT = "/api/members/me";
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtProvider jwtProvider;
@@ -36,7 +37,7 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
         String registrationToken = jwtProvider.extractCookieValue(request, JwtProvider.REGISTRATION_COOKIE);
 
         if (!isRegistrationEndpoint) {
-            if (isRegistrationCheckRequest(request)) {
+            if (isRegistrationCheckRequest(request) || isMemberMeRequest(request)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -73,5 +74,10 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
     private boolean isRegistrationCheckRequest(HttpServletRequest request) {
         return "GET".equalsIgnoreCase(request.getMethod())
                 && PATH_MATCHER.match(REGISTRATION_CHECK_ENDPOINT, request.getRequestURI());
+    }
+
+    private boolean isMemberMeRequest(HttpServletRequest request) {
+        return "GET".equalsIgnoreCase(request.getMethod())
+                && PATH_MATCHER.match(MEMBER_ME_ENDPOINT, request.getRequestURI());
     }
 }
