@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -150,6 +151,7 @@ public class JwtProvider {
                 .subject(String.valueOf(memberId))
                 .claim(CLAIM_MEMBER_ID, memberId)
                 .claim(CLAIM_TOKEN_TYPE, type.value)
+                .id(UUID.randomUUID().toString())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
                 .signWith(signingKey(type))
