@@ -21,6 +21,7 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
     public static final String REGISTRATION_MEMBER_ID = "registrationMemberId";
 
     private static final String REGISTRATION_ENDPOINT = "/api/members";
+    private static final String REGISTRATION_CHECK_ENDPOINT = "/api/members/check";
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtProvider jwtProvider;
@@ -35,6 +36,10 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
         String registrationToken = jwtProvider.extractCookieValue(request, JwtProvider.REGISTRATION_COOKIE);
 
         if (!isRegistrationEndpoint) {
+            if (isRegistrationCheckRequest(request)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             // 회원가입 API 요청이 아닌데, 임시 AT인 경우
             if (accessToken != null && jwtProvider.isTokenType(accessToken, TokenType.REGISTRATION)) {
                 throw new AuthException(AuthErrorCode.INVALID_TEMP_TOKEN_PATH);
@@ -63,5 +68,10 @@ public class RegistrationTokenFilter extends OncePerRequestFilter {
     private boolean isRegistrationRequest(HttpServletRequest request) {
         return "POST".equalsIgnoreCase(request.getMethod())
                 && PATH_MATCHER.match(REGISTRATION_ENDPOINT, request.getRequestURI());
+    }
+
+    private boolean isRegistrationCheckRequest(HttpServletRequest request) {
+        return "GET".equalsIgnoreCase(request.getMethod())
+                && PATH_MATCHER.match(REGISTRATION_CHECK_ENDPOINT, request.getRequestURI());
     }
 }

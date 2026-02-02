@@ -35,5 +35,8 @@ public interface AuthApiSpec {
                     @ApiResponse(responseCode = "200", description = "로그아웃 성공",
                             content = @Content(schema = @Schema(implementation = APIResponse.class)))
             })
-    ResponseEntity<APIResponse<Void>> logout(HttpServletResponse response);
+    ResponseEntity<APIResponse<Void>> logout(
+            @CookieValue(value = JwtProvider.REFRESH_COOKIE, required = false) String refreshToken,
+            HttpServletResponse response
+    );
 }
