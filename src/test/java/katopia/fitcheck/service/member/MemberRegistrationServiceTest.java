@@ -5,6 +5,7 @@ import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.domain.member.MemberProfileValidator;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
 import katopia.fitcheck.repository.member.MemberRepository;
+import katopia.fitcheck.service.auth.RefreshTokenService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseCookie;
@@ -25,7 +26,8 @@ class MemberRegistrationServiceTest {
         MemberRepository memberRepository = mock(MemberRepository.class);
         JwtProvider jwtProvider = mock(JwtProvider.class);
         MemberProfileValidator profileValidator = mock(MemberProfileValidator.class);
-        MemberRegistrationService service = new MemberRegistrationService(memberRepository, jwtProvider, profileValidator);
+        RefreshTokenService refreshTokenService = mock(RefreshTokenService.class);
+        MemberRegistrationService service = new MemberRegistrationService(memberRepository, jwtProvider, profileValidator, refreshTokenService);
 
         Member member = Member.builder()
                 .id(1L)
