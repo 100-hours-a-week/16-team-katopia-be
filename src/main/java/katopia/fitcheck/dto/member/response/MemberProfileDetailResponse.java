@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 @Builder
 public record MemberProfileDetailResponse(
     Long id,
+    String nickname,
+    String profileImageObjectKey,
     boolean enableRealtimeNotification,
     String email,
     MemberProfile profile,

@@ -3,15 +3,15 @@ package katopia.fitcheck.controller.spec;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
-import katopia.fitcheck.dto.comment.request.CommentCreateRequest;
-import katopia.fitcheck.dto.comment.response.CommentCreateResponse;
+import katopia.fitcheck.dto.comment.request.CommentRequest;
+import katopia.fitcheck.dto.comment.response.CommentResponse;
 import katopia.fitcheck.dto.comment.response.CommentListResponse;
-import katopia.fitcheck.dto.comment.request.CommentUpdateRequest;
-import katopia.fitcheck.dto.comment.response.CommentUpdateResponse;
 import katopia.fitcheck.global.APIResponse;
+import katopia.fitcheck.global.docs.SwaggerExamples;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,16 +22,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface CommentApiSpec {
 
     @Operation(summary = "댓글 작성", description = "댓글 작성 API 입니다.")
-    @ApiResponse(responseCode = "201", description = "댓글 작성 성공", content = @Content(schema = @Schema(implementation = CommentCreateResponse.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(
+                    schema = @Schema(implementation = CommentRequest.class),
+                    examples = @ExampleObject(name = "create", value = "{\"content\": \"" + SwaggerExamples.COMMENT_CONTENT_CREATE + "\"}")
+            )
+    )
+    @ApiResponse(responseCode = "201", description = "댓글 작성 성공", content = @Content(schema = @Schema(implementation = CommentResponse.class)))
     @ApiResponse(responseCode = "400", description = "본문 필수 입력 검증 실패", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "400", description = "본문 200자 초과", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "401", description = "AT 누락", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "401", description = "AT 만료/위조", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음", content = @Content(schema = @Schema(implementation = APIResponse.class)))
-    ResponseEntity<APIResponse<CommentCreateResponse>> createComment(
+    ResponseEntity<APIResponse<CommentResponse>> createComment(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
-            @Valid @RequestBody CommentCreateRequest request
+            @Valid @RequestBody CommentRequest request
     );
 
     @Operation(summary = "댓글 목록 조회", description = "커서 기반 인피니티 스크롤을 지원합니다.")
@@ -48,7 +55,14 @@ public interface CommentApiSpec {
     );
 
     @Operation(summary = "댓글 수정", description = "댓글 수정 API 입니다.")
-    @ApiResponse(responseCode = "200", description = "댓글 수정 성공", content = @Content(schema = @Schema(implementation = CommentUpdateResponse.class)))
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(
+                    schema = @Schema(implementation = CommentRequest.class),
+                    examples = @ExampleObject(name = "update", value = "{\"content\": \"" + SwaggerExamples.COMMENT_CONTENT_UPDATE + "\"}")
+            )
+    )
+    @ApiResponse(responseCode = "200", description = "댓글 수정 성공", content = @Content(schema = @Schema(implementation = CommentResponse.class)))
     @ApiResponse(responseCode = "400", description = "본문 필수 입력 검증 실패", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "400", description = "본문 200자 초과", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "401", description = "AT 누락", content = @Content(schema = @Schema(implementation = APIResponse.class)))
@@ -56,11 +70,11 @@ public interface CommentApiSpec {
     @ApiResponse(responseCode = "403", description = "다른 사용자 댓글 수정 시도", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "404", description = "댓글을 찾을 수 없음", content = @Content(schema = @Schema(implementation = APIResponse.class)))
-    ResponseEntity<APIResponse<CommentUpdateResponse>> updateComment(
+    ResponseEntity<APIResponse<CommentResponse>> updateComment(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
             @PathVariable("id") Long commentId,
-            @Valid @RequestBody CommentUpdateRequest request
+            @Valid @RequestBody CommentRequest request
     );
 
     @Operation(summary = "댓글 삭제", description = "댓글 삭제 API 입니다.")

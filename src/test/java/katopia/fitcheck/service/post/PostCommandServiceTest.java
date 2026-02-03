@@ -66,7 +66,7 @@ class PostCommandServiceTest {
     private PostCommandService postCommandService;
 
     @Test
-    @DisplayName("게시글 생성: 본문/이미지/태그 정규화 후 저장")
+    @DisplayName("TC-POST-CMD-01 게시글 생성: 본문/이미지/태그 정규화 후 저장")
     void create_normalizesContentImagesAndTags() {
         Member member = Member.builder()
                 .id(1L)
@@ -111,7 +111,7 @@ class PostCommandServiceTest {
     }
 
     @Test
-    @DisplayName("게시글 수정: 본문 업데이트 및 태그 동기화")
+    @DisplayName("TC-POST-CMD-02 게시글 수정: 본문 업데이트 및 태그 동기화")
     void update_updatesContentAndSyncsTags() {
         Member member = Member.builder()
                 .id(1L)
@@ -145,7 +145,7 @@ class PostCommandServiceTest {
     }
 
     @Test
-    @DisplayName("게시글 삭제: 댓글/좋아요/태그 정리 후 삭제")
+    @DisplayName("TC-POST-CMD-03 게시글 삭제: 댓글/좋아요/태그 정리 후 삭제")
     void delete_removesRelatedData() {
         Member member = Member.builder()
                 .id(1L)

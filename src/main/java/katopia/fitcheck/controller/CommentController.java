@@ -1,10 +1,8 @@
 package katopia.fitcheck.controller;
 
-import katopia.fitcheck.dto.comment.request.CommentCreateRequest;
-import katopia.fitcheck.dto.comment.response.CommentCreateResponse;
+import katopia.fitcheck.dto.comment.request.CommentRequest;
+import katopia.fitcheck.dto.comment.response.CommentResponse;
 import katopia.fitcheck.dto.comment.response.CommentListResponse;
-import katopia.fitcheck.dto.comment.request.CommentUpdateRequest;
-import katopia.fitcheck.dto.comment.response.CommentUpdateResponse;
 import katopia.fitcheck.service.comment.CommentService;
 import katopia.fitcheck.controller.spec.CommentApiSpec;
 import katopia.fitcheck.global.APIResponse;
@@ -35,14 +33,14 @@ public class CommentController implements CommentApiSpec {
 
     @PostMapping
     @Override
-    public ResponseEntity<APIResponse<CommentCreateResponse>> createComment(
+    public ResponseEntity<APIResponse<CommentResponse>> createComment(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
-            @Valid @RequestBody CommentCreateRequest request
+            @Valid @RequestBody CommentRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
 
-        CommentCreateResponse body = commentService.create(memberId, postId, request);
+        CommentResponse body = commentService.create(memberId, postId, request);
 
         return APIResponse.ok(CommentSuccessCode.COMMENT_CREATED, body);
     }
@@ -61,15 +59,15 @@ public class CommentController implements CommentApiSpec {
 
     @PatchMapping("/{id}")
     @Override
-    public ResponseEntity<APIResponse<CommentUpdateResponse>> updateComment(
+    public ResponseEntity<APIResponse<CommentResponse>> updateComment(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("postId") Long postId,
             @PathVariable("id") Long commentId,
-            @Valid @RequestBody CommentUpdateRequest request
+            @Valid @RequestBody CommentRequest request
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
 
-        CommentUpdateResponse body = commentService.update(memberId, postId, commentId, request);
+        CommentResponse body = commentService.update(memberId, postId, commentId, request);
 
         return APIResponse.ok(CommentSuccessCode.COMMENT_UPDATED, body);
     }

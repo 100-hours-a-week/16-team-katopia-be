@@ -13,6 +13,13 @@ public interface PostTagRepository extends JpaRepository<PostTag, Long> {
     @Query("delete from PostTag pt where pt.post.id = :postId")
     void deleteByPostId(Long postId);
 
+    @Modifying
+    @Query("delete from PostTag pt where pt.post.id = :postId and pt.tag.id in :tagIds")
+    void deleteByPostIdAndTagIds(
+            @Param("postId") Long postId,
+            @Param("tagIds") java.util.Set<Long> tagIds
+    );
+
     @Query("""
             select t.name from PostTag pt
             join pt.tag t

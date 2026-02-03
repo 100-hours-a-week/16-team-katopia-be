@@ -19,20 +19,15 @@ public class ImageObjectKeysValidator implements ConstraintValidator<ImageObject
     @Override
     public boolean isValid(List<String> value, ConstraintValidatorContext context) {
         if (value == null || value.isEmpty() || value.size() > category.getMaxCount()) {
-            addViolation(context, PostErrorCode.IMAGE_COUNT_INVALID.getCode());
+            ValidationSupport.addViolation(context, PostErrorCode.IMAGE_COUNT_INVALID.getCode());
             return false;
         }
         for (String url : value) {
             if (!StringUtils.hasText(url)) {
-                addViolation(context, PostErrorCode.IMAGE_COUNT_INVALID.getCode());
+                ValidationSupport.addViolation(context, PostErrorCode.IMAGE_COUNT_INVALID.getCode());
                 return false;
             }
         }
         return true;
-    }
-
-    private void addViolation(ConstraintValidatorContext context, String message) {
-        context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
     }
 }

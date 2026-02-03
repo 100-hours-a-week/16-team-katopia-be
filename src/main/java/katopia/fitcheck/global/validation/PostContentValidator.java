@@ -11,23 +11,18 @@ public class PostContentValidator implements ConstraintValidator<PostContent, St
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (!StringUtils.hasText(value)) {
-            addViolation(context, PostErrorCode.CONTENT_REQUIRED.getCode());
+            ValidationSupport.addViolation(context, PostErrorCode.CONTENT_REQUIRED.getCode());
             return false;
         }
         String trimmed = value.trim();
-        if (trimmed.length() < 1) {
-            addViolation(context, PostErrorCode.CONTENT_REQUIRED.getCode());
+        if (trimmed.isEmpty()) {
+            ValidationSupport.addViolation(context, PostErrorCode.CONTENT_REQUIRED.getCode());
             return false;
         }
-        if (trimmed.length() > MAX_LENGTH) {
-            addViolation(context, PostErrorCode.CONTENT_TOO_LONG.getCode());
+        if (ValidationSupport.isOutOfRange(trimmed.length(), 1, MAX_LENGTH)) {
+            ValidationSupport.addViolation(context, PostErrorCode.CONTENT_TOO_LONG.getCode());
             return false;
         }
         return true;
-    }
-
-    private void addViolation(ConstraintValidatorContext context, String message) {
-        context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
     }
 }

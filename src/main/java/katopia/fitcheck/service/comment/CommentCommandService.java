@@ -1,10 +1,8 @@
 package katopia.fitcheck.service.comment;
 
 import katopia.fitcheck.domain.comment.Comment;
-import katopia.fitcheck.dto.comment.request.CommentCreateRequest;
-import katopia.fitcheck.dto.comment.response.CommentCreateResponse;
-import katopia.fitcheck.dto.comment.request.CommentUpdateRequest;
-import katopia.fitcheck.dto.comment.response.CommentUpdateResponse;
+import katopia.fitcheck.dto.comment.request.CommentRequest;
+import katopia.fitcheck.dto.comment.response.CommentResponse;
 import katopia.fitcheck.repository.comment.CommentRepository;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.service.member.MemberFinder;
@@ -27,7 +25,7 @@ public class CommentCommandService {
     private final PostFinder postFinder;
 
     @Transactional
-    public CommentCreateResponse create(Long memberId, Long postId, CommentCreateRequest request) {
+    public CommentResponse create(Long memberId, Long postId, CommentRequest request) {
         postFinder.requireExists(postId);
         Post post = postFinder.getReferenceById(postId);
         Member member = memberFinder.getReferenceById(memberId);
@@ -35,17 +33,17 @@ public class CommentCommandService {
         Comment comment = Comment.create(post, member, request.content());
         Comment saved = commentRepository.save(comment);
         postRepository.incrementCommentCount(postId);
-        return CommentCreateResponse.of(saved);
+        return CommentResponse.of(saved);
     }
 
     @Transactional
-    public CommentUpdateResponse update(Long memberId, Long postId, Long commentId, CommentUpdateRequest request) {
+    public CommentResponse update(Long memberId, Long postId, Long commentId, CommentRequest request) {
         postFinder.requireExists(postId);
         Comment comment = commentFinder.findByIdAndPostIdOrThrow(commentId, postId);
         commentValidator.validateOwner(comment, memberId);
 
         comment.updateContent(request.content());
-        return CommentUpdateResponse.of(comment);
+        return CommentResponse.of(comment);
     }
 
     @Transactional

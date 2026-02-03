@@ -2,7 +2,6 @@ package katopia.fitcheck.dto.member.request;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jdk.jfr.BooleanFlag;
 import katopia.fitcheck.global.docs.SwaggerExamples;
 import katopia.fitcheck.global.validation.GenderValue;
 import katopia.fitcheck.global.validation.HeightValue;
@@ -36,7 +35,7 @@ public record MemberProfileUpdateRequest(
                 example = SwaggerExamples.GENDER_M,
                 allowableValues = {"M", "F"}
         )
-        @GenderValue(required = false)
+        @GenderValue
         String gender,
 
         @Schema(
@@ -44,7 +43,7 @@ public record MemberProfileUpdateRequest(
                 example = SwaggerExamples.HEIGHT_175,
                 pattern = "^[0-9]+$"
         )
-        @HeightValue(required = false)
+        @HeightValue
         String height,
 
         @Schema(
@@ -52,7 +51,7 @@ public record MemberProfileUpdateRequest(
                 example = SwaggerExamples.WEIGHT_70,
                 pattern = "^[0-9]+$"
         )
-        @WeightValue(required = false)
+        @WeightValue
         String weight,
 
         @Schema(

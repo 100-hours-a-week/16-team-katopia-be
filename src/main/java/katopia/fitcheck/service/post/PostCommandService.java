@@ -52,7 +52,7 @@ public class PostCommandService {
         post.replaceTags(buildPostTags(post, tagEntities));
 
         Post saved = postRepository.save(post);
-        return PostCreateResponse.of(saved);
+        return PostCreateResponse.of(saved, tagEntities);
     }
 
     @Transactional
@@ -148,7 +148,14 @@ public class PostCommandService {
                 .map(Tag::getId)
                 .collect(Collectors.toSet());
 
-        post.getPostTags().removeIf(postTag -> !newTagIds.contains(postTag.getTag().getId()));
+        Set<Long> removedTagIds = post.getPostTags().stream()
+                .map(postTag -> postTag.getTag().getId())
+                .filter(existingId -> !newTagIds.contains(existingId))
+                .collect(Collectors.toSet());
+        if (!removedTagIds.isEmpty()) {
+            postTagRepository.deleteByPostIdAndTagIds(post.getId(), removedTagIds);
+        }
+        post.getPostTags().removeIf(postTag -> removedTagIds.contains(postTag.getTag().getId()));
 
         Set<Long> existingTagIds = post.getPostTags().stream()
                 .map(postTag -> postTag.getTag().getId())

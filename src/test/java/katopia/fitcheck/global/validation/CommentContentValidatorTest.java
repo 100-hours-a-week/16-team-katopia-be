@@ -3,6 +3,7 @@ package katopia.fitcheck.global.validation;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import katopia.fitcheck.dto.comment.request.CommentRequest;
 import katopia.fitcheck.global.exception.code.CommentErrorCode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -65,14 +66,5 @@ class CommentContentValidatorTest {
     private void assertSingleViolationWithMessage(Set<? extends ConstraintViolation<?>> violations, String message) {
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage()).isEqualTo(message);
-    }
-
-    static class CommentRequest {
-        @CommentContent
-        String content;
-
-        CommentRequest(String content) {
-            this.content = content;
-        }
     }
 }

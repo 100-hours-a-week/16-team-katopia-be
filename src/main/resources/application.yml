@@ -54,12 +54,7 @@ app:
       allow-credentials: true
 
   sse:
-    emitter-timeout: 30m   # SSE 연결 유지(클라이언트 재연결 고려)
-
-# S3 이미지 업로드는 클라이언트 -> S3로 진행
-#  file:
-#    upload:
-#      max-size: 10MB
+    emitter-timeout: 30m
 
 springdoc:
   api-docs:

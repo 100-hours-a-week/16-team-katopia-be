@@ -1,10 +1,8 @@
 package katopia.fitcheck.service.comment;
 
-import katopia.fitcheck.dto.comment.request.CommentCreateRequest;
-import katopia.fitcheck.dto.comment.response.CommentCreateResponse;
+import katopia.fitcheck.dto.comment.request.CommentRequest;
+import katopia.fitcheck.dto.comment.response.CommentResponse;
 import katopia.fitcheck.dto.comment.response.CommentListResponse;
-import katopia.fitcheck.dto.comment.request.CommentUpdateRequest;
-import katopia.fitcheck.dto.comment.response.CommentUpdateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +13,7 @@ public class CommentService {
     private final CommentCommandService commentCommandService;
     private final CommentQueryService commentQueryService;
 
-    public CommentCreateResponse create(Long memberId, Long postId, CommentCreateRequest request) {
+    public CommentResponse create(Long memberId, Long postId, CommentRequest request) {
         return commentCommandService.create(memberId, postId, request);
     }
 
@@ -23,7 +21,7 @@ public class CommentService {
         return commentQueryService.list(postId, sizeValue, after);
     }
 
-    public CommentUpdateResponse update(Long memberId, Long postId, Long commentId, CommentUpdateRequest request) {
+    public CommentResponse update(Long memberId, Long postId, Long commentId, CommentRequest request) {
         return commentCommandService.update(memberId, postId, commentId, request);
     }
 

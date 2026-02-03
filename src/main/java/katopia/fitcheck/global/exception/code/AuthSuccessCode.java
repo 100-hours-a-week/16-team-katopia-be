@@ -14,7 +14,7 @@ public enum AuthSuccessCode implements ResponseCode {
     LOGIN_SUCCESS(HttpStatus.CREATED, "AUTH-S-010", "로그인이 완료되었습니다."),
     LOGOUT_SUCCESS(HttpStatus.OK, "AUTH-S-011", "로그아웃이 완료되었습니다."),
 
-    TOKEN_REFRESH_SUCCESS(HttpStatus.OK, "AUTH-S-020", "토큰이 성공적으로 갱신되었습니다.");
+    TOKEN_REFRESH_SUCCESS(HttpStatus.OK, "AUTH-S-020", "엑세스 토큰이 갱신되었습니다.");
 
     private final HttpStatus status;
     private final String code;
