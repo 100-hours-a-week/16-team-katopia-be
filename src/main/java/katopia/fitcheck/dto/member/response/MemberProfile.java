@@ -19,7 +19,7 @@ public record MemberProfile(
         return MemberProfile.builder()
                 .nickname(member.getNickname())
                 .profileImageObjectKey(member.getProfileImageObjectKey())
-                .gender(member.getGender() != null ? member.getGender().name() : null)
+                .gender(member.getGender().name())
                 .height(member.getHeight())
                 .weight(member.getWeight())
                 .style(member.getStyles() != null ? Set.copyOf(member.getStyles()) : null)

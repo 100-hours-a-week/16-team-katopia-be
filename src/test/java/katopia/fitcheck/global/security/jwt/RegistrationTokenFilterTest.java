@@ -42,9 +42,10 @@ class RegistrationTokenFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", JwtProvider.REFRESH_PATH);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        when(jwtProvider.extractBearerToken(any(HttpServletRequest.class))).thenReturn(null);
         when(jwtProvider.extractCookieValue(any(HttpServletRequest.class), eq(JwtProvider.REGISTRATION_COOKIE)))
                 .thenReturn("reg");
+        when(jwtProvider.isTokenType(eq("reg"), eq(JwtProvider.TokenType.REGISTRATION)))
+                .thenReturn(true);
         when(jwtProvider.clearRegistrationCookie())
                 .thenReturn(org.springframework.http.ResponseCookie.from(JwtProvider.REGISTRATION_COOKIE, "")
                         .maxAge(0)
@@ -65,14 +66,13 @@ class RegistrationTokenFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/members");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        when(jwtProvider.extractBearerToken(any(HttpServletRequest.class))).thenReturn(null);
         when(jwtProvider.extractCookieValue(any(HttpServletRequest.class), eq(JwtProvider.REGISTRATION_COOKIE)))
                 .thenReturn(null);
 
         assertThatThrownBy(() -> filter.doFilter(request, response, chain))
                 .isInstanceOf(AuthException.class)
                 .extracting(ex -> ((AuthException) ex).getErrorCode())
-                .isEqualTo(AuthErrorCode.NOT_FOUND_AT);
+                .isEqualTo(AuthErrorCode.NOT_FOUND_TEMP_TOKEN);
     }
 
     @Test
@@ -81,7 +81,6 @@ class RegistrationTokenFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/members");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        when(jwtProvider.extractBearerToken(any(HttpServletRequest.class))).thenReturn(null);
         when(jwtProvider.extractCookieValue(any(HttpServletRequest.class), eq(JwtProvider.REGISTRATION_COOKIE)))
                 .thenReturn("reg");
         when(jwtProvider.extractMemberId("reg", JwtProvider.TokenType.REGISTRATION)).thenReturn(1L);

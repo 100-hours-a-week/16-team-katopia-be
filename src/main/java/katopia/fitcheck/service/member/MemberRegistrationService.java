@@ -11,6 +11,7 @@ import katopia.fitcheck.service.auth.RefreshTokenService;
 import katopia.fitcheck.repository.member.MemberRepository;
 import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Member;
+import katopia.fitcheck.service.member.MemberProfileInputResolver.ResolvedProfile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseCookie;
@@ -26,6 +27,7 @@ public class MemberRegistrationService {
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
+    private final MemberProfileInputResolver profileInputResolver;
 
 
     @Transactional
@@ -48,8 +50,17 @@ public class MemberRegistrationService {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
 
+        ResolvedProfile resolved = profileInputResolver.resolveForSignup(member, request);
         try {
-            member.completeRegistration(request);
+            member.completeRegistration(
+                    request,
+                    resolved.gender(),
+                    resolved.height(),
+                    resolved.weight(),
+                    resolved.enableRealtimeNotification(),
+                    resolved.styles(),
+                    resolved.profileImageObjectKey()
+            );
             memberRepository.flush();
         } catch (DataIntegrityViolationException ex) {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);

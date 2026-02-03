@@ -149,9 +149,29 @@ public class Member {
                 .build();
     }
 
-    public void completeRegistration(MemberSignupRequest request) {
+    public void completeRegistration(MemberSignupRequest request,
+                                     Gender gender,
+                                     Short height,
+                                     Short weight,
+                                     boolean enableRealtimeNotification,
+                                     Set<StyleType> styles,
+                                     String profileImageObjectKey) {
         this.nickname = request.nickname();
-        this.gender = Gender.valueOf(request.gender());
+        this.gender = gender;
+        if (height != null) {
+            this.height = height;
+        }
+        if (weight != null) {
+            this.weight = weight;
+        }
+        this.enableRealtimeNotification = enableRealtimeNotification;
+        if (styles != null) {
+            this.styles.clear();
+            this.styles.addAll(styles);
+        }
+        if (profileImageObjectKey != null) {
+            this.profileImageObjectKey = profileImageObjectKey;
+        }
         this.accountStatus = AccountStatus.ACTIVE;
         this.termsAgreedAt = LocalDateTime.now();
     }

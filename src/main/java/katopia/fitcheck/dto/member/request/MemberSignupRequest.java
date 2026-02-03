@@ -3,7 +3,12 @@ package katopia.fitcheck.dto.member.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.global.docs.SwaggerExamples;
 import katopia.fitcheck.global.validation.GenderValue;
+import katopia.fitcheck.global.validation.HeightValue;
 import katopia.fitcheck.global.validation.Nickname;
+import katopia.fitcheck.global.validation.StyleList;
+import katopia.fitcheck.global.validation.WeightValue;
+
+import java.util.List;
 
 @Schema(description = SwaggerExamples.MEMBER_SIGNUP_REQUEST_DES)
 public record MemberSignupRequest(
@@ -24,5 +29,45 @@ public record MemberSignupRequest(
                 allowableValues = {"M", "F"}
         )
         @GenderValue(required = true)
-        String gender
+        String gender,
+
+        @Schema(
+                description = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY_DES,
+                example = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY
+        )
+        String profileImageObjectKey,
+
+        @Schema(
+                description = SwaggerExamples.HEIGHT_DES,
+                example = SwaggerExamples.HEIGHT_175,
+                pattern = "^[0-9]+$"
+        )
+        @HeightValue
+        String height,
+
+        @Schema(
+                description = SwaggerExamples.WEIGHT_DES,
+                example = SwaggerExamples.WEIGHT_70,
+                pattern = "^[0-9]+$"
+        )
+        @WeightValue
+        String weight,
+
+        @Schema(
+                description = SwaggerExamples.NOTIFICATION_DES,
+                example = SwaggerExamples.NOTIFICATION_TRUE
+        )
+        Boolean enableRealtimeNotification,
+
+        @io.swagger.v3.oas.annotations.media.ArraySchema(
+                arraySchema = @Schema(
+                        description = SwaggerExamples.STYLE_LIST_DES,
+                        example = SwaggerExamples.STYLE_LIST
+                ),
+                schema = @Schema(
+                        allowableValues = {"MINIMAL", "FEMININE", "STREET", "CASUAL", "CLASSIC", "SPORTY", "VINTAGE"}
+                )
+        )
+        @StyleList
+        List<String> style
 ) { }

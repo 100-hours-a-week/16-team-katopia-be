@@ -3,6 +3,7 @@ package katopia.fitcheck.domain.post;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -82,7 +83,7 @@ public class Post {
     @OrderBy("sortOrder ASC")
     private List<PostImage> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<PostTag> postTags = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "post")
