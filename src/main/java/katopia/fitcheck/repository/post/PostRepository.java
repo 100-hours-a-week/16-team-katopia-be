@@ -4,6 +4,7 @@ import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.post.Post;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -68,7 +69,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             set p.likeCount = p.likeCount + 1
             where p.id = :id
             """)
-    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     int incrementLikeCount(@Param("id") Long id);
 
     @Query("""
@@ -76,7 +77,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             set p.likeCount = p.likeCount - 1
             where p.id = :id and p.likeCount > 0
             """)
-    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     int decrementLikeCount(@Param("id") Long id);
 
     @Query("""
@@ -84,7 +85,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             set p.commentCount = p.commentCount + 1
             where p.id = :id
             """)
-    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     int incrementCommentCount(@Param("id") Long id);
 
     @Query("""

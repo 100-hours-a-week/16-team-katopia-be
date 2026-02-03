@@ -18,18 +18,17 @@ public class TagListValidator implements ConstraintValidator<TagList, List<Strin
             return true;
         }
         if (value.size() > MAX_COUNT) {
-            addViolation(context, PostErrorCode.TAG_COUNT_EXCEEDED.getCode());
+            ValidationSupport.addViolation(context, PostErrorCode.TAG_COUNT_EXCEEDED.getCode());
             return false;
         }
         for (String tag : value) {
             if (!StringUtils.hasText(tag)) {
-                addViolation(context, PostErrorCode.TAG_LENGTH_INVALID.getCode());
+                ValidationSupport.addViolation(context, PostErrorCode.TAG_LENGTH_INVALID.getCode());
                 return false;
             }
             String normalized = normalize(tag);
-            int length = normalized.length();
-            if (length < MIN_LENGTH || length > MAX_LENGTH) {
-                addViolation(context, PostErrorCode.TAG_LENGTH_INVALID.getCode());
+            if (ValidationSupport.isOutOfRange(normalized.length(), MIN_LENGTH, MAX_LENGTH)) {
+                ValidationSupport.addViolation(context, PostErrorCode.TAG_LENGTH_INVALID.getCode());
                 return false;
             }
         }
@@ -44,8 +43,4 @@ public class TagListValidator implements ConstraintValidator<TagList, List<Strin
         return trimmed;
     }
 
-    private void addViolation(ConstraintValidatorContext context, String message) {
-        context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
-    }
 }

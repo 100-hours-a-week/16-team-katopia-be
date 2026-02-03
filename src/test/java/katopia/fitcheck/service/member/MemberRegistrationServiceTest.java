@@ -3,6 +3,7 @@ package katopia.fitcheck.service.member;
 import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.domain.member.MemberProfileValidator;
+import katopia.fitcheck.dto.member.request.MemberSignupRequest;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
 import katopia.fitcheck.repository.member.MemberRepository;
 import katopia.fitcheck.service.auth.RefreshTokenService;
@@ -27,7 +28,7 @@ class MemberRegistrationServiceTest {
         JwtProvider jwtProvider = mock(JwtProvider.class);
         MemberProfileValidator profileValidator = mock(MemberProfileValidator.class);
         RefreshTokenService refreshTokenService = mock(RefreshTokenService.class);
-        MemberRegistrationService service = new MemberRegistrationService(memberRepository, jwtProvider, profileValidator, refreshTokenService);
+        MemberRegistrationService service = new MemberRegistrationService(memberRepository, jwtProvider, refreshTokenService);
 
         Member member = Member.builder()
                 .id(1L)
@@ -48,7 +49,7 @@ class MemberRegistrationServiceTest {
         when(jwtProvider.clearRegistrationCookie())
                 .thenReturn(ResponseCookie.from(JwtProvider.REGISTRATION_COOKIE, "").maxAge(0).build());
 
-        MemberRegistrationService.SignupResult result = service.signup(1L, "newnick", "M");
+        MemberRegistrationService.SignupResult result = service.signup(1L, new MemberSignupRequest("newnick", "M"));
 
         assertThat(result.clearRegistrationCookie().getMaxAge()).isZero();
     }

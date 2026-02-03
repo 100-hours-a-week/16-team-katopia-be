@@ -6,28 +6,23 @@ import katopia.fitcheck.global.exception.code.CommentErrorCode;
 import org.springframework.util.StringUtils;
 
 public class CommentContentValidator implements ConstraintValidator<CommentContent, String> {
-    private static final int MAX_LENGTH = 200;
+    private static final int MIN_LENGTH = 1, MAX_LENGTH = 200;
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (!StringUtils.hasText(value)) {
-            addViolation(context, CommentErrorCode.CONTENT_REQUIRED.getCode());
+            ValidationSupport.addViolation(context, CommentErrorCode.CONTENT_REQUIRED.getCode());
             return false;
         }
         String trimmed = value.trim();
-        if (trimmed.length() < 1) {
-            addViolation(context, CommentErrorCode.CONTENT_REQUIRED.getCode());
+        if (trimmed.isEmpty()) {
+            ValidationSupport.addViolation(context, CommentErrorCode.CONTENT_REQUIRED.getCode());
             return false;
         }
-        if (trimmed.length() > MAX_LENGTH) {
-            addViolation(context, CommentErrorCode.CONTENT_TOO_LONG.getCode());
+        if (ValidationSupport.isOutOfRange(trimmed.length(), MIN_LENGTH, MAX_LENGTH)) {
+            ValidationSupport.addViolation(context, CommentErrorCode.CONTENT_TOO_LONG.getCode());
             return false;
         }
         return true;
-    }
-
-    private void addViolation(ConstraintValidatorContext context, String message) {
-        context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
     }
 }

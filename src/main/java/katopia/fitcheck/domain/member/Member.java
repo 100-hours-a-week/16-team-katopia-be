@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import katopia.fitcheck.dto.member.request.MemberSignupRequest;
 import katopia.fitcheck.global.security.oauth2.SocialProvider;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdate;
 import lombok.AccessLevel;
@@ -148,9 +149,9 @@ public class Member {
                 .build();
     }
 
-    public void completeRegistration(String nickname, Gender gender) {
-        this.nickname = nickname;
-        this.gender = gender;
+    public void completeRegistration(MemberSignupRequest request) {
+        this.nickname = request.nickname();
+        this.gender = Gender.valueOf(request.gender());
         this.accountStatus = AccountStatus.ACTIVE;
         this.termsAgreedAt = LocalDateTime.now();
     }

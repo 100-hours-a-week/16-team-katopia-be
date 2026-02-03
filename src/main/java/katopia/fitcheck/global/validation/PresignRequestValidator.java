@@ -16,23 +16,23 @@ public class PresignRequestValidator implements ConstraintValidator<ValidPresign
     @Override
     public boolean isValid(PresignRequest value, ConstraintValidatorContext context) {
         if (value == null) {
-            addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
+            ValidationSupport.addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
             return false;
         }
         UploadCategory category = value.category();
         List<String> extensions = value.extensions();
         if (category == null || extensions == null || extensions.isEmpty()) {
-            addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
+            ValidationSupport.addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
             return false;
         }
         if (!isCountAllowed(category, extensions.size())) {
-            addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
+            ValidationSupport.addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
             return false;
         }
         for (String ext : extensions) {
             String normalized = normalizeExtension(ext);
             if (!ALLOWED_EXTENSIONS.contains(normalized)) {
-                addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
+                ValidationSupport.addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
                 return false;
             }
         }
@@ -48,11 +48,6 @@ public class PresignRequestValidator implements ConstraintValidator<ValidPresign
             trimmed = trimmed.substring(1);
         }
         return trimmed;
-    }
-
-    private void addViolation(ConstraintValidatorContext context, String message) {
-        context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
     }
 
     private boolean isCountAllowed(UploadCategory category, int size) {
