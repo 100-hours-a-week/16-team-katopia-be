@@ -97,11 +97,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     int decrementCommentCount(@Param("id") Long id);
 
     @Query("""
-            select p.likeCount from Post p where p.id = :id
-            """)
-    Long findLikeCountById(@Param("id") Long id);
-
-    @Query("""
             select p.id from Post p where p.member.id = :memberId
             """)
     List<Long> findIdsByMemberId(@Param("memberId") Long memberId);
@@ -110,7 +105,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             select p from Post p
             join p.member m
             where m.accountStatus = :status
-              and p.content like concat(:query, '%')
+              and p.content like concat(:query, '%') escape '\\'
             order by p.createdAt desc, p.id desc
             """)
     List<Post> searchLatestByContent(
@@ -123,7 +118,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             select p from Post p
             join p.member m
             where m.accountStatus = :status
-              and p.content like concat(:query, '%')
+              and p.content like concat(:query, '%') escape '\\'
               and ((p.createdAt < :createdAt) or (p.createdAt = :createdAt and p.id < :id))
             order by p.createdAt desc, p.id desc
             """)
@@ -141,7 +136,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             join p.postTags pt
             join pt.tag t
             where m.accountStatus = :status
-              and t.name like concat(:query, '%')
+              and t.name like concat(:query, '%') escape '\\'
             order by p.createdAt desc, p.id desc
             """)
     List<Post> searchLatestByTag(
@@ -156,7 +151,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             join p.postTags pt
             join pt.tag t
             where m.accountStatus = :status
-              and t.name like concat(:query, '%')
+              and t.name like concat(:query, '%') escape '\\'
               and ((p.createdAt < :createdAt) or (p.createdAt = :createdAt and p.id < :id))
             order by p.createdAt desc, p.id desc
             """)

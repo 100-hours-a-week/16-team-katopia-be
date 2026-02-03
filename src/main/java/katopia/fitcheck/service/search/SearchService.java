@@ -31,7 +31,7 @@ public class SearchService {
                                           String query,
                                           String sizeValue,
                                           String after) {
-        String keyword = searchValidator.requireQuery(query);
+        String keyword = LikeEscapeHelper.escape(searchValidator.requireQuery(query));
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<Member> members = loadUsers(keyword, size, after);
         List<MemberSummary> summaries = members.stream()
@@ -80,7 +80,7 @@ public class SearchService {
     private List<Post> loadPosts(String query, int size, String after) {
         boolean tagOnly = query.startsWith("#");
         String keyword = tagOnly ? query.substring(1).trim() : query;
-        keyword = searchValidator.requireQuery(keyword);
+        keyword = LikeEscapeHelper.escape(searchValidator.requireQuery(keyword));
         PageRequest pageRequest = PageRequest.of(0, size);
         if (!StringUtils.hasText(after)) {
             return tagOnly
