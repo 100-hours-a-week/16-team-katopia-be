@@ -55,11 +55,11 @@ class GenderValueValidatorTest {
     }
 
     @Test
-    @DisplayName("TC-GENDER-05 유효성 성공(소문자)")
+    @DisplayName("TC-GENDER-05 유효하지 않은 값 실패(소문자)")
     void tcGender05_lowercaseGender_isValid() {
         Set<ConstraintViolation<GenderRequest>> violations = validator.validate(new GenderRequest("f"));
 
-        assertThat(violations).isEmpty();
+        assertSingleViolationWithMessage(violations, MemberErrorCode.INVALID_GENDER_FORMAT.getCode());
     }
 
     private void assertSingleViolationWithMessage(Set<? extends ConstraintViolation<?>> violations, String message) {

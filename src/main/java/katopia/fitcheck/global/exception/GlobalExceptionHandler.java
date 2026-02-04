@@ -1,5 +1,6 @@
 package katopia.fitcheck.global.exception;
 
+import jakarta.validation.ConstraintViolation;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.CommentErrorCode;
@@ -9,8 +10,10 @@ import katopia.fitcheck.global.exception.code.PostErrorCode;
 import katopia.fitcheck.global.exception.code.ResponseCode;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -61,16 +64,22 @@ public class GlobalExceptionHandler {
     public ResponseEntity<APIResponse<?>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getAllErrors().stream()
                 .findFirst()
-                .map(error -> error.getDefaultMessage())
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .orElse(null);
         return buildValidationResponse(message);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<APIResponse<?>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        log.warn("Request body parse error", ex);
+        return APIResponse.error(CommonErrorCode.INVALID_INPUT_VALUE);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<APIResponse<?>> handleConstraintViolation(ConstraintViolationException ex) {
         String message = ex.getConstraintViolations().stream()
                 .findFirst()
-                .map(violation -> violation.getMessage())
+                .map(ConstraintViolation::getMessage)
                 .orElse(null);
         return buildValidationResponse(message);
     }

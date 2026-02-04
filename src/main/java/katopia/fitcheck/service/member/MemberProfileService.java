@@ -1,6 +1,7 @@
 package katopia.fitcheck.service.member;
 
-import katopia.fitcheck.domain.member.*;
+import katopia.fitcheck.domain.member.AccountStatus;
+import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdate;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdateRequest;
 import katopia.fitcheck.dto.member.response.MemberProfileDetailResponse;
@@ -9,13 +10,10 @@ import katopia.fitcheck.dto.member.response.NicknameCheckResponse;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.repository.member.MemberRepository;
+import katopia.fitcheck.service.member.MemberProfileInputResolver.ResolvedProfile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.util.Collections;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +21,7 @@ public class MemberProfileService {
 
     private final MemberRepository memberRepository;
     private final MemberFinder memberFinder;
-    private final MemberProfileValidator profileValidator;
+    private final MemberProfileInputResolver profileInputResolver;
 
     @Transactional(readOnly = true)
     public MemberProfileResponse getProfile(Long memberId) {
@@ -47,27 +45,21 @@ public class MemberProfileService {
         }
 
         // nickname
-        String nickname = request.nickname();
-        boolean nicknameChanged = !nickname.equals(member.getNickname());
+        ResolvedProfile resolved = profileInputResolver.resolveForUpdate(member, request);
+        String nickname = resolved.nickname();
+        boolean nicknameChanged = nickname != null && !nickname.equals(member.getNickname());
         if (nicknameChanged && memberRepository.existsByNickname(nickname)) {
             throw new BusinessException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
 
-        // gender, height, weight, styles, notification
-        Gender gender = profileValidator.parseGender(request.gender());
-        Short height = profileValidator.parseHeight(request.height());
-        Short weight = profileValidator.parseWeight(request.weight());
-        Set<StyleType> styles = resolveStyles(request);
-        boolean notification = request.enableRealtimeNotification();
-
         member.updateProfile(new MemberProfileUpdate(
-                nickname,
-                normalizeImageObjectKey(request.profileImageObjectKey()),
-                gender,
-                height,
-                weight,
-                notification,
-                styles
+                resolved.nickname(),
+                resolved.profileImageObjectKey(),
+                resolved.gender(),
+                resolved.height(),
+                resolved.weight(),
+                resolved.enableRealtimeNotification(),
+                resolved.styles()
         ));
         memberRepository.flush();
         return MemberProfileDetailResponse.of(member);
@@ -81,19 +73,6 @@ public class MemberProfileService {
         }
         member.markAsWithdrawn(String.format("withdrawn_%d", member.getId()));
         memberRepository.flush();
-    }
-
-
-    private Set<StyleType> resolveStyles(MemberProfileUpdateRequest request) {
-        Set<StyleType> parsed = profileValidator.parseStyles(request.style());
-        if (parsed == null) {
-            return null;
-        }
-        return parsed.isEmpty() ? Collections.emptySet() : Set.copyOf(parsed);
-    }
-
-    private String normalizeImageObjectKey(String profileImageObjectKey) {
-        return StringUtils.hasText(profileImageObjectKey) ? profileImageObjectKey.trim() : null;
     }
 
     @Transactional(readOnly = true)

@@ -16,6 +16,7 @@ import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.repository.post.PostTagRepository;
 import katopia.fitcheck.repository.post.TagRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostCommandService {
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
@@ -50,7 +52,7 @@ public class PostCommandService {
         post.replaceTags(buildPostTags(post, tagEntities));
 
         Post saved = postRepository.save(post);
-        return PostCreateResponse.of(saved);
+        return PostCreateResponse.of(saved, tagEntities);
     }
 
     @Transactional
@@ -146,7 +148,14 @@ public class PostCommandService {
                 .map(Tag::getId)
                 .collect(Collectors.toSet());
 
-        post.getPostTags().removeIf(postTag -> !newTagIds.contains(postTag.getTag().getId()));
+        Set<Long> removedTagIds = post.getPostTags().stream()
+                .map(postTag -> postTag.getTag().getId())
+                .filter(existingId -> !newTagIds.contains(existingId))
+                .collect(Collectors.toSet());
+        if (!removedTagIds.isEmpty()) {
+            postTagRepository.deleteByPostIdAndTagIds(post.getId(), removedTagIds);
+        }
+        post.getPostTags().removeIf(postTag -> removedTagIds.contains(postTag.getTag().getId()));
 
         Set<Long> existingTagIds = post.getPostTags().stream()
                 .map(postTag -> postTag.getTag().getId())

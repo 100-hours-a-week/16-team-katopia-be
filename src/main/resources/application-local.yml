@@ -59,5 +59,5 @@ logging:
     root: info
     org.springframework.web: info
     org.springframework.security: debug
-    org.springframework.security.oauth2: TRACE
+    org.springframework.security.oauth2: info
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

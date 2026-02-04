@@ -22,6 +22,11 @@
 
 ## 테스트 시나리오
 
+### 0) 애플리케이션 부팅
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-BOOT-01 | ✅ | Low | 스프링 컨텍스트 로딩 | 애플리케이션 | contextLoads | 예외 없이 로딩 |
+
 ### 1) 회원(Member)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
@@ -56,7 +61,7 @@
 | TC-GENDER-02 | ✅ | High | 필수값 누락(빈 문자열) | gender="", required=true | 검증 수행 | COMMON-E-001 반환 |
 | TC-GENDER-03 | ✅ | Medium | 유효하지 않은 값 | gender="X" | 검증 수행 | MEMBER-E-020 반환 |
 | TC-GENDER-04 | ✅ | Medium | 유효성 성공(대문자) | gender="M" | 검증 수행 | 오류 없음 |
-| TC-GENDER-05 | ✅ | Medium | 유효성 성공(소문자) | gender="f" | 검증 수행 | 오류 없음 |
+| TC-GENDER-05 | ✅ | Medium | 유효하지 않은 값(소문자) | gender="f" | 검증 수행 | MEMBER-E-020 반환 |
 
 #### 1-3) 키 유효성(Unit)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
@@ -106,6 +111,20 @@
 | TC-POST-13 | ⬜ | Medium | 게시글 좋아요 실패(중복) | 이미 좋아요 상태 | 좋아요 요청 | 409 오류 반환 |
 | TC-POST-14 | ⬜ | Medium | 게시글 좋아요 해제 성공 | 좋아요 상태 | 해제 요청 | 204 응답 |
 | TC-POST-15 | ⬜ | Medium | 게시글 좋아요 해제 실패(기록 없음) | 미좋아요 상태 | 해제 요청 | 404 오류 반환 |
+
+#### 2-1) 게시글 커맨드(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-POST-CMD-01 | ✅ | Medium | 게시글 생성: 본문/이미지/태그 정규화 | 유효 본문/이미지/태그 | create 호출 | 정규화된 값으로 저장 |
+| TC-POST-CMD-02 | ✅ | Medium | 게시글 수정: 본문 업데이트 및 태그 동기화 | 기존 게시글/태그 | update 호출 | 본문/태그가 동기화됨 |
+| TC-POST-CMD-03 | ✅ | Medium | 게시글 삭제: 댓글/좋아요/태그 정리 | 기존 게시글 | delete 호출 | 연관 데이터 삭제 후 본문 삭제 |
+
+#### 2-2) 게시글 조회(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-POST-QUERY-01 | ✅ | Medium | 게시글 목록: 다음 커서 생성 | size와 동일한 게시글 | list 호출 | nextCursor 생성 |
+| TC-POST-QUERY-02 | ✅ | Medium | 회원별 게시글 목록: 멤버 검증 | 멤버 존재 | listByMember 호출 | 멤버 검증 후 목록 반환 |
+| TC-POST-QUERY-03 | ✅ | Medium | 게시글 상세: 태그/좋아요 포함 | 게시글/태그/좋아요 존재 | getDetail 호출 | tags/isLiked 포함 |
 
 ### 3) 댓글(Comment)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
@@ -230,6 +249,13 @@
 | TC-REG-FILTER-02 | ✅ | Medium | 등록 요청 쿠키 누락 | registration_token 없음 | POST /api/members | AUTH-E-010 반환 |
 | TC-REG-FILTER-03 | ✅ | Medium | 등록 요청 쿠키 정상 처리 | 유효 등록 쿠키 | POST /api/members | request attribute 설정 |
 
+#### 12-1) 가입 필터 통합(WebMvcTest)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-REG-FILTER-INT-01 | ✅ | Medium | 허가되지 않은 경로 요청 시 쿠키 만료 | registration_token 존재 | GET /api/posts | 401 + Set-Cookie 만료 |
+| TC-REG-FILTER-INT-02 | ✅ | Medium | 닉네임 중복 체크는 쿠키 유지 | registration_token 존재 | GET /api/members/check | 200 + Set-Cookie 없음 |
+| TC-REG-FILTER-INT-03 | ✅ | Medium | 회원가입 요청은 쿠키로만 통과 | registration_token 존재 | POST /api/members | 200 + Set-Cookie 없음 |
+
 ### 13) 보안/예외(경계)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
@@ -237,3 +263,51 @@
 | TC-SEC-02 | 🔴 | High | 권한 없는 리소스 접근 차단 | 타인 리소스 | 수정/삭제 요청 | 403 응답 |
 | TC-ERR-01 | 🔴 | Medium | 존재하지 않는 경로 처리 | 미존재 경로 | 요청 | 404 응답 |
 | TC-ERR-02 | 🔴 | Medium | 메서드 미지원 처리 | 지원하지 않는 HTTP 메서드 | 요청 | 405 응답 |
+
+### 14) 추가 필요 단위 테스트(실패 중심)
+#### 14-1) 회원 가입/프로필
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-MEMBER-REG-01 | ✅ | High | 회원가입 실패(임시 토큰 불일치) | memberId 미존재 | signup 호출 | AUTH-E-000 반환 |
+| TC-MEMBER-REG-02 | ✅ | High | 회원가입 실패(이미 가입 완료) | ACTIVE 회원 | signup 호출 | AUTH-E-020 반환 |
+| TC-MEMBER-REG-03 | ✅ | High | 회원가입 실패(탈퇴 유예기간) | WITHDRAWN + 14일 미경과 | signup 호출 | AUTH-E-021 반환 |
+| TC-MEMBER-REG-04 | ✅ | High | 회원가입 실패(닉네임 중복) | 중복 닉네임 | signup 호출 | MEMBER-E-004 반환 |
+| TC-MEMBER-REG-05 | ✅ | Medium | 회원가입 실패(DB 유니크 충돌) | 중복 닉네임 경쟁 조건 | signup 호출 | MEMBER-E-004 반환 |
+| TC-MEMBER-PROFILE-01 | ⬜ | High | 프로필 수정 실패(탈퇴 회원) | WITHDRAWN 회원 | updateProfile 호출 | MEMBER-E-008 반환 |
+| TC-MEMBER-PROFILE-02 | ⬜ | High | 프로필 수정 실패(닉네임 중복) | nickname 변경 + 중복 | updateProfile 호출 | MEMBER-E-005 반환 |
+| TC-MEMBER-PROFILE-03 | ⬜ | Medium | 프로필 수정 실패(성별/키/몸무게 파싱 실패) | invalid gender/height/weight | updateProfile 호출 | MEMBER-E-020/021/023 반환 |
+| TC-MEMBER-WITHDRAW-01 | ⬜ | Medium | 회원 탈퇴 실패(이미 탈퇴) | WITHDRAWN 회원 | withdraw 호출 | MEMBER-E-008 반환 |
+
+#### 14-2) Auth/Refresh Token
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-AUTH-REFRESH-01 | ⬜ | High | 토큰 재발급 실패(토큰 파싱 실패) | refreshToken에서 memberId null | refreshTokens 호출 | AUTH-E-004 반환 |
+| TC-AUTH-REFRESH-02 | ⬜ | High | 토큰 재발급 실패(미등록 토큰) | hash 미존재 | refreshTokens 호출 | AUTH-E-004 반환 |
+| TC-AUTH-REFRESH-03 | ⬜ | High | 토큰 재발급 실패(폐기/만료) | revoked/expired RT | refreshTokens 호출 | AUTH-E-004 반환 + revokeAll 호출 |
+| TC-AUTH-REFRESH-04 | ⬜ | Medium | 토큰 재발급 실패(탈퇴 회원) | WITHDRAWN 회원 | refreshTokens 호출 | MEMBER-E-008 반환 |
+
+#### 14-3) 게시글/댓글(서비스 실패)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-POST-LIKE-01 | ⬜ | High | 좋아요 실패(중복) | 이미 좋아요 | like 호출 | POSTLIKE-E-001 반환 |
+| TC-POST-LIKE-02 | ⬜ | High | 좋아요 해제 실패(기록 없음) | 좋아요 미존재 | unlike 호출 | POSTLIKE-E-002 반환 |
+| TC-POST-UPDATE-01 | ⬜ | High | 게시글 수정 실패(작성자 아님) | 타인 게시글 | update 호출 | 403 오류 반환 |
+| TC-POST-DELETE-01 | ⬜ | High | 게시글 삭제 실패(작성자 아님) | 타인 게시글 | delete 호출 | 403 오류 반환 |
+| TC-COMMENT-CMD-01 | ⬜ | High | 댓글 작성 실패(게시글 없음) | postId 미존재 | create 호출 | 404 오류 반환 |
+| TC-COMMENT-CMD-02 | ⬜ | High | 댓글 수정 실패(댓글 없음) | commentId 미존재 | update 호출 | 404 오류 반환 |
+| TC-COMMENT-CMD-03 | ⬜ | High | 댓글 수정 실패(작성자 아님) | 타인 댓글 | update 호출 | 403 오류 반환 |
+| TC-COMMENT-CMD-04 | ⬜ | High | 댓글 삭제 실패(작성자 아님) | 타인 댓글 | delete 호출 | 403 오류 반환 |
+| TC-COMMENT-CMD-05 | ⬜ | High | 댓글 삭제 실패(댓글 없음) | commentId 미존재 | delete 호출 | 404 오류 반환 |
+
+#### 14-4) 검색/페이징(검증 실패)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-SEARCH-VAL-01 | ⬜ | Medium | 검색어 누락 | query=null/blank | requireQuery 호출 | COMMON-E-001 반환 |
+| TC-SEARCH-VAL-02 | ⬜ | Medium | 검색어 길이 위반 | 길이<2 or >100 | requireQuery 호출 | COMMON-E-006 반환 |
+| TC-SEARCH-PAGE-01 | ⬜ | Medium | 커서 디코딩 실패 | after 형식 오류 | searchUsers/searchPosts 호출 | 400 오류 반환 |
+| TC-SEARCH-PAGE-02 | ⬜ | Medium | 페이지 사이즈 형식 오류 | sizeValue 비숫자 | searchUsers/searchPosts 호출 | 400 오류 반환 |
+
+#### 14-5) 개발용 회원 하드 삭제
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-DEV-01 | ⬜ | Medium | 하드 삭제 실패(회원 없음) | memberId 미존재 | hardDeleteMember 호출 | 404 오류 반환 |

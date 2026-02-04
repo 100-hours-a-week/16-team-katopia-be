@@ -10,14 +10,19 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.beans.factory.annotation.Autowired;
+import katopia.fitcheck.controller.MemberController;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -29,7 +34,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = TestRegistrationController.class)
+@WebMvcTest(
+        controllers = TestRegistrationController.class,
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = MemberController.class
+        )
+)
+@ActiveProfiles("test")
 @Import({
         RegistrationTokenFilter.class,
         TestRegistrationController.class,
@@ -50,20 +62,22 @@ class RegistrationTokenFilterIntegrationTest {
     }
 
     @Test
-    @DisplayName("회원가입 쿠키가 허가되지 않은 경로로 요청되면 만료")
+    @DisplayName("TC-REG-FILTER-INT-01 회원가입 쿠키가 허가되지 않은 경로로 요청되면 만료")
     void registrationCookieExpiresOnInvalidPath() throws Exception {
         when(jwtProvider.extractCookieValue(any(HttpServletRequest.class), eq(JwtProvider.REGISTRATION_COOKIE)))
                 .thenReturn("reg");
+        when(jwtProvider.isTokenType(eq("reg"), eq(JwtProvider.TokenType.REGISTRATION)))
+                .thenReturn(true);
         when(jwtProvider.clearRegistrationCookie()).thenReturn(expiredRegistrationCookie());
 
-        mockMvc.perform(get("/api/other")
+        mockMvc.perform(get("/api/posts")
                         .cookie(new Cookie(JwtProvider.REGISTRATION_COOKIE, "reg")))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("registration_token=")));
     }
 
     @Test
-    @DisplayName("닉네임 중복 검증 호출은 회원가입 쿠키가 있어도 통과")
+    @DisplayName("TC-REG-FILTER-INT-02 닉네임 중복 검증 호출은 회원가입 쿠키가 있어도 통과")
     void registrationCookieIsKeptOnNicknameCheck() throws Exception {
         when(jwtProvider.extractCookieValue(any(HttpServletRequest.class), eq(JwtProvider.REGISTRATION_COOKIE)))
                 .thenReturn("reg");
@@ -77,7 +91,7 @@ class RegistrationTokenFilterIntegrationTest {
     }
 
     @Test
-    @DisplayName("회원가입 요청은 회원가입 쿠키로만 통과")
+    @DisplayName("TC-REG-FILTER-INT-03 회원가입 요청은 회원가입 쿠키로만 통과")
     void registrationCookieAllowsSignup() throws Exception {
         when(jwtProvider.extractCookieValue(any(HttpServletRequest.class), eq(JwtProvider.REGISTRATION_COOKIE)))
                 .thenReturn("reg");
@@ -109,7 +123,7 @@ class RegistrationTokenFilterIntegrationTest {
                     .exceptionHandling(eh -> eh.authenticationEntryPoint((request, response, ex) -> {
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     }))
-                    .addFilterBefore(registrationTokenFilter, FilterSecurityInterceptor.class);
+                    .addFilterBefore(registrationTokenFilter, AuthorizationFilter.class);
             return http.build();
         }
     }
