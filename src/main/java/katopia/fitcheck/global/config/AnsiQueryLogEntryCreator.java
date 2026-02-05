@@ -11,7 +11,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class AnsiQueryLogEntryCreator extends DefaultQueryLogEntryCreator {
+    private final boolean ansi;
+
+    public AnsiQueryLogEntryCreator(boolean ansi) {
+        this.ansi = ansi;
+    }
+
     public AnsiQueryLogEntryCreator() {
+        this(true);
     }
 
     private static final String RESET = "\u001B[0m";
@@ -58,7 +65,6 @@ public class AnsiQueryLogEntryCreator extends DefaultQueryLogEntryCreator {
         if (argsList == null || argsList.isEmpty()) {
             return query;
         }
-        // Pick first arg set (non-batch)
         var args = argsList.getFirst();
         if (args == null || args.isEmpty()) {
             return query;
@@ -92,6 +98,9 @@ public class AnsiQueryLogEntryCreator extends DefaultQueryLogEntryCreator {
                     CYAN;
             default -> RESET;
         };
+        if (!ansi) {
+            return keyword;
+        }
         return color + keyword + RESET;
     }
 }
