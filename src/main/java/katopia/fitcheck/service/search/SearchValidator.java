@@ -17,12 +17,20 @@ public class SearchValidator {
         return validateQuery(query, "query");
     }
 
+    public String requireQuery(String query, int maxLength) {
+        return validateQuery(query, "query", maxLength);
+    }
+
     public String validateQuery(String query, String fieldName) {
+        return validateQuery(query, fieldName, MAX_QUERY_LENGTH);
+    }
+
+    public String validateQuery(String query, String fieldName, int maxLength) {
         if (!StringUtils.hasText(query)) {
             throw new BusinessException(requiredValue(fieldName));
         }
         String trimmed = query.trim();
-        if (trimmed.length() < MIN_QUERY_LENGTH || trimmed.length() > MAX_QUERY_LENGTH) {
+        if (trimmed.length() < MIN_QUERY_LENGTH || trimmed.length() > maxLength) {
             throw new BusinessException(CommonErrorCode.INVALID_SEARCH_QUERY_LEN);
         }
         return trimmed;

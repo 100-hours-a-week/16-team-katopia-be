@@ -10,21 +10,17 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update # 수동 DDL 필요
+      ddl-auto: update # TODO: 수동 DDL 적용 예정
     properties:
       hibernate:
         format_sql: false
+        show_sql: false
+        highlight_sql: false
         jdbc:
           time_zone: Asia/Seoul
-
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT:6379}
 
   security:
     oauth2:
@@ -46,16 +42,10 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
-
-server:
-  port: ${SERVER_PORT:8080}
-  forward-headers-strategy: framework
-
-
-logging:
-  level:
-    org.springframework.security: info
-    org.springframework.security.oauth2: info
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
 
 app:
   jwt:
@@ -65,6 +55,10 @@ app:
     server-url: https://fitcheck.kr
   frontend:
     base-url: https://fitcheck.kr
+  datasource-proxy:
+    enabled: false
+    log-queries: false
+    ansi: false
 
 cloud:
   aws:
@@ -79,10 +73,12 @@ cloud:
     cloudfront-base-url: ${CLOUDFRONT_BASE_URL}
     max-size-bytes: ${S3_MAX_SIZE_BYTES:31457280}
 
-springdoc:
-  api-docs:
-    enabled: true
-    path: /api/v3/api-docs
-  swagger-ui:
-    enabled: true
-    path: /api/swagger-ui
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+
+
+logging:
+  level:
+    org.springframework.security: info
+#    org.springframework.security.oauth2: info

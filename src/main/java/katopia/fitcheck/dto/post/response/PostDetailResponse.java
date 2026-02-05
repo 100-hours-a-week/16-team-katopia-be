@@ -20,7 +20,7 @@ public record PostDetailResponse(
 ) {
     public static PostDetailResponse of (Post post, Member author, List<String> tags, boolean isLiked) {
         return PostDetailResponse.builder()
-                .imageObjectKeys(post.getImageObjectKeys())
+                .imageObjectKeys(post.getImages())
                 .content(post.getContent())
                 .tags(tags)
                 .isLiked(isLiked)
