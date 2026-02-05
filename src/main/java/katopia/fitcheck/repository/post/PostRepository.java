@@ -162,4 +162,21 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("id") Long id,
             Pageable pageable
     );
+
+    @Query(value = """
+            select p.*
+            from posts p
+            join members m on m.id = p.member_id
+            where m.account_status = :status
+              and match(p.content) against(:query in natural language mode)
+            order by match(p.content) against(:query in natural language mode) desc,
+                     p.created_at desc,
+                     p.id desc
+            limit :size
+            """, nativeQuery = true)
+    List<Post> searchLatestByContentFulltext(
+            @Param("query") String query,
+            @Param("status") String status,
+            @Param("size") int size
+    );
 }

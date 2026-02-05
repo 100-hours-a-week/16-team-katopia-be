@@ -25,8 +25,10 @@ public class SearchService {
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
     private final SearchValidator searchValidator;
+    private static final int MAX_FULLTEXT_QUERY_LENGTH = 200;
 
     @Transactional(readOnly = true)
+    @katopia.fitcheck.global.aop.SearchLog("users")
     public MemberSearchResponse searchUsers(
                                           String query,
                                           String sizeValue,
@@ -42,6 +44,7 @@ public class SearchService {
     }
 
     @Transactional(readOnly = true)
+    @katopia.fitcheck.global.aop.SearchLog("posts")
     public PostSearchResponse searchPosts(String query,
                                           String sizeValue,
                                           String after) {
@@ -56,6 +59,26 @@ public class SearchService {
                 .toList();
         String nextCursor = resolveNextCursor(posts, size);
         return PostSearchResponse.of(summaries, nextCursor);
+    }
+
+    @Transactional(readOnly = true)
+    @katopia.fitcheck.global.aop.SearchLog("posts-fulltext")
+    public PostSearchResponse searchPostsFulltext(String query, String sizeValue) {
+        String keyword = searchValidator.requireQuery(query, MAX_FULLTEXT_QUERY_LENGTH);
+        int size = CursorPagingHelper.resolvePageSize(sizeValue);
+        List<Post> posts = postRepository.searchLatestByContentFulltext(
+                keyword,
+                AccountStatus.ACTIVE.name(),
+                size
+        );
+        List<PostSummary> summaries = posts.stream()
+                .map(post -> PostSummary.builder()
+                        .id(post.getId())
+                        .imageObjectKey(post.getImageObjectKeys().getFirst().getImageObjectKey())
+                        .createdAt(post.getCreatedAt())
+                        .build())
+                .toList();
+        return PostSearchResponse.of(summaries, null);
     }
 
     private List<Member> loadUsers(String nickname, int size, String after) {

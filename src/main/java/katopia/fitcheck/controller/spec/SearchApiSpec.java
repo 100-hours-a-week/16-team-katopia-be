@@ -32,7 +32,7 @@ public interface SearchApiSpec {
             @RequestParam(value = "after", required = false) String after
     );
 
-    @Operation(summary = "게시글 검색", description = "로그인 사용자 전용 게시글 검색 API입니다. query가 '#'으로 시작하면 태그 prefix 검색, 아니면 본문 prefix 검색을 수행합니다.")
+    @Operation(summary = "게시글 검색", description = "로그인 사용자 전용 게시글 검색 API입니다. FULLTEXT 기반 본문 검색을 수행합니다.")
     @ApiResponse(responseCode = "200", description = "검색 성공", content = @Content(schema = @Schema(implementation = PostSearchResponse.class)))
     @ApiResponse(responseCode = "400", description = "검색어 필수 입력", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     @ApiResponse(responseCode = "400", description = "검색어 길이 제한", content = @Content(schema = @Schema(implementation = APIResponse.class)))
@@ -41,7 +41,7 @@ public interface SearchApiSpec {
     @ApiResponse(responseCode = "401", description = "인증 정보 부재", content = @Content(schema = @Schema(implementation = APIResponse.class)))
     ResponseEntity<APIResponse<PostSearchResponse>> searchPosts(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @Parameter(description = "본문 또는 태그 prefix 검색어 (2~100자)")
+            @Parameter(description = "본문 검색어 (2~200자)")
             @RequestParam(value = "query", required = false) String query,
             @Parameter(description = "페이지 크기")
             @RequestParam(value = "size", required = false) String size,
