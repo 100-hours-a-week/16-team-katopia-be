@@ -163,10 +163,85 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             Pageable pageable
     );
 
+    @Query("""
+            select p.id as id, i.imageObjectKey as imageObjectKey, p.createdAt as createdAt
+            from Post p
+            join p.member m
+            join p.images i
+            where m.accountStatus = :status
+              and i.sortOrder = 1
+              and p.content like concat(:query, '%') escape '\\'
+            order by p.createdAt desc, p.id desc
+            """)
+    List<PostSummaryProjection> searchLatestByContentSummary(
+            @Param("query") String query,
+            @Param("status") AccountStatus status,
+            Pageable pageable
+    );
+
+    @Query("""
+            select p.id as id, i.imageObjectKey as imageObjectKey, p.createdAt as createdAt
+            from Post p
+            join p.member m
+            join p.images i
+            where m.accountStatus = :status
+              and i.sortOrder = 1
+              and p.content like concat(:query, '%') escape '\\'
+              and ((p.createdAt < :createdAt) or (p.createdAt = :createdAt and p.id < :id))
+            order by p.createdAt desc, p.id desc
+            """)
+    List<PostSummaryProjection> searchPageAfterByContentSummary(
+            @Param("query") String query,
+            @Param("status") AccountStatus status,
+            @Param("createdAt") LocalDateTime createdAt,
+            @Param("id") Long id,
+            Pageable pageable
+    );
+
+    @Query("""
+            select distinct p.id as id, i.imageObjectKey as imageObjectKey, p.createdAt as createdAt
+            from Post p
+            join p.member m
+            join p.images i
+            join p.postTags pt
+            join pt.tag t
+            where m.accountStatus = :status
+              and i.sortOrder = 1
+              and t.name like concat(:query, '%') escape '\\'
+            order by p.createdAt desc, p.id desc
+            """)
+    List<PostSummaryProjection> searchLatestByTagSummary(
+            @Param("query") String query,
+            @Param("status") AccountStatus status,
+            Pageable pageable
+    );
+
+    @Query("""
+            select distinct p.id as id, i.imageObjectKey as imageObjectKey, p.createdAt as createdAt
+            from Post p
+            join p.member m
+            join p.images i
+            join p.postTags pt
+            join pt.tag t
+            where m.accountStatus = :status
+              and i.sortOrder = 1
+              and t.name like concat(:query, '%') escape '\\'
+              and ((p.createdAt < :createdAt) or (p.createdAt = :createdAt and p.id < :id))
+            order by p.createdAt desc, p.id desc
+            """)
+    List<PostSummaryProjection> searchPageAfterByTagSummary(
+            @Param("query") String query,
+            @Param("status") AccountStatus status,
+            @Param("createdAt") LocalDateTime createdAt,
+            @Param("id") Long id,
+            Pageable pageable
+    );
+
     @Query(value = """
-            select p.*
+            select p.id as id, i.image_object_key as imageObjectKey, p.created_at as createdAt
             from posts p
             join members m on m.id = p.member_id
+            join post_images i on i.post_id = p.id and i.sort_order = 1
             where m.account_status = :status
               and match(p.content) against(:query in natural language mode)
             order by match(p.content) against(:query in natural language mode) desc,
@@ -174,7 +249,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                      p.id desc
             limit :size
             """, nativeQuery = true)
-    List<Post> searchLatestByContentFulltext(
+    List<PostSummaryProjection> searchLatestByContentFulltextSummary(
             @Param("query") String query,
             @Param("status") String status,
             @Param("size") int size

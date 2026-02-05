@@ -25,7 +25,7 @@ public class SearchLogAspect {
             Object result = joinPoint.proceed();
             int resultCount = extractResultCount(result);
             long elapsedMs = (System.nanoTime() - startNs) / 1_000_000;
-            log.info("SEARCH type={} queryLen={} results={} elapsedMs={}",
+            log.info("[SEARCH] type={} queryLen={} results={} elapsedMs={}",
                     searchLog.value(),
                     queryLen,
                     resultCount,
@@ -33,7 +33,7 @@ public class SearchLogAspect {
             return result;
         } catch (RuntimeException ex) {
             long elapsedMs = (System.nanoTime() - startNs) / 1_000_000;
-            log.warn("SEARCH type={} queryLen={} elapsedMs={} error={}",
+            log.warn("[SEARCH] type={} queryLen={} elapsedMs={} error={}",
                     searchLog.value(),
                     queryLen,
                     elapsedMs,
