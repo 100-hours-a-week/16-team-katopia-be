@@ -34,7 +34,7 @@ public class PostSearchService {
         List<PostSummary> summaries = posts.stream()
                 .map(post -> PostSummary.builder()
                         .id(post.getId())
-                        .imageObjectKey(post.getImages().getFirst().getImageObjectKey())
+                        .imageObjectKey(post.getImageObjectKeys().getFirst().getImageObjectKey())
                         .createdAt(post.getCreatedAt())
                         .build())
                 .toList();
@@ -56,7 +56,7 @@ public class PostSearchService {
         List<PostSummary> summaries = posts.stream()
                 .map(post -> PostSummary.builder()
                         .id(post.getId())
-                        .imageObjectKey(post.getImages().getFirst().getImageObjectKey())
+                        .imageObjectKey(post.getImageObjectKeys().getFirst().getImageObjectKey())
                         .createdAt(post.getCreatedAt())
                         .build())
                 .toList();

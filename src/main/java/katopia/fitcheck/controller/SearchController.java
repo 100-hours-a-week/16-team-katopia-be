@@ -46,7 +46,7 @@ public class SearchController implements SearchApiSpec {
             @RequestParam(value = "after", required = false) String after
     ) {
         securitySupport.requireMemberId(principal);
-        PostSearchResponse body = searchService.searchPostsFulltext(query, size);
+        PostSearchResponse body = searchService.searchPosts(query, size, after);
         return APIResponse.ok(CommonSuccessCode.SEARCH_COMPLETED, body);
     }
 }

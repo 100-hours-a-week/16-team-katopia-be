@@ -67,12 +67,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
 
-    // AOP
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
-
-    // JDBC Proxy (SQL logging/grouping)
-    implementation 'net.ttddyy:datasource-proxy:1.10.1'
-
     // Dev & Test
     implementation 'io.micrometer:micrometer-registry-prometheus'
     compileOnly 'org.projectlombok:lombok'

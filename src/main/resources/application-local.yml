@@ -3,6 +3,24 @@ spring:
     activate:
       on-profile: local
 
+  datasource:
+    url: jdbc:mysql://localhost:3307/fitcheck?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:admin}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+#        generate_statistics: true
+        format_sql: false
+        show_sql: true
+        highlight_sql: true
+        jdbc:
+          time_zone: Asia/Seoul
 
   data:
     redis:
@@ -22,11 +40,24 @@ spring:
       file: docker-compose.yml
       lifecycle-management: start_only
 
+
   cloud:
     aws:
       secretsmanager:
         enabled: false
 
+server:
+  error:
+    include-message: always # 로컬 편의 디버깅
+
+app:
+  frontend:
+    base-url: http://localhost:3000
+
 logging:
   level:
-    net.ttddyy.dsproxy.listener.logging: info
+    root: info
+    org.springframework.web: info
+    org.springframework.security: debug
+    org.springframework.security.oauth2: info
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

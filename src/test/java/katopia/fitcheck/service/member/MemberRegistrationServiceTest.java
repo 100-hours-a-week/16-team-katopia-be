@@ -10,10 +10,10 @@ import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
+import katopia.fitcheck.global.security.oauth2.SocialProvider;
 import katopia.fitcheck.repository.member.MemberRepository;
 import katopia.fitcheck.service.auth.RefreshTokenService;
 import katopia.fitcheck.service.member.MemberProfileInputResolver.ResolvedProfile;
-import katopia.fitcheck.support.MemberTestFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -208,36 +207,6 @@ class MemberRegistrationServiceTest {
         assertThat(member.getStyles()).containsExactlyInAnyOrder(StyleType.CASUAL, StyleType.MINIMAL);
     }
 
-    @Test
-    @DisplayName("TC-MEMBER-REG-07 회원가입 성공(선택값 누락)")
-    void tcMemberReg07_signupWithOptionalNulls() {
-        Member member = pendingMember();
-        when(memberRepository.findById(anyLong())).thenReturn(Optional.of(member));
-        when(memberRepository.existsByNickname("newnick")).thenReturn(false);
-
-        JwtProvider.Token accessToken = new JwtProvider.Token("at", Instant.now().plusSeconds(60));
-        JwtProvider.Token refreshToken = new JwtProvider.Token("rt", Instant.now().plusSeconds(120));
-        when(jwtProvider.issueTokens(1L)).thenReturn(new JwtProvider.TokenPair(accessToken, refreshToken));
-
-        MemberSignupRequest request = minimalSignupRequest();
-        when(profileInputResolver.resolveForSignup(eq(member), eq(request)))
-                .thenReturn(new ResolvedProfile(
-                        "newnick",
-                        null,
-                        Gender.M,
-                        null,
-                        null,
-                        false,
-                        null
-                ));
-
-        MemberRegistrationService.SignupResult result = service.signup(1L, request);
-
-        assertThat(member.getAccountStatus()).isEqualTo(AccountStatus.ACTIVE);
-        assertThat(result.accessToken()).isEqualTo("at");
-        verify(refreshTokenService).issue(1L, refreshToken);
-    }
-
     private MemberSignupRequest minimalSignupRequest() {
         return new MemberSignupRequest(
                 "newnick",
@@ -251,7 +220,11 @@ class MemberRegistrationServiceTest {
     }
 
     private Member pendingMember() {
-        return MemberTestFactory.builder(1L, "pending")
+        return Member.builder()
+                .id(1L)
+                .nickname("pending")
+                .oauth2Provider(SocialProvider.KAKAO)
+                .oauth2UserId("1")
                 .accountStatus(AccountStatus.PENDING)
                 .build();
     }

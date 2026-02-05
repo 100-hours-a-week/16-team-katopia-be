@@ -4,9 +4,9 @@ import katopia.fitcheck.global.pagination.CursorPagingHelper;
 import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.repository.member.MemberRepository;
+import katopia.fitcheck.domain.post.Post;
 import katopia.fitcheck.dto.post.response.PostSummary;
 import katopia.fitcheck.repository.post.PostRepository;
-import katopia.fitcheck.repository.post.PostSummaryProjection;
 import katopia.fitcheck.dto.search.PostSearchResponse;
 import katopia.fitcheck.dto.search.MemberSearchResponse;
 import katopia.fitcheck.dto.search.MemberSummary;
@@ -25,15 +25,13 @@ public class SearchService {
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
     private final SearchValidator searchValidator;
-    private static final int MAX_FULLTEXT_QUERY_LENGTH = 200;
 
     @Transactional(readOnly = true)
-    @katopia.fitcheck.global.aop.SearchLog("users")
     public MemberSearchResponse searchUsers(
                                           String query,
                                           String sizeValue,
                                           String after) {
-        String keyword = LikeEscapeHelper.escape(searchValidator.requireQuery(query));
+        String keyword = searchValidator.requireQuery(query);
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<Member> members = loadUsers(keyword, size, after);
         List<MemberSummary> summaries = members.stream()
@@ -44,30 +42,20 @@ public class SearchService {
     }
 
     @Transactional(readOnly = true)
-    @katopia.fitcheck.global.aop.SearchLog("posts")
     public PostSearchResponse searchPosts(String query,
                                           String sizeValue,
                                           String after) {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
-        List<PostSummary> summaries = loadPostSummaries(query, size, after);
-        String nextCursor = resolveNextCursor(summaries, size);
-        return PostSearchResponse.of(summaries, nextCursor);
-    }
-
-    @Transactional(readOnly = true)
-    @katopia.fitcheck.global.aop.SearchLog("posts-fulltext")
-    public PostSearchResponse searchPostsFulltext(String query, String sizeValue) {
-        String keyword = searchValidator.requireQuery(query, MAX_FULLTEXT_QUERY_LENGTH);
-        int size = CursorPagingHelper.resolvePageSize(sizeValue);
-        List<PostSummaryProjection> posts = postRepository.searchLatestByContentFulltextSummary(
-                keyword,
-                AccountStatus.ACTIVE.name(),
-                size
-        );
+        List<Post> posts = loadPosts(query, size, after);
         List<PostSummary> summaries = posts.stream()
-                .map(this::toSummary)
+                .map(post -> PostSummary.builder()
+                        .id(post.getId())
+                        .imageObjectKey(post.getImageObjectKeys().getFirst().getImageObjectKey())
+                        .createdAt(post.getCreatedAt())
+                        .build())
                 .toList();
-        return PostSearchResponse.of(summaries, null);
+        String nextCursor = resolveNextCursor(posts, size);
+        return PostSearchResponse.of(summaries, nextCursor);
     }
 
     private List<Member> loadUsers(String nickname, int size, String after) {
@@ -89,23 +77,20 @@ public class SearchService {
         );
     }
 
-    private List<PostSummary> loadPostSummaries(String query, int size, String after) {
+    private List<Post> loadPosts(String query, int size, String after) {
         boolean tagOnly = query.startsWith("#");
         String keyword = tagOnly ? query.substring(1).trim() : query;
-        keyword = LikeEscapeHelper.escape(searchValidator.requireQuery(keyword));
+        keyword = searchValidator.requireQuery(keyword);
         PageRequest pageRequest = PageRequest.of(0, size);
-        List<PostSummaryProjection> posts;
         if (!StringUtils.hasText(after)) {
-            posts = tagOnly
-                    ? postRepository.searchLatestByTagSummary(keyword, AccountStatus.ACTIVE, pageRequest)
-                    : postRepository.searchLatestByContentSummary(keyword, AccountStatus.ACTIVE, pageRequest);
-        } else {
-            CursorPagingHelper.Cursor cursor = CursorPagingHelper.decodeCursor(after);
-            posts = tagOnly
-                    ? postRepository.searchPageAfterByTagSummary(keyword, AccountStatus.ACTIVE, cursor.createdAt(), cursor.id(), pageRequest)
-                    : postRepository.searchPageAfterByContentSummary(keyword, AccountStatus.ACTIVE, cursor.createdAt(), cursor.id(), pageRequest);
+            return tagOnly
+                    ? postRepository.searchLatestByTag(keyword, AccountStatus.ACTIVE, pageRequest)
+                    : postRepository.searchLatestByContent(keyword, AccountStatus.ACTIVE, pageRequest);
         }
-        return posts.stream().map(this::toSummary).toList();
+        CursorPagingHelper.Cursor cursor = CursorPagingHelper.decodeCursor(after);
+        return tagOnly
+                ? postRepository.searchPageAfterByTag(keyword, AccountStatus.ACTIVE, cursor.createdAt(), cursor.id(), pageRequest)
+                : postRepository.searchPageAfterByContent(keyword, AccountStatus.ACTIVE, cursor.createdAt(), cursor.id(), pageRequest);
     }
 
     private <T> String resolveNextCursor(List<T> items, int size) {
@@ -113,20 +98,12 @@ public class SearchService {
             return null;
         }
         Object last = items.getLast();
-        if (last instanceof PostSummary summary) {
-            return CursorPagingHelper.encodeCursor(summary.createdAt(), summary.id());
-        }
         if (last instanceof Member member) {
             return CursorPagingHelper.encodeCursor(member.getCreatedAt(), member.getId());
         }
+        if (last instanceof Post post) {
+            return CursorPagingHelper.encodeCursor(post.getCreatedAt(), post.getId());
+        }
         return null;
-    }
-
-    private PostSummary toSummary(PostSummaryProjection row) {
-        return PostSummary.builder()
-                .id(row.getId())
-                .imageObjectKey(row.getImageObjectKey())
-                .createdAt(row.getCreatedAt())
-                .build();
     }
 }

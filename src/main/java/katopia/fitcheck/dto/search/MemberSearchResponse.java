@@ -8,16 +8,11 @@ import java.util.List;
 public record MemberSearchResponse(
         List<MemberSummary> members,
         String nextCursor
-) implements SearchResultCount {
+) {
     public static MemberSearchResponse of(List<MemberSummary> members, String nextCursor) {
         return MemberSearchResponse.builder()
                 .members(members)
                 .nextCursor(nextCursor)
                 .build();
-    }
-
-    @Override
-    public int resultCount() {
-        return members == null ? 0 : members.size();
     }
 }
