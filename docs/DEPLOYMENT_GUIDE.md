@@ -50,10 +50,6 @@ docker compose up -d
 
 Spring Boot 3.5 + `spring-boot-docker-compose` 의존성으로 `./gradlew bootRun` 시 자동으로 compose 서비스를 띄웁니다. 수동 제어가 필요하면 `spring.docker.compose.enabled=false` VM 옵션을 지정하세요.
 
-### 2.4 수동 DDL (검색 FULLTEXT)
-- 마이그레이션 도구 없이 적용 시 `docs/sql/fulltext_posts.sql` 실행
-- 운영 적용은 저부하 시간대 권장, 롤백은 `docs/search/FULLTEXT.md` 참고
-
 ### 2.3 로컬 애플리케이션 프로필 요약
 - 기본 프로필: `local`
 - 그룹 로딩: `local -> (local, local-secret)`

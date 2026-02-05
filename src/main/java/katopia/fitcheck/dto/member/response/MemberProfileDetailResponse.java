@@ -18,8 +18,6 @@ public record MemberProfileDetailResponse(
     public static MemberProfileDetailResponse of(Member member) {
         return MemberProfileDetailResponse.builder()
                 .id(member.getId())
-                .nickname(member.getNickname())
-                .profileImageObjectKey(member.getProfileImageObjectKey())
                 .enableRealtimeNotification(member.isEnableRealtimeNotification())
                 .email(member.getEmail())
                 .profile(MemberProfile.of(member))
