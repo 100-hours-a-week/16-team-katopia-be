@@ -65,7 +65,6 @@ public class SecurityConfig {
                         ).permitAll();
                     }
                     if (allowDevOnly) {
-                        auth.requestMatchers("/api/dev/**").permitAll();
                     }
                     // 공개 API { 사용자 공개 프로필, 닉네임 중복 검증 }
                     auth.requestMatchers(HttpMethod.GET, "/api/members/check").permitAll();

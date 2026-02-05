@@ -22,7 +22,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("""
             select m from Member m
             where m.accountStatus = :status
-              and m.nickname like concat(:nickname, '%')
+              and m.nickname like concat(:nickname, '%') escape '\\'
             order by m.createdAt desc, m.id desc
             """)
     List<Member> searchLatestByNickname(
@@ -34,7 +34,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("""
             select m from Member m
             where m.accountStatus = :status
-              and m.nickname like concat(:nickname, '%')
+              and m.nickname like concat(:nickname, '%') escape '\\'
               and ((m.createdAt < :createdAt) or (m.createdAt = :createdAt and m.id < :id))
             order by m.createdAt desc, m.id desc
             """)

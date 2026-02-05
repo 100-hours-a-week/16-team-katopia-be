@@ -9,13 +9,15 @@ import katopia.fitcheck.dto.post.request.PostCreateRequest;
 import katopia.fitcheck.dto.post.request.PostUpdateRequest;
 import katopia.fitcheck.dto.post.response.PostCreateResponse;
 import katopia.fitcheck.dto.post.response.PostUpdateResponse;
-import katopia.fitcheck.global.security.oauth2.SocialProvider;
+import katopia.fitcheck.global.exception.AuthException;
+import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.repository.comment.CommentRepository;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.repository.post.PostTagRepository;
 import katopia.fitcheck.repository.post.TagRepository;
 import katopia.fitcheck.service.member.MemberFinder;
+import katopia.fitcheck.support.MemberTestFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,11 +31,10 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostCommandServiceTest {
@@ -68,14 +69,8 @@ class PostCommandServiceTest {
     @Test
     @DisplayName("TC-POST-CMD-01 게시글 생성: 본문/이미지/태그 정규화 후 저장")
     void create_normalizesContentImagesAndTags() {
-        Member member = Member.builder()
-                .id(1L)
-                .nickname("author")
-                .oauth2Provider(SocialProvider.KAKAO)
-                .oauth2UserId("oauth")
-                .build();
+        Member member = MemberTestFactory.member(1L);
         when(memberFinder.getReferenceById(1L)).thenReturn(member);
-
         Tag existing = Tag.of("Tag1");
         ReflectionTestUtils.setField(existing, "id", 1L);
         when(tagRepository.findByNameIn(eq(List.of("Tag1", "tag2")))).thenReturn(List.of(existing));
@@ -113,12 +108,7 @@ class PostCommandServiceTest {
     @Test
     @DisplayName("TC-POST-CMD-02 게시글 수정: 본문 업데이트 및 태그 동기화")
     void update_updatesContentAndSyncsTags() {
-        Member member = Member.builder()
-                .id(1L)
-                .nickname("author")
-                .oauth2Provider(SocialProvider.KAKAO)
-                .oauth2UserId("oauth")
-                .build();
+        Member member = MemberTestFactory.member(1L);
         Post post = Post.create(member, "old", List.of(PostImage.of(1, "img")));
 
         Tag tag1 = Tag.of("tag1");
@@ -126,7 +116,6 @@ class PostCommandServiceTest {
         post.replaceTags(Set.of(PostTag.of(post, tag1)));
 
         when(postFinder.findByIdOrThrow(10L)).thenReturn(post);
-        doNothing().when(postValidator).validateOwner(eq(post), eq(1L));
 
         when(tagRepository.findByNameIn(eq(List.of("tag1", "tag2")))).thenReturn(List.of(tag1));
         Tag tag2 = Tag.of("tag2");
@@ -147,12 +136,7 @@ class PostCommandServiceTest {
     @Test
     @DisplayName("TC-POST-CMD-03 게시글 삭제: 댓글/좋아요/태그 정리 후 삭제")
     void delete_removesRelatedData() {
-        Member member = Member.builder()
-                .id(1L)
-                .nickname("author")
-                .oauth2Provider(SocialProvider.KAKAO)
-                .oauth2UserId("oauth")
-                .build();
+        Member member = MemberTestFactory.member(1L);
         Post post = Post.create(member, "content", List.of(PostImage.of(1, "img")));
 
         when(postFinder.findByIdOrThrow(10L)).thenReturn(post);
@@ -164,5 +148,63 @@ class PostCommandServiceTest {
         verify(postLikeRepository).deleteByPostId(10L);
         verify(postTagRepository).deleteByPostId(10L);
         verify(postRepository).delete(post);
+    }
+
+    @Test
+    @DisplayName("TC-POST-CMD-04 게시글 생성: 태그 누락 시 빈 태그 처리")
+    void create_allowsNullTags() {
+        Member member = MemberTestFactory.member(1L);
+        when(memberFinder.getReferenceById(1L)).thenReturn(member);
+
+        ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
+        when(postRepository.save(postCaptor.capture())).thenAnswer(invocation -> {
+            Post post = invocation.getArgument(0);
+            ReflectionTestUtils.setField(post, "id", 11L);
+            return post;
+        });
+
+        PostCreateRequest request = new PostCreateRequest(
+                "content",
+                List.of("img1"),
+                null
+        );
+
+        PostCreateResponse response = postCommandService.create(1L, request);
+
+        Post saved = postCaptor.getValue();
+        assertThat(saved.getPostTags()).isEmpty();
+        assertThat(response.tags()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("TC-POST-UPDATE-01 게시글 수정 실패(작성자 아님)")
+    void update_failsWhenNotOwner() {
+        Member owner = MemberTestFactory.member(1L);
+        Post post = Post.create(owner, "content", List.of(PostImage.of(1, "img")));
+        when(postFinder.findByIdOrThrow(10L)).thenReturn(post);
+        doThrow(new AuthException(AuthErrorCode.ACCESS_DENIED))
+                .when(postValidator)
+                .validateOwner(eq(post), eq(2L));
+
+        assertThatThrownBy(() -> postCommandService.update(2L, 10L, new PostUpdateRequest("new", List.of())))
+                .isInstanceOf(AuthException.class)
+                .extracting(ex -> ((AuthException) ex).getErrorCode())
+                .isEqualTo(AuthErrorCode.ACCESS_DENIED);
+    }
+
+    @Test
+    @DisplayName("TC-POST-DELETE-01 게시글 삭제 실패(작성자 아님)")
+    void delete_failsWhenNotOwner() {
+        Member owner = MemberTestFactory.member(1L);
+        Post post = Post.create(owner, "content", List.of(PostImage.of(1, "img")));
+        when(postFinder.findByIdOrThrow(10L)).thenReturn(post);
+        doThrow(new AuthException(AuthErrorCode.ACCESS_DENIED))
+                .when(postValidator)
+                .validateOwner(eq(post), eq(2L));
+
+        assertThatThrownBy(() -> postCommandService.delete(2L, 10L))
+                .isInstanceOf(AuthException.class)
+                .extracting(ex -> ((AuthException) ex).getErrorCode())
+                .isEqualTo(AuthErrorCode.ACCESS_DENIED);
     }
 }
