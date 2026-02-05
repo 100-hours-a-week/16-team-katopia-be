@@ -34,9 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostCommandServiceTest {
@@ -73,7 +71,6 @@ class PostCommandServiceTest {
     void create_normalizesContentImagesAndTags() {
         Member member = MemberTestFactory.member(1L);
         when(memberFinder.getReferenceById(1L)).thenReturn(member);
-
         Tag existing = Tag.of("Tag1");
         ReflectionTestUtils.setField(existing, "id", 1L);
         when(tagRepository.findByNameIn(eq(List.of("Tag1", "tag2")))).thenReturn(List.of(existing));
@@ -119,9 +116,6 @@ class PostCommandServiceTest {
         post.replaceTags(Set.of(PostTag.of(post, tag1)));
 
         when(postFinder.findByIdOrThrow(10L)).thenReturn(post);
-        org.mockito.Mockito.doThrow(new AuthException(AuthErrorCode.ACCESS_DENIED))
-                .when(postValidator)
-                .validateOwner(eq(post), eq(2L));
 
         when(tagRepository.findByNameIn(eq(List.of("tag1", "tag2")))).thenReturn(List.of(tag1));
         Tag tag2 = Tag.of("tag2");
@@ -146,9 +140,6 @@ class PostCommandServiceTest {
         Post post = Post.create(member, "content", List.of(PostImage.of(1, "img")));
 
         when(postFinder.findByIdOrThrow(10L)).thenReturn(post);
-        org.mockito.Mockito.doThrow(new AuthException(AuthErrorCode.ACCESS_DENIED))
-                .when(postValidator)
-                .validateOwner(eq(post), eq(2L));
         doNothing().when(postValidator).validateOwner(eq(post), eq(1L));
 
         postCommandService.delete(1L, 10L);
@@ -191,7 +182,9 @@ class PostCommandServiceTest {
         Member owner = MemberTestFactory.member(1L);
         Post post = Post.create(owner, "content", List.of(PostImage.of(1, "img")));
         when(postFinder.findByIdOrThrow(10L)).thenReturn(post);
-        doNothing().when(postValidator).validateOwner(eq(post), eq(1L));
+        doThrow(new AuthException(AuthErrorCode.ACCESS_DENIED))
+                .when(postValidator)
+                .validateOwner(eq(post), eq(2L));
 
         assertThatThrownBy(() -> postCommandService.update(2L, 10L, new PostUpdateRequest("new", List.of())))
                 .isInstanceOf(AuthException.class)
@@ -205,6 +198,9 @@ class PostCommandServiceTest {
         Member owner = MemberTestFactory.member(1L);
         Post post = Post.create(owner, "content", List.of(PostImage.of(1, "img")));
         when(postFinder.findByIdOrThrow(10L)).thenReturn(post);
+        doThrow(new AuthException(AuthErrorCode.ACCESS_DENIED))
+                .when(postValidator)
+                .validateOwner(eq(post), eq(2L));
 
         assertThatThrownBy(() -> postCommandService.delete(2L, 10L))
                 .isInstanceOf(AuthException.class)

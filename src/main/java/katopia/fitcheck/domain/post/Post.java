@@ -127,13 +127,6 @@ public class Post {
         this.content = content;
     }
 
-    public void replaceImages(List<PostImage> images) {
-        this.images.clear();
-        if (images != null) {
-            this.images.addAll(images);
-        }
-    }
-
     public void replaceTags(Set<PostTag> tags) {
         this.postTags.clear();
         if (tags != null) {
@@ -141,10 +134,4 @@ public class Post {
         }
     }
 
-    public List<PostImage> getImageObjectKeys() {
-        if (images == null) {
-            return Collections.emptyList();
-        }
-        return images;
-    }
 }
