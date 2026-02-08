@@ -34,12 +34,12 @@ management:
       show-details: when_authorized
       roles: ADMIN # 시큐리티 actuate EndpointRequest ADMIN Role 설정 필요
 
-logging:
-  level:
-    root: info
-    org.springframework.web: info
-    org.springframework.security: debug
-    org.springframework.security.oauth2: TRACE
+#logging:
+#  level:
+#    root: info
+#    org.springframework.web: info
+#    org.springframework.security: debug
+#    org.springframework.security.oauth2: TRACE
 
 app:
   swagger:
