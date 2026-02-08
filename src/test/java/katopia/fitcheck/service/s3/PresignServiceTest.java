@@ -37,7 +37,7 @@ class PresignServiceTest {
                 "ap-northeast-2",
                 new S3PresignProperties.S3("bucket"),
                 new S3PresignProperties.Credentials("ak", "sk"),
-                new S3PresignProperties.Presign(600, null),
+                new S3PresignProperties.Presign(null, 600),
                 "https://cdn.example.com",
                 30L * 1024 * 1024,
                 null
@@ -79,7 +79,7 @@ class PresignServiceTest {
                 "ap-northeast-2",
                 new S3PresignProperties.S3(null),
                 new S3PresignProperties.Credentials("ak", "sk"),
-                new S3PresignProperties.Presign(600, null),
+                new S3PresignProperties.Presign(null, 600),
                 "https://cdn.example.com",
                 30L * 1024 * 1024,
                 null
@@ -100,7 +100,7 @@ class PresignServiceTest {
                 "ap-northeast-2",
                 new S3PresignProperties.S3("bucket"),
                 new S3PresignProperties.Credentials("ak", "sk"),
-                new S3PresignProperties.Presign(600, null),
+                new S3PresignProperties.Presign(null, 600),
                 "https://cdn.example.com",
                 31L * 1024 * 1024,
                 null
@@ -138,5 +138,103 @@ class PresignServiceTest {
         verify(presigner).presignPutObject(captor.capture());
         PutObjectRequest put = captor.getValue().putObjectRequest();
         assertThat(put.contentType()).isEqualTo("image/png");
+    }
+
+    @Test
+    @DisplayName("TC-PRESIGN-07 만료 분 설정 사용")
+    void tcPresign07_expireMinutes_usedWhenSecondsMissing() throws Exception {
+        props = new S3PresignProperties(
+                "ap-northeast-2",
+                new S3PresignProperties.S3("bucket"),
+                new S3PresignProperties.Credentials("ak", "sk"),
+                new S3PresignProperties.Presign(5, null),
+                "https://cdn.example.com",
+                30L * 1024 * 1024,
+                null
+        );
+        presignService = new PresignService(presigner, props);
+
+        PresignRequest request = new PresignRequest(UploadCategory.PROFILE, List.of("png"));
+
+        presignService.createPresignedUrls(1L, request);
+
+        ArgumentCaptor<PutObjectPresignRequest> captor = ArgumentCaptor.forClass(PutObjectPresignRequest.class);
+        verify(presigner).presignPutObject(captor.capture());
+        assertThat(captor.getValue().signatureDuration()).isEqualTo(java.time.Duration.ofSeconds(300));
+    }
+
+    @Test
+    @DisplayName("TC-PRESIGN-08 만료 기본값 사용")
+    void tcPresign08_defaultExpireSeconds() throws Exception {
+        props = new S3PresignProperties(
+                "ap-northeast-2",
+                new S3PresignProperties.S3("bucket"),
+                new S3PresignProperties.Credentials("ak", "sk"),
+                null,
+                "https://cdn.example.com",
+                30L * 1024 * 1024,
+                null
+        );
+        presignService = new PresignService(presigner, props);
+
+        PresignRequest request = new PresignRequest(UploadCategory.PROFILE, List.of("png"));
+
+        presignService.createPresignedUrls(1L, request);
+
+        ArgumentCaptor<PutObjectPresignRequest> captor = ArgumentCaptor.forClass(PutObjectPresignRequest.class);
+        verify(presigner).presignPutObject(captor.capture());
+        assertThat(captor.getValue().signatureDuration()).isEqualTo(java.time.Duration.ofSeconds(600));
+    }
+
+    @Test
+    @DisplayName("TC-PRESIGN-09 contentType 기본값 적용")
+    void tcPresign09_contentTypeDefault() {
+        PresignRequest request = new PresignRequest(UploadCategory.PROFILE, List.of("bmp"));
+
+        presignService.createPresignedUrls(1L, request);
+
+        ArgumentCaptor<PutObjectPresignRequest> captor = ArgumentCaptor.forClass(PutObjectPresignRequest.class);
+        verify(presigner).presignPutObject(captor.capture());
+        PutObjectRequest put = captor.getValue().putObjectRequest();
+        assertThat(put.contentType()).isEqualTo("application/octet-stream");
+    }
+
+    @Test
+    @DisplayName("TC-PRESIGN-10 contentType jpeg 매핑")
+    void tcPresign10_contentTypeJpeg() {
+        PresignRequest request = new PresignRequest(UploadCategory.PROFILE, List.of("jpg"));
+
+        presignService.createPresignedUrls(1L, request);
+
+        ArgumentCaptor<PutObjectPresignRequest> captor = ArgumentCaptor.forClass(PutObjectPresignRequest.class);
+        verify(presigner).presignPutObject(captor.capture());
+        PutObjectRequest put = captor.getValue().putObjectRequest();
+        assertThat(put.contentType()).isEqualTo("image/jpeg");
+    }
+
+    @Test
+    @DisplayName("TC-PRESIGN-11 contentType webp 매핑")
+    void tcPresign11_contentTypeWebp() {
+        PresignRequest request = new PresignRequest(UploadCategory.PROFILE, List.of("webp"));
+
+        presignService.createPresignedUrls(1L, request);
+
+        ArgumentCaptor<PutObjectPresignRequest> captor = ArgumentCaptor.forClass(PutObjectPresignRequest.class);
+        verify(presigner).presignPutObject(captor.capture());
+        PutObjectRequest put = captor.getValue().putObjectRequest();
+        assertThat(put.contentType()).isEqualTo("image/webp");
+    }
+
+    @Test
+    @DisplayName("TC-PRESIGN-12 contentType heic 매핑")
+    void tcPresign12_contentTypeHeic() {
+        PresignRequest request = new PresignRequest(UploadCategory.PROFILE, List.of("heic"));
+
+        presignService.createPresignedUrls(1L, request);
+
+        ArgumentCaptor<PutObjectPresignRequest> captor = ArgumentCaptor.forClass(PutObjectPresignRequest.class);
+        verify(presigner).presignPutObject(captor.capture());
+        PutObjectRequest put = captor.getValue().putObjectRequest();
+        assertThat(put.contentType()).isEqualTo("image/heic");
     }
 }
