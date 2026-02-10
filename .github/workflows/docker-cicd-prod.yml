@@ -1,0 +1,126 @@
+name: docker-cicd-prod - Spring
+on:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: docker-cicd-prod-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.PROD_ECR_REPOSITORY }}
+  ASG_NAME: ${{ secrets.PROD_ASG_NAME }}
+  MIN_HEALTHY_PERCENTAGE: "100"
+  INSTANCE_WARMUP: "180"
+
+
+jobs:
+  ci:
+    name: Build/Test/Analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '1'
+
+      - name: Set up JDK 21
+        id: setup_jdk
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        id: setup_gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # Gradle 캐시 (중간 산출물)
+      - name: Cache project .gradle (intermediate outputs)
+        id: cache_project_gradle
+        uses: actions/cache@v4
+        with:
+          path: .gradle
+          key: project-gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties', 'settings.gradle*') }}
+          restore-keys: |
+            project-gradle-${{ runner.os }}-
+
+      # Gradle 빌드 (테스트 제외)
+      - name: Build (gradle build)
+        id: build_gradle
+        run: gradle --no-daemon --build-cache build -x test
+
+      # JAR 레이어화
+      - name: Extract JAR layers
+        run: |
+          mkdir -p jar-layers
+          cd jar-layers
+          java -Djarmode=layertools -jar ../build/libs/*.jar extract
+
+  build-and-push:
+    name: Docker Build + Push(ECR)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: ci
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '1'
+
+      - name: Configure AWS Credential
+        id: configure_aws_credential
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Login to Amazon ECR
+        id: login_ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Docker Image
+        id: build_and_push_dockerimage
+        if: success()
+        env:
+          ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
+        run: |
+          set -euo pipefail
+          TAG="prod-${GITHUB_SHA::7}"
+          docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$TAG" -t "$ECR_REGISTRY/$ECR_REPOSITORY:prod-backend" .
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$TAG"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:prod-backend"
+      
+  refresh-asg:
+    name: CD - ASG Instance Refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: build-and-push
+
+    steps:
+      - name: Configure AWS credentials
+        id: configure_aws_credential
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Start instance refresh
+        id: start_instance_refresh
+        run: |
+          set -euo pipefail
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name "$ASG_NAME" \
+            --strategy Rolling \
+            --preferences MinHealthyPercentage=$MIN_HEALTHY_PERCENTAGE,InstanceWarmup=$INSTANCE_WARMUP

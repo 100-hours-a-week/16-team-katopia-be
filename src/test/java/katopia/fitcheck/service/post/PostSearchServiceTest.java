@@ -6,11 +6,11 @@ import katopia.fitcheck.domain.post.PostImage;
 import katopia.fitcheck.dto.post.response.PostDetailResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
 import katopia.fitcheck.global.pagination.CursorPagingHelper;
-import katopia.fitcheck.global.security.oauth2.SocialProvider;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.repository.post.PostTagRepository;
 import katopia.fitcheck.service.member.MemberFinder;
+import katopia.fitcheck.support.MemberTestFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,12 +81,7 @@ class PostSearchServiceTest {
     @Test
     @DisplayName("TC-POST-QUERY-03 게시글 상세: 태그와 좋아요 여부 포함")
     void getDetail_returnsTagsAndLikeState() {
-        Member author = Member.builder()
-                .id(7L)
-                .nickname("author")
-                .oauth2Provider(SocialProvider.KAKAO)
-                .oauth2UserId("oauth")
-                .build();
+        Member author = MemberTestFactory.member(7L);
         Post post = Post.create(author, "content", List.of(PostImage.of(1, "img1")));
         ReflectionTestUtils.setField(post, "id", 10L);
 
@@ -101,12 +96,7 @@ class PostSearchServiceTest {
     }
 
     private Post buildPost(Long id, LocalDateTime createdAt, String imageKey) {
-        Member member = Member.builder()
-                .id(1L)
-                .nickname("author")
-                .oauth2Provider(SocialProvider.KAKAO)
-                .oauth2UserId("oauth")
-                .build();
+        Member member = MemberTestFactory.member(1L);
         Post post = Post.create(member, "content", List.of(PostImage.of(1, imageKey)));
         ReflectionTestUtils.setField(post, "id", id);
         ReflectionTestUtils.setField(post, "createdAt", createdAt);

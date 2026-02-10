@@ -93,6 +93,13 @@
 | TC-STYLE-05 | ✅ | Medium | 유효하지 않은 값 | style=["UNKNOWN"] | 검증 수행 | MEMBER-E-030 반환 |
 | TC-STYLE-06 | ✅ | Medium | 유효성 성공 | style=["MINIMAL","CASUAL"] | 검증 수행 | 오류 없음 |
 
+#### 1-6) 회원가입/프로필 서비스(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-MEMBER-REG-06 | ✅ | Medium | 회원가입 성공(선택 필드 입력) | 선택값 모두 제공 | signup 호출 | 프로필/스타일 반영 |
+| TC-MEMBER-REG-07 | ✅ | Medium | 회원가입 성공(선택값 누락) | 선택값 null | signup 호출 | 기본값 유지 |
+| TC-MEMBER-PROFILE-04 | ✅ | Medium | 프로필 수정 성공(선택값 누락) | 선택값 null | updateProfile 호출 | 기존 값 유지 |
+
 ### 2) 게시글(Post)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
@@ -118,6 +125,9 @@
 | TC-POST-CMD-01 | ✅ | Medium | 게시글 생성: 본문/이미지/태그 정규화 | 유효 본문/이미지/태그 | create 호출 | 정규화된 값으로 저장 |
 | TC-POST-CMD-02 | ✅ | Medium | 게시글 수정: 본문 업데이트 및 태그 동기화 | 기존 게시글/태그 | update 호출 | 본문/태그가 동기화됨 |
 | TC-POST-CMD-03 | ✅ | Medium | 게시글 삭제: 댓글/좋아요/태그 정리 | 기존 게시글 | delete 호출 | 연관 데이터 삭제 후 본문 삭제 |
+| TC-POST-CMD-04 | ✅ | Medium | 게시글 생성: 태그 누락 허용 | tags=null | create 호출 | 빈 태그 처리 |
+| TC-POST-UPDATE-01 | ✅ | High | 게시글 수정 실패(작성자 아님) | 타인 게시글 | update 호출 | AUTH-E-014 반환 |
+| TC-POST-DELETE-01 | ✅ | High | 게시글 삭제 실패(작성자 아님) | 타인 게시글 | delete 호출 | AUTH-E-014 반환 |
 
 #### 2-2) 게시글 조회(Unit)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
@@ -125,6 +135,13 @@
 | TC-POST-QUERY-01 | ✅ | Medium | 게시글 목록: 다음 커서 생성 | size와 동일한 게시글 | list 호출 | nextCursor 생성 |
 | TC-POST-QUERY-02 | ✅ | Medium | 회원별 게시글 목록: 멤버 검증 | 멤버 존재 | listByMember 호출 | 멤버 검증 후 목록 반환 |
 | TC-POST-QUERY-03 | ✅ | Medium | 게시글 상세: 태그/좋아요 포함 | 게시글/태그/좋아요 존재 | getDetail 호출 | tags/isLiked 포함 |
+
+#### 2-3) 게시글 좋아요(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-POST-LIKE-01 | ✅ | High | 좋아요 실패(중복) | 이미 좋아요 | like 호출 | POST-LIKE-E-001 반환 |
+| TC-POST-LIKE-02 | ✅ | High | 좋아요 해제 실패(기록 없음) | 좋아요 미존재 | unlike 호출 | POST-LIKE-E-002 반환 |
+| TC-POST-LIKE-03 | ✅ | Medium | 좋아요 성공 | 좋아요 없음 | like 호출 | 저장 + 카운트 갱신 |
 
 ### 3) 댓글(Comment)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
@@ -139,6 +156,23 @@
 | TC-COMMENT-08 | ⬜ | High | 댓글 삭제 실패(타인) | 작성자 아님 | 삭제 요청 | 403 오류 반환 |
 | TC-COMMENT-09 | ⬜ | Medium | 댓글 수정 실패(댓글 없음) | 댓글 미존재 | 수정 요청 | 404 오류 반환 |
 | TC-COMMENT-10 | ⬜ | Medium | 댓글 삭제 실패(댓글 없음) | 댓글 미존재 | 삭제 요청 | 404 오류 반환 |
+
+#### 3-1) 댓글 커맨드(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-COMMENT-CMD-01 | ✅ | High | 댓글 작성 실패(게시글 없음) | postId 미존재 | create 호출 | POST-E-002 반환 |
+| TC-COMMENT-CMD-02 | ✅ | High | 댓글 수정 실패(댓글 없음) | commentId 미존재 | update 호출 | COMMENT-E-003 반환 |
+| TC-COMMENT-CMD-03 | ✅ | High | 댓글 수정 실패(작성자 아님) | 타인 댓글 | update 호출 | AUTH-E-014 반환 |
+| TC-COMMENT-CMD-04 | ✅ | High | 댓글 삭제 실패(작성자 아님) | 타인 댓글 | delete 호출 | AUTH-E-014 반환 |
+| TC-COMMENT-CMD-05 | ✅ | High | 댓글 삭제 실패(댓글 없음) | commentId 미존재 | delete 호출 | COMMENT-E-003 반환 |
+| TC-COMMENT-CMD-06 | ✅ | Medium | 댓글 생성 성공(연관 엔티티/카운트 증가) | 게시글/작성자 존재 | create 호출 | 저장 + count 증가 |
+
+#### 3-2) 댓글 조회(Unit)
+| TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
+|---|---|---|---|---|---|---|
+| TC-COMMENT-QUERY-01 | ✅ | Medium | 댓글 목록: 최신 목록과 다음 커서 생성 | 댓글 2개 | list 호출 | nextCursor 생성 |
+| TC-COMMENT-QUERY-02 | ✅ | Medium | 댓글 목록: 커서 이후 페이지 조회 | after 존재 | list 호출 | after 기반 조회 |
+| TC-COMMENT-QUERY-03 | ✅ | Medium | 댓글 목록 실패(게시글 없음) | postId 미존재 | list 호출 | POST-E-002 반환 |
 
 ### 4) 검색(Search)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
@@ -273,18 +307,18 @@
 | TC-MEMBER-REG-03 | ✅ | High | 회원가입 실패(탈퇴 유예기간) | WITHDRAWN + 14일 미경과 | signup 호출 | AUTH-E-021 반환 |
 | TC-MEMBER-REG-04 | ✅ | High | 회원가입 실패(닉네임 중복) | 중복 닉네임 | signup 호출 | MEMBER-E-004 반환 |
 | TC-MEMBER-REG-05 | ✅ | Medium | 회원가입 실패(DB 유니크 충돌) | 중복 닉네임 경쟁 조건 | signup 호출 | MEMBER-E-004 반환 |
-| TC-MEMBER-PROFILE-01 | ⬜ | High | 프로필 수정 실패(탈퇴 회원) | WITHDRAWN 회원 | updateProfile 호출 | MEMBER-E-008 반환 |
-| TC-MEMBER-PROFILE-02 | ⬜ | High | 프로필 수정 실패(닉네임 중복) | nickname 변경 + 중복 | updateProfile 호출 | MEMBER-E-005 반환 |
-| TC-MEMBER-PROFILE-03 | ⬜ | Medium | 프로필 수정 실패(성별/키/몸무게 파싱 실패) | invalid gender/height/weight | updateProfile 호출 | MEMBER-E-020/021/023 반환 |
-| TC-MEMBER-WITHDRAW-01 | ⬜ | Medium | 회원 탈퇴 실패(이미 탈퇴) | WITHDRAWN 회원 | withdraw 호출 | MEMBER-E-008 반환 |
+| TC-MEMBER-PROFILE-01 | ✅ | High | 프로필 수정 실패(탈퇴 회원) | WITHDRAWN 회원 | updateProfile 호출 | MEMBER-E-052 반환 |
+| TC-MEMBER-PROFILE-02 | ✅ | High | 프로필 수정 실패(닉네임 중복) | nickname 변경 + 중복 | updateProfile 호출 | MEMBER-E-004 반환 |
+| TC-MEMBER-PROFILE-03 | ✅ | Medium | 프로필 수정 실패(성별/키/몸무게 파싱 실패) | invalid gender/height/weight | updateProfile 호출 | MEMBER-E-020/021/023 반환 |
+| TC-MEMBER-WITHDRAW-01 | ✅ | Medium | 회원 탈퇴 실패(이미 탈퇴) | WITHDRAWN 회원 | withdraw 호출 | MEMBER-E-052 반환 |
 
 #### 14-2) Auth/Refresh Token
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
 |---|---|---|---|---|---|---|
-| TC-AUTH-REFRESH-01 | ⬜ | High | 토큰 재발급 실패(토큰 파싱 실패) | refreshToken에서 memberId null | refreshTokens 호출 | AUTH-E-004 반환 |
-| TC-AUTH-REFRESH-02 | ⬜ | High | 토큰 재발급 실패(미등록 토큰) | hash 미존재 | refreshTokens 호출 | AUTH-E-004 반환 |
-| TC-AUTH-REFRESH-03 | ⬜ | High | 토큰 재발급 실패(폐기/만료) | revoked/expired RT | refreshTokens 호출 | AUTH-E-004 반환 + revokeAll 호출 |
-| TC-AUTH-REFRESH-04 | ⬜ | Medium | 토큰 재발급 실패(탈퇴 회원) | WITHDRAWN 회원 | refreshTokens 호출 | MEMBER-E-008 반환 |
+| TC-AUTH-REFRESH-01 | ✅ | High | 토큰 재발급 실패(토큰 파싱 실패) | refreshToken에서 memberId null | refreshTokens 호출 | AUTH-E-013 반환 |
+| TC-AUTH-REFRESH-02 | ✅ | High | 토큰 재발급 실패(미등록 토큰) | hash 미존재 | refreshTokens 호출 | AUTH-E-013 반환 |
+| TC-AUTH-REFRESH-03 | ✅ | High | 토큰 재발급 실패(폐기/만료) | revoked/expired RT | refreshTokens 호출 | AUTH-E-013 반환 + revokeAll 호출 |
+| TC-AUTH-REFRESH-04 | ✅ | Medium | 토큰 재발급 실패(탈퇴 회원) | WITHDRAWN 회원 | refreshTokens 호출 | MEMBER-E-050 반환 |
 
 #### 14-3) 게시글/댓글(서비스 실패)
 | TC ID | 상태 | 우선순위 | 설명 | GIVEN | WHEN | THEN |
