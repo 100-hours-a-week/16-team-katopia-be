@@ -1,7 +1,7 @@
 # Build stage - cicd 과정에서 build
 
 # Runtime stage
-FROM amazoncorretto:21-slim
+FROM amazoncorretto:21-alpine
 WORKDIR /app
 
 # 1. 보안: root 사용자 대신 전용 유저 생성
