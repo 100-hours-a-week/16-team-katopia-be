@@ -62,7 +62,7 @@ jobs:
         run: |
           mkdir -p jar-layers
           cd jar-layers
-          java -Djarmode=layertools -jar ../build/libs/*.jar extract
+          java -Djarmode=layertools -jar $(ls ../build/libs/*.jar | grep -v plain) extract
 
   build-and-push:
     name: Docker Build + Push(ECR)
