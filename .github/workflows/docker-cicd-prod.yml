@@ -54,15 +54,15 @@ jobs:
 
       # Gradle 빌드 (테스트 제외)
       - name: Build (gradle build)
-        id: build_bootjar
+        id: build_gradle
         run: gradle --no-daemon --build-cache build -x test
 
       # JAR 레이어화
       - name: Extract JAR layers
         run: |
-          mkdir -p /tmp/jar-layers
-          cd /tmp/jar-layers
-          java -Djarmode=layertools -jar ${{ github.workspace }}/build/libs/*.jar extract
+          mkdir -p jar-layers
+          cd jar-layers
+          java -Djarmode=layertools -jar ../build/libs/*.jar extract
 
   build-and-push:
     name: Docker Build + Push(ECR)
