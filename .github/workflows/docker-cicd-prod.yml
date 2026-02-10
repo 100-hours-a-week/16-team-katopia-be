@@ -1,4 +1,5 @@
 name: docker-cicd-prod - Spring
+
 on:
   push:
     branches: ["main"]
