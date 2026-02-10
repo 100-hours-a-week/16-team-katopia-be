@@ -57,6 +57,13 @@ jobs:
         id: build_bootjar
         run: gradle --no-daemon --build-cache build -x test
 
+      # JAR 레이어화
+      - name: Extract JAR layers
+        run: |
+          mkdir -p /tmp/jar-layers
+          cd /tmp/jar-layers
+          java -Djarmode=layertools -jar ${{ github.workspace }}/build/libs/*.jar extract
+
   build-and-push:
     name: Docker Build + Push(ECR)
     runs-on: ubuntu-latest
