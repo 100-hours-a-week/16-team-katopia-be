@@ -92,6 +92,9 @@ jobs:
           name: jar-layers
           path: jar-layers/
 
+      - name: Ensure snapshot-dependencies exists
+        run: mkdir -p jar-layers/snapshot-dependencies
+
       - name: Configure AWS Credential
         id: configure_aws_credential
         uses: aws-actions/configure-aws-credentials@v4
