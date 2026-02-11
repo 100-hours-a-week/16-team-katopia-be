@@ -28,8 +28,7 @@ public class MemberFinder {
     }
 
     public Member findActiveByIdOrThrow(Long memberId) {
-        return memberRepository.findById(memberId)
-                .filter(member -> member.getAccountStatus() == AccountStatus.ACTIVE)
+        return memberRepository.findByIdAndAccountStatus(memberId, AccountStatus.ACTIVE)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 

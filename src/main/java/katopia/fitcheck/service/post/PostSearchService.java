@@ -32,11 +32,11 @@ public class PostSearchService {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<Post> posts = loadPosts(size, after);
         List<PostSummary> summaries = posts.stream()
-                .map(post -> PostSummary.builder()
-                        .id(post.getId())
-                        .imageObjectKey(post.getImages().getFirst().getImageObjectKey())
-                        .createdAt(post.getCreatedAt())
-                        .build())
+                .map(post -> PostSummary.of(
+                        post.getId(),
+                        post.getImages().getFirst().getImageObjectKey(),
+                        post.getCreatedAt()
+                ))
                 .toList();
 
         String nextCursor = null;
@@ -54,11 +54,11 @@ public class PostSearchService {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<Post> posts = loadPostsByMember(memberId, size, after);
         List<PostSummary> summaries = posts.stream()
-                .map(post -> PostSummary.builder()
-                        .id(post.getId())
-                        .imageObjectKey(post.getImages().getFirst().getImageObjectKey())
-                        .createdAt(post.getCreatedAt())
-                        .build())
+                .map(post -> PostSummary.of(
+                        post.getId(),
+                        post.getImages().getFirst().getImageObjectKey(),
+                        post.getCreatedAt()
+                ))
                 .toList();
 
         String nextCursor = null;

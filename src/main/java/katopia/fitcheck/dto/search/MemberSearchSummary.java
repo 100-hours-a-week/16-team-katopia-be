@@ -4,16 +4,18 @@ import katopia.fitcheck.domain.member.Member;
 import lombok.Builder;
 
 @Builder
-public record MemberSummary(
+public record MemberSearchSummary(
         Long id,
         String nickname,
-        String profileImageObjectKey
+        String profileImageObjectKey,
+        boolean isFollowing
 ) {
-    public static MemberSummary of(Member member) {
-        return MemberSummary.builder()
+    public static MemberSearchSummary of(Member member, boolean isFollowing) {
+        return MemberSearchSummary.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
                 .profileImageObjectKey(member.getProfileImageObjectKey())
+                .isFollowing(isFollowing)
                 .build();
     }
 }

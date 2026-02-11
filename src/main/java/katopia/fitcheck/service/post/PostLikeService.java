@@ -34,7 +34,7 @@ public class PostLikeService {
         postLikeRepository.save(like);
         postRepository.incrementLikeCount(postId);
         long likeCount = resolveLikeCount(postId);
-        return new PostLikeResponse(post.getId(), likeCount);
+        return PostLikeResponse.of(post.getId(), likeCount);
     }
 
     @Transactional

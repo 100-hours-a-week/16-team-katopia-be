@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import katopia.fitcheck.global.APIResponse;
+import katopia.fitcheck.global.docs.SwaggerExamples;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.global.security.jwt.RegistrationTokenFilter;
 import katopia.fitcheck.global.validation.Nickname;
@@ -15,6 +16,8 @@ import katopia.fitcheck.dto.member.response.MemberProfileDetailResponse;
 import katopia.fitcheck.dto.member.response.MemberProfileResponse;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdateRequest;
 import katopia.fitcheck.dto.member.request.MemberSignupRequest;
+import katopia.fitcheck.dto.member.response.MemberFollowListResponse;
+import katopia.fitcheck.dto.member.response.MemberFollowResponse;
 import katopia.fitcheck.dto.member.response.MemberSignupResponse;
 import katopia.fitcheck.dto.member.response.NicknameCheckResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
@@ -120,5 +123,60 @@ public interface MemberApiSpec {
     @DeleteMapping
     ResponseEntity<Void> withdraw(
             @AuthenticationPrincipal MemberPrincipal principal
+    );
+
+    // FOLLOW
+    @Operation(summary = "팔로우")
+    @ApiResponse(responseCode = "201", description = "팔로우 성공", content = @Content(schema = @Schema(implementation = MemberFollowResponse.class)))
+    @ApiResponse(responseCode = "400", description = "자기 자신 팔로우 불가", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @ApiResponse(responseCode = "401", description = "인증 정보 부재", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @ApiResponse(responseCode = "409", description = "이미 팔로우한 사용자", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @PostMapping("/{memberId}/follow")
+    ResponseEntity<APIResponse<MemberFollowResponse>> follow(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @Parameter(description = SwaggerExamples.MEMBER_ID_DES, example = SwaggerExamples.MEMBER_ID_EXAMPLE)
+            @PathVariable Long memberId
+    );
+
+    @Operation(summary = "언팔로우")
+    @ApiResponse(responseCode = "200", description = "언팔로우 성공", content = @Content(schema = @Schema(implementation = MemberFollowResponse.class)))
+    @ApiResponse(responseCode = "400", description = "자기 자신 언팔로우 불가", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @ApiResponse(responseCode = "401", description = "인증 정보 부재", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @ApiResponse(responseCode = "404", description = "팔로우 관계 없음", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @DeleteMapping("/{memberId}/follow")
+    ResponseEntity<APIResponse<MemberFollowResponse>> unfollow(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @Parameter(description = SwaggerExamples.MEMBER_ID_DES, example = SwaggerExamples.MEMBER_ID_EXAMPLE)
+            @PathVariable Long memberId
+    );
+
+    @Operation(summary = "팔로워 목록 조회")
+    @ApiResponse(responseCode = "200", description = "팔로워 목록 조회 성공", content = @Content(schema = @Schema(implementation = MemberFollowListResponse.class)))
+    @ApiResponse(responseCode = "401", description = "인증 정보 부재", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @ApiResponse(responseCode = "404", description = "회원 없음", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @GetMapping("/{memberId}/followers")
+    ResponseEntity<APIResponse<MemberFollowListResponse>> listFollowers(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @Parameter(description = SwaggerExamples.MEMBER_ID_DES, example = SwaggerExamples.MEMBER_ID_EXAMPLE)
+            @PathVariable Long memberId,
+            @Parameter(description = "페이지 크기(미지정 시 기본값 적용)", example = "20")
+            @RequestParam(value = "size", required = false) String size,
+            @Parameter(description = SwaggerExamples.FOLLOW_CURSOR_DES, example = SwaggerExamples.FOLLOW_CURSOR_EXAMPLE)
+            @RequestParam(value = "after", required = false) String after
+    );
+
+    @Operation(summary = "팔로잉 목록 조회")
+    @ApiResponse(responseCode = "200", description = "팔로잉 목록 조회 성공", content = @Content(schema = @Schema(implementation = MemberFollowListResponse.class)))
+    @ApiResponse(responseCode = "401", description = "인증 정보 부재", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @ApiResponse(responseCode = "404", description = "회원 없음", content = @Content(schema = @Schema(implementation = APIResponse.class)))
+    @GetMapping("/{memberId}/followings")
+    ResponseEntity<APIResponse<MemberFollowListResponse>> listFollowings(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @Parameter(description = SwaggerExamples.MEMBER_ID_DES, example = SwaggerExamples.MEMBER_ID_EXAMPLE)
+            @PathVariable Long memberId,
+            @Parameter(description = "페이지 크기(미지정 시 기본값 적용)", example = "20")
+            @RequestParam(value = "size", required = false) String size,
+            @Parameter(description = SwaggerExamples.FOLLOW_CURSOR_DES, example = SwaggerExamples.FOLLOW_CURSOR_EXAMPLE)
+            @RequestParam(value = "after", required = false) String after
     );
 }

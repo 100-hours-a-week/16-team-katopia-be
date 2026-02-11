@@ -8,6 +8,10 @@ public record PresignResponse(
         @Schema(description = "발급된 파일 목록")
         List<PresignUrl> files
 ) {
+    public static PresignResponse of(List<PresignUrl> files) {
+        return new PresignResponse(files);
+    }
+
     public record PresignUrl(
             @Schema(description = "업로드용 presigned URL")
             String uploadUrl,

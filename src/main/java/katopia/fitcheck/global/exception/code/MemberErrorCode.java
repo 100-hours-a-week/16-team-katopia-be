@@ -28,6 +28,10 @@ public enum MemberErrorCode implements ResponseCode {
     NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "MEMBER-E-050", "사용자를 찾을 수 없습니다."),
     NOT_FOUND_PENDING_MEMBER(HttpStatus.NOT_FOUND, "MEMBER-E-051", "회원가입이 완료되지 않은 사용자입니다."),
     NOT_FOUND_WITHDRAWN_MEMBER(HttpStatus.NOT_FOUND, "MEMBER-E-052", "탈퇴 후 재가입 유예 기간 중입니다. 14일 후에 다시 시도해주세요."),
+
+    SELF_FOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "MEMBER-E-060", "자기 자신을 팔로우할 수 없습니다."),
+    ALREADY_FOLLOWING(HttpStatus.CONFLICT, "MEMBER-E-061", "이미 팔로우한 사용자입니다."),
+    NOT_FOLLOWING(HttpStatus.NOT_FOUND, "MEMBER-E-062", "팔로우 관계가 존재하지 않습니다."),
     ;
 
     private final HttpStatus status;

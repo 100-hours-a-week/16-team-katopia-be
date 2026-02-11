@@ -9,4 +9,12 @@ public record PostSummary(
         Long id,
         String imageObjectKey,
         LocalDateTime createdAt
-) { }
+) {
+    public static PostSummary of(Long id, String imageObjectKey, LocalDateTime createdAt) {
+        return PostSummary.builder()
+                .id(id)
+                .imageObjectKey(imageObjectKey)
+                .createdAt(createdAt)
+                .build();
+    }
+}

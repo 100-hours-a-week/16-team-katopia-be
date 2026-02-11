@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import katopia.fitcheck.dto.member.request.MemberSignupRequest;
+import katopia.fitcheck.dto.member.response.MemberAggregate;
 import katopia.fitcheck.global.security.oauth2.SocialProvider;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdate;
 import lombok.AccessLevel;
@@ -76,6 +77,15 @@ public class Member {
     @Column(name = "enable_realtime_notification", nullable = false)
     private boolean enableRealtimeNotification;
 
+    @Column(name = "post_count", nullable = false)
+    private long postCount;
+
+    @Column(name = "following_count", nullable = false)
+    private long followingCount;
+
+    @Column(name = "follower_count", nullable = false)
+    private long followerCount;
+
     @ElementCollection(fetch = FetchType.LAZY, targetClass = StyleType.class)
     @CollectionTable(name = "member_styles", joinColumns = @JoinColumn(name = "member_id"))
     @Enumerated(EnumType.STRING)
@@ -111,6 +121,9 @@ public class Member {
                    Short height,
                    Short weight,
                    boolean enableRealtimeNotification,
+                   long postCount,
+                   long followingCount,
+                   long followerCount,
                    Set<StyleType> styles,
                    LocalDateTime deletedAt,
                    LocalDateTime termsAgreedAt,
@@ -125,6 +138,9 @@ public class Member {
         this.height = height;
         this.weight = weight;
         this.enableRealtimeNotification = enableRealtimeNotification;
+        this.postCount = Math.max(0, postCount);
+        this.followingCount = Math.max(0, followingCount);
+        this.followerCount = Math.max(0, followerCount);
         if (styles != null) {
             this.styles.addAll(styles);
         }
@@ -144,6 +160,9 @@ public class Member {
                 .nickname(nickname)
                 .email(email)
                 .enableRealtimeNotification(false)
+                .postCount(0)
+                .followingCount(0)
+                .followerCount(0)
                 .styles(Set.of())
                 .accountStatus(AccountStatus.PENDING)
                 .build();
@@ -174,6 +193,36 @@ public class Member {
         }
         this.accountStatus = AccountStatus.ACTIVE;
         this.termsAgreedAt = LocalDateTime.now();
+    }
+
+    public void incrementPostCount() {
+        this.postCount += 1;
+    }
+
+    public void decrementPostCount() {
+        if (this.postCount > 0) {
+            this.postCount -= 1;
+        }
+    }
+
+    public void incrementFollowingCount() {
+        this.followingCount += 1;
+    }
+
+    public void decrementFollowingCount() {
+        if (this.followingCount > 0) {
+            this.followingCount -= 1;
+        }
+    }
+
+    public void incrementFollowerCount() {
+        this.followerCount += 1;
+    }
+
+    public void decrementFollowerCount() {
+        if (this.followerCount > 0) {
+            this.followerCount -= 1;
+        }
     }
 
     public void markAsWithdrawn(String anonymizedNickname) {
@@ -223,5 +272,9 @@ public class Member {
             this.styles.clear();
             this.styles.addAll(update.styles());
         }
+    }
+
+    public MemberAggregate getAggregate() {
+        return new MemberAggregate(postCount, followingCount, followerCount);
     }
 }
