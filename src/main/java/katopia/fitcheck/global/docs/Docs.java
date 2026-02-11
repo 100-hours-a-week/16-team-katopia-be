@@ -23,7 +23,8 @@ public final class Docs {
     // Follow
     public static final String
             FOLLOW_LIST_DES = "팔로워/팔로잉 목록",
-            FOLLOW_STATUS = "팔로우 여부";
+            FOLLOW_STATUS = "팔로우 여부",
+            FOLLOWING_STATUS = "팔로잉 여부";
 
 
     // Aggregate

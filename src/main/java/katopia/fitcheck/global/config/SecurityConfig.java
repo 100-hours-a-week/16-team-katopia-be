@@ -75,6 +75,7 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/members/me").authenticated();
                     auth.requestMatchers(HttpMethod.POST, "/api/auth/tokens").permitAll();   // RTR
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/auth/tokens").permitAll(); // 로그아웃
                     auth.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth -> oauth

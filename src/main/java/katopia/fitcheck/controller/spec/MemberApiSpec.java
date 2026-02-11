@@ -71,6 +71,7 @@ public interface MemberApiSpec {
     @ApiResponse(responseCode = "404", description = Docs.NOT_FOUND_DES, content = @Content)
     @GetMapping("/{memberId}")
     ResponseEntity<APIResponse<MemberProfileResponse>> getProfile(
+            @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable Long memberId
     );
 

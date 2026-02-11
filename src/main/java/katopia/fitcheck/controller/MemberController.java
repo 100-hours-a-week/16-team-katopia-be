@@ -84,9 +84,11 @@ public class MemberController implements MemberApiSpec {
     @Override
     @GetMapping("/{memberId}")
     public ResponseEntity<APIResponse<MemberProfileResponse>> getProfile(
+            @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable Long memberId
     ) {
-        MemberProfileResponse responseBody = memberService.getProfile(memberId);
+        Long requesterId = securitySupport.findMemberIdOrNull(principal);
+        MemberProfileResponse responseBody = memberService.getProfile(memberId, requesterId);
         return APIResponse.ok(MemberSuccessCode.PROFILE_FETCHED, responseBody);
     }
 

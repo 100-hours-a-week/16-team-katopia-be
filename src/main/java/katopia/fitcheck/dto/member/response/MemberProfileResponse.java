@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 public record MemberProfileResponse(
     @Schema(description = Docs.ID_DES, example = "1")
     Long id,
+    @Schema(description = Docs.FOLLOWING_STATUS, example = "false")
+    boolean isFollowing,
     @Schema(description = Docs.PROFILE_DES)
     MemberProfile profile,
     @Schema(description = Docs.AGGREGATE_DES)
@@ -18,9 +20,10 @@ public record MemberProfileResponse(
     @Schema(description = Docs.UPDATED_AT_DES, example = Docs.TIMESTAMP)
     LocalDateTime updatedAt
 ) {
-    public static MemberProfileResponse of(Member member) {
+    public static MemberProfileResponse of(Member member, boolean isFollowing) {
         return MemberProfileResponse.builder()
                 .id(member.getId())
+                .isFollowing(isFollowing)
                 .profile(MemberProfile.of(member))
                 .aggregate(member.getAggregate())
                 .updatedAt(member.getUpdatedAt())

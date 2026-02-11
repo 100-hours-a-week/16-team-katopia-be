@@ -94,7 +94,7 @@ class MemberProfileServiceTest {
                 .build();
         when(memberFinder.findPublicProfileByIdOrThrow(eq(1L))).thenReturn(member);
 
-        MemberProfileResponse response = memberProfileService.getProfile(1L);
+        MemberProfileResponse response = memberProfileService.getProfile(1L, null);
 
         assertThat(response.aggregate().postCount()).isEqualTo(2L);
         assertThat(response.aggregate().followingCount()).isEqualTo(3L);

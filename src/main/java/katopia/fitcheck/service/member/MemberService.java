@@ -30,8 +30,8 @@ public class MemberService {
         return memberProfileService.updateProfile(memberId, request);
     }
 
-    public MemberProfileResponse getProfile(Long memberId) {
-        return memberProfileService.getProfile(memberId);
+    public MemberProfileResponse getProfile(Long memberId, Long requesterId) {
+        return memberProfileService.getProfile(memberId, requesterId);
     }
 
     public MemberProfileDetailResponse getProfileDetail(Long memberId) {
