@@ -10,11 +10,17 @@ import java.util.List;
 
 @ValidPresignRequest
 public record PresignRequest(
-        @Schema(description = SwaggerExamples.PRESIGN_CATEGORY_DES, example = SwaggerExamples.PRESIGN_CATEGORY_POST)
+        @Schema(
+                description = SwaggerExamples.PRESIGN_CATEGORY_DES,
+                example = SwaggerExamples.PRESIGN_CATEGORY_POST,
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
         UploadCategory category,
         @ArraySchema(
                 arraySchema = @Schema(description = SwaggerExamples.PRESIGN_EXTENSIONS_DES, example = SwaggerExamples.PRESIGN_EXTENSIONS_EXAMPLE),
-                schema = @Schema(description = SwaggerExamples.PRESIGN_EXTENSION_DES, example = SwaggerExamples.PRESIGN_EXTENSION_EXAMPLE)
+                schema = @Schema(description = SwaggerExamples.PRESIGN_EXTENSION_DES, example = SwaggerExamples.PRESIGN_EXTENSION_EXAMPLE),
+                minItems = 1,
+                maxItems = 5
         )
         List<String> extensions
 ) {
