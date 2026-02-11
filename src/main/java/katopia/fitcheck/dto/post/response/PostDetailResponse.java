@@ -5,7 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.domain.post.Post;
 import katopia.fitcheck.domain.post.PostImage;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
+import katopia.fitcheck.global.policy.Policy;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -13,33 +14,36 @@ import java.util.List;
 
 @Builder
 public record PostDetailResponse(
-        @Schema(description = "게시글 ID", example = "1")
+        @Schema(description = Docs.ID_DES, example = "1")
         Long id,
-        @Schema(description = "이미지 목록")
+        @Schema(description = Docs.POST_IMAGE_LIST_DES)
         List<PostImage> imageObjectKeys,
-        @Schema(description = SwaggerExamples.POST_CONTENT_CREATE_DES, example = SwaggerExamples.POST_CONTENT_CREATE)
+        @Schema(description = Docs.POST_CONTENT_DES, example = Docs.POST_CONTENT)
         String content,
         @ArraySchema(
-                arraySchema = @Schema(description = SwaggerExamples.TAG_LIST_DES, example = SwaggerExamples.TAG_LIST),
-                schema = @Schema(description = SwaggerExamples.TAG_DES)
+                arraySchema = @Schema(description = Policy.TAG_LIST_DES, example = Docs.TAG_LIST),
+                schema = @Schema(description = Docs.TAG_DES)
         )
         List<String> tags,
-        @Schema(description = "좋아요 여부", example = "false")
+        @Schema(description = "게시글 좋아요 여부", example = "false")
         boolean isLiked,
-        @Schema(description = "작성자 정보")
+        @Schema(description = "게시글 북마크 여부", example = "false")
+        boolean isBookmarked,
+        @Schema(description = Docs.AUTHOR_DES)
         PostAuthorResponse author,
-        @Schema(description = "게시글 집계")
+        @Schema(description = Docs.AGGREGATE_DES)
         PostAggregateResponse aggregate,
-        @Schema(description = "작성 시각", example = SwaggerExamples.TIMESTAMP_EXAMPLE)
+        @Schema(description = Docs.CREATED_AT_DES, example = Docs.TIMESTAMP)
         LocalDateTime createdAt
 ) {
-    public static PostDetailResponse of (Post post, Member author, List<String> tags, boolean isLiked) {
+    public static PostDetailResponse of (Post post, Member author, List<String> tags, boolean isLiked, boolean isBookmarked) {
         return PostDetailResponse.builder()
                 .id(post.getId())
                 .imageObjectKeys(post.getImages())
                 .content(post.getContent())
                 .tags(tags)
                 .isLiked(isLiked)
+                .isBookmarked(isBookmarked)
                 .author(PostAuthorResponse.of(author))
                 .aggregate(PostAggregateResponse.of(post))
                 .createdAt(post.getCreatedAt())

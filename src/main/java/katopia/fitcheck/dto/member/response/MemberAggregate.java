@@ -1,12 +1,13 @@
 package katopia.fitcheck.dto.member.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import katopia.fitcheck.global.docs.Docs;
 
 public record MemberAggregate(
-        @Schema(description = "게시글 수", example = "10")
+        @Schema(description = Docs.POST_COUNT_DES, example = "0")
         long postCount,
-        @Schema(description = "팔로잉 수", example = "3")
+        @Schema(description = Docs.FOLLOWER_COUNT_DES, example = "0")
         long followingCount,
-        @Schema(description = "팔로워 수", example = "5")
+        @Schema(description = Docs.FOLLOWING_COUNT_DES, example = "0")
         long followerCount
 ) { }

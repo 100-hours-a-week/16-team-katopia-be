@@ -3,12 +3,10 @@ package katopia.fitcheck.global.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
+import katopia.fitcheck.global.policy.Policy;
 import org.springframework.util.StringUtils;
 
 public class HeightValueValidator implements ConstraintValidator<HeightValue, String> {
-    private static final int MIN_HEIGHT = 50;
-    private static final int MAX_HEIGHT = 300;
-
     private boolean required;
     private String fieldName;
 
@@ -35,7 +33,7 @@ public class HeightValueValidator implements ConstraintValidator<HeightValue, St
             ValidationSupport.addViolation(context, MemberErrorCode.INVALID_HEIGHT_FORMAT.getCode());
             return false;
         }
-        if (parsed < MIN_HEIGHT || parsed > MAX_HEIGHT) {
+        if (parsed < Policy.HEIGHT_MIN || parsed > Policy.HEIGHT_MAX) {
             ValidationSupport.addViolation(context, MemberErrorCode.INVALID_HEIGHT_RANGE.getCode());
             return false;
         }

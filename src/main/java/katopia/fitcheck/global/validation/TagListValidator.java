@@ -3,21 +3,18 @@ package katopia.fitcheck.global.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import katopia.fitcheck.global.exception.code.PostErrorCode;
+import katopia.fitcheck.global.policy.Policy;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 
 public class TagListValidator implements ConstraintValidator<TagList, List<String>> {
-    private static final int MIN_LENGTH = 1;
-    private static final int MAX_LENGTH = 20;
-    private static final int MAX_COUNT = 10;
-
     @Override
     public boolean isValid(List<String> value, ConstraintValidatorContext context) {
         if (value == null || value.isEmpty()) {
             return true;
         }
-        if (value.size() > MAX_COUNT) {
+        if (value.size() > Policy.TAG_MAX_COUNT) {
             ValidationSupport.addViolation(context, PostErrorCode.TAG_COUNT_EXCEEDED.getCode());
             return false;
         }
@@ -27,7 +24,8 @@ public class TagListValidator implements ConstraintValidator<TagList, List<Strin
                 return false;
             }
             String normalized = normalize(tag);
-            if (ValidationSupport.isOutOfRange(normalized.length(), MIN_LENGTH, MAX_LENGTH)) {
+            if (ValidationSupport.isOutOfRange(
+                    normalized.length(), Policy.TAG_MIN_LENGTH, Policy.TAG_MAX_LENGTH)) {
                 ValidationSupport.addViolation(context, PostErrorCode.TAG_LENGTH_INVALID.getCode());
                 return false;
             }

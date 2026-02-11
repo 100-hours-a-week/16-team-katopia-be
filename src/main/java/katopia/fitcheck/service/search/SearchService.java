@@ -11,6 +11,7 @@ import katopia.fitcheck.repository.post.PostSummaryProjection;
 import katopia.fitcheck.dto.search.PostSearchResponse;
 import katopia.fitcheck.dto.search.MemberSearchResponse;
 import katopia.fitcheck.dto.search.MemberSearchSummary;
+import katopia.fitcheck.global.policy.Policy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -27,8 +28,6 @@ public class SearchService {
     private final MemberFollowRepository memberFollowRepository;
     private final PostRepository postRepository;
     private final SearchValidator searchValidator;
-    private static final int MAX_FULLTEXT_QUERY_LENGTH = 200;
-
     @Transactional(readOnly = true)
     @katopia.fitcheck.global.aop.SearchLog("users")
     public MemberSearchResponse searchUsers(
@@ -59,7 +58,7 @@ public class SearchService {
     @Transactional(readOnly = true)
     @katopia.fitcheck.global.aop.SearchLog("posts-fulltext")
     public PostSearchResponse searchPostsFulltext(String query, String sizeValue) {
-        String keyword = searchValidator.requireQuery(query, MAX_FULLTEXT_QUERY_LENGTH);
+        String keyword = searchValidator.requireQuery(query, Policy.SEARCH_MAX_FULLTEXT_QUERY_LENGTH);
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<PostSummaryProjection> posts = postRepository.searchLatestByContentFulltextSummary(
                 keyword,

@@ -2,7 +2,7 @@ package katopia.fitcheck.global;
 
 import katopia.fitcheck.global.exception.code.ResponseCode;
 import io.swagger.v3.oas.annotations.media.Schema;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +21,9 @@ public class APIResponse<T> {
     private String message;
     @Schema(description = "응답 코드", example = "COMMON-S-000")
     private String code;
-    @Schema(description = "응답 데이터", example = "{}")
+    @Schema(description = "응답 데이터", example = "{...}")
     private T data;
-    @Schema(description = "응답 시각(UTC)", example = SwaggerExamples.TIMESTAMP_EXAMPLE)
+    @Schema(description = "응답 시각(UTC)", example = Docs.TIMESTAMP)
     private Instant timestamp;
 
     private static Instant now() {

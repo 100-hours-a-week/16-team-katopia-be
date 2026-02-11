@@ -1,6 +1,7 @@
 package katopia.fitcheck.dto.vote.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import katopia.fitcheck.global.docs.Docs;
 import lombok.Builder;
 
 import java.util.List;
@@ -9,10 +10,7 @@ import java.util.List;
 public record VoteListResponse(
         @Schema(description = "투표 목록")
         List<VoteSummary> votes,
-        @io.swagger.v3.oas.annotations.media.Schema(
-                description = katopia.fitcheck.global.docs.SwaggerExamples.VOTE_CURSOR_DES,
-                example = katopia.fitcheck.global.docs.SwaggerExamples.VOTE_CURSOR_EXAMPLE
-        )
+        @Schema(description = Docs.CURSOR_DES, example = Docs.CURSOR)
         String nextCursor
 ) {
     public static VoteListResponse of(List<VoteSummary> votes, String nextCursor) {

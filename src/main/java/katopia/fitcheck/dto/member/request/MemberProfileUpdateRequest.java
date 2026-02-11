@@ -2,7 +2,8 @@ package katopia.fitcheck.dto.member.request;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.global.validation.GenderValue;
 import katopia.fitcheck.global.validation.HeightValue;
 import katopia.fitcheck.global.validation.Nickname;
@@ -11,71 +12,64 @@ import katopia.fitcheck.global.validation.WeightValue;
 
 import java.util.List;
 
-@Schema(description = SwaggerExamples.MEMBER_PROFILE_UPDATE_REQUEST_DES)
+@Schema(description = Docs.MEMBER_PROFILE_UPDATE_REQUEST_DES)
 public record MemberProfileUpdateRequest(
         @Schema(
-                description = SwaggerExamples.NICKNAME_DES,
-                example = SwaggerExamples.NICKNAME,
-                requiredMode = Schema.RequiredMode.REQUIRED,
-                minLength = 2,
-                maxLength = 20,
-                pattern = "^[\\p{L}\\p{N}._]+$"
+                description = Policy.NICKNAME_DES,
+                example = Docs.NICKNAME,
+                minLength = Policy.NICKNAME_MIN_LENGTH,
+                maxLength = Policy.NICKNAME_MAX_LENGTH,
+                pattern = Policy.NICKNAME_REGEX
         )
         @Nickname
         String nickname,
 
         @Schema(
-                description = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY_DES,
-                example = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY,
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+                description = Docs.IMAGE_OBJECT_KEY_DES,
+                example = Docs.IMAGE_OBJECT_KEY
         )
         String profileImageObjectKey,
 
         @Schema(
-                description = SwaggerExamples.GENDER_DES,
-                example = SwaggerExamples.GENDER_M,
-                allowableValues = {"M", "F"},
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+                description = Policy.GENDER_DES,
+                example = Docs.GENDER,
+                allowableValues = {Policy.GENDER_M, Policy.GENDER_F}
         )
         @GenderValue
         String gender,
 
         @Schema(
-                description = SwaggerExamples.HEIGHT_DES,
-                example = SwaggerExamples.HEIGHT_175,
-                pattern = "^[0-9]+$",
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+                description = Policy.HEIGHT_DES,
+                example = Docs.HEIGHT,
+                pattern = "^[0-9]+$"
         )
         @HeightValue
         String height,
 
         @Schema(
-                description = SwaggerExamples.WEIGHT_DES,
-                example = SwaggerExamples.WEIGHT_70,
-                pattern = "^[0-9]+$",
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+                description = Policy.WEIGHT_DES,
+                example = Docs.WEIGHT,
+                pattern = "^[0-9]+$"
         )
         @WeightValue
         String weight,
 
         @Schema(
-                description = SwaggerExamples.NOTIFICATION_DES,
-                example = SwaggerExamples.NOTIFICATION_TRUE,
-                requiredMode = Schema.RequiredMode.NOT_REQUIRED
+                description = Docs.NOTIFICATION_DES,
+                example = Docs.NOTIFICATION
         )
 
         Boolean enableRealtimeNotification,
 
         @ArraySchema(
                 arraySchema = @Schema(
-                        description = SwaggerExamples.STYLE_LIST_DES,
-                        example = SwaggerExamples.STYLE_LIST
+                        description = Docs.STYLE_LIST_DES,
+                        example = Docs.STYLE_LIST
                 ),
                 schema = @Schema(
                         allowableValues = {"MINIMAL", "FEMININE", "STREET", "CASUAL", "CLASSIC", "SPORTY", "VINTAGE"}
                 ),
-                minItems = 0,
-                maxItems = 2
+                maxItems = Policy.STYLE_MAX_COUNT
         )
         @StyleList
         List<String> style

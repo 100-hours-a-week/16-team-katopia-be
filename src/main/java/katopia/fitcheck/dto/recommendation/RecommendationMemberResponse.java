@@ -3,6 +3,7 @@ package katopia.fitcheck.dto.recommendation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.domain.member.StyleType;
+import katopia.fitcheck.global.docs.Docs;
 import lombok.Builder;
 
 import java.util.List;
@@ -10,15 +11,15 @@ import java.util.Set;
 
 @Builder
 public record RecommendationMemberResponse(
-        @Schema(description = "회원 ID", example = "1")
+        @Schema(description = Docs.ID_DES, example = "1")
         Long id,
-        @Schema(description = "닉네임", example = "dev_user")
+        @Schema(description = Docs.NICKNAME_DES, example = Docs.NICKNAME)
         String nickname,
-        @Schema(description = "프로필 이미지 objectKey", example = "profile/1/1-uuid.png")
+        @Schema(description = Docs.IMAGE_OBJECT_KEY_DES, example = Docs.IMAGE_OBJECT_KEY)
         String profileImageObjectKey,
-        @Schema(description = "키(cm)", example = "175")
+        @Schema(description = Docs.HEIGHT_DES, example = Docs.HEIGHT)
         Short height,
-        @Schema(description = "몸무게(kg)", example = "70")
+        @Schema(description = Docs.WEIGHT_DES, example = Docs.WEIGHT)
         Short weight,
         @Schema(description = "선호 스타일 목록", example = "[\"MINIMAL\",\"CASUAL\"]")
         List<String> styles

@@ -84,9 +84,11 @@ public class MemberController implements MemberApiSpec {
     @Override
     @GetMapping("/{memberId}")
     public ResponseEntity<APIResponse<MemberProfileResponse>> getProfile(
+            @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable Long memberId
     ) {
-        MemberProfileResponse responseBody = memberService.getProfile(memberId);
+        Long requesterId = securitySupport.findMemberIdOrNull(principal);
+        MemberProfileResponse responseBody = memberService.getProfile(memberId, requesterId);
         return APIResponse.ok(MemberSuccessCode.PROFILE_FETCHED, responseBody);
     }
 
@@ -110,6 +112,18 @@ public class MemberController implements MemberApiSpec {
         Long memberId = securitySupport.requireMemberId(principal);
         MemberProfileDetailResponse responseBody = memberService.getProfileDetail(memberId);
         return APIResponse.ok(MemberSuccessCode.PROFILE_FETCHED, responseBody);
+    }
+
+    @GetMapping("/me/bookmarks")
+    @Override
+    public ResponseEntity<APIResponse<PostListResponse>> listMyBookmarks(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @RequestParam(value = "size", required = false) String size,
+            @RequestParam(value = "after", required = false) String after
+    ) {
+        Long memberId = securitySupport.requireMemberId(principal);
+        PostListResponse responseBody = postService.listBookmarks(memberId, size, after);
+        return APIResponse.ok(PostSuccessCode.POST_LISTED, responseBody);
     }
 
 

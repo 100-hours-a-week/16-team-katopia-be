@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import katopia.fitcheck.dto.s3.PresignRequest;
 import katopia.fitcheck.global.exception.code.CommonErrorCode;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.service.s3.UploadCategory;
 import org.springframework.util.StringUtils;
 
@@ -11,8 +12,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class PresignRequestValidator implements ConstraintValidator<ValidPresignRequest, PresignRequest> {
-    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "heic", "webp");
-
     @Override
     public boolean isValid(PresignRequest value, ConstraintValidatorContext context) {
         if (value == null) {
@@ -31,7 +30,7 @@ public class PresignRequestValidator implements ConstraintValidator<ValidPresign
         }
         for (String ext : extensions) {
             String normalized = normalizeExtension(ext);
-            if (!ALLOWED_EXTENSIONS.contains(normalized)) {
+            if (!Policy.PRESIGN_ALLOWED_EXTENSIONS.contains(normalized)) {
                 ValidationSupport.addViolation(context, CommonErrorCode.INVALID_INPUT_VALUE.getCode());
                 return false;
             }

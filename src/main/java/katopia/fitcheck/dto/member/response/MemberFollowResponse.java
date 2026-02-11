@@ -2,16 +2,16 @@ package katopia.fitcheck.dto.member.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.member.Member;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
 
 public record MemberFollowResponse(
-        @Schema(description = "팔로우 상태", example = "true")
+        @Schema(description = Docs.FOLLOW_STATUS, example = "true")
         boolean isFollowing,
-        @Schema(description = SwaggerExamples.MEMBER_ID_DES, example = SwaggerExamples.MEMBER_ID_EXAMPLE)
+        @Schema(description = Docs.ID_DES, example = "1")
         Long targetId,
-        @Schema(description = "대상 닉네임", example = SwaggerExamples.NICKNAME)
+        @Schema(description = Docs.NICKNAME_DES, example = Docs.NICKNAME)
         String targetNickname,
-        @Schema(description = "대상 집계 정보")
+        @Schema(description = Docs.AGGREGATE_DES)
         FollowAggregate aggregate
 ) {
     public static MemberFollowResponse of(Member target, boolean isFollowing) {
@@ -24,9 +24,9 @@ public record MemberFollowResponse(
     }
 
     public record FollowAggregate(
-            @Schema(description = "팔로워 수", example = "12")
+            @Schema(description = Docs.FOLLOWER_COUNT_DES, example = "0")
             long followerCount,
-            @Schema(description = "팔로잉 수", example = "5")
+            @Schema(description = Docs.FOLLOWING_COUNT_DES, example = "0")
             long followingCount
     ) { }
 }

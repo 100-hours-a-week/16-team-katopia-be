@@ -13,6 +13,7 @@ import katopia.fitcheck.global.exception.AuthException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.repository.comment.CommentRepository;
 import katopia.fitcheck.repository.member.MemberRepository;
+import katopia.fitcheck.repository.post.PostBookmarkRepository;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.repository.post.PostTagRepository;
@@ -51,6 +52,9 @@ class PostCommandServiceTest {
 
     @Mock
     private PostLikeRepository postLikeRepository;
+
+    @Mock
+    private PostBookmarkRepository postBookmarkRepository;
 
     @Mock
     private CommentRepository commentRepository;
@@ -152,6 +156,7 @@ class PostCommandServiceTest {
         verify(memberRepository).decrementPostCount(1L);
         verify(commentRepository).deleteByPostId(10L);
         verify(postLikeRepository).deleteByPostId(10L);
+        verify(postBookmarkRepository).deleteByPostId(10L);
         verify(postTagRepository).deleteByPostId(10L);
         verify(postRepository).delete(post);
     }
