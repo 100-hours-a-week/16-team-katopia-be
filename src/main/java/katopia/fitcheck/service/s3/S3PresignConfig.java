@@ -24,7 +24,7 @@ public class S3PresignConfig {
                 .build();
     }
 
-    private AwsCredentialsProvider resolveCredentials(S3PresignProperties props) {
+    AwsCredentialsProvider resolveCredentials(S3PresignProperties props) {
         if (props.credentials() == null
                 || props.credentials().accessKeyId() == null
                 || props.credentials().secretAccessKey() == null) {
