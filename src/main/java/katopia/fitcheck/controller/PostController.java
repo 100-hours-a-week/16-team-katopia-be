@@ -11,6 +11,7 @@ import katopia.fitcheck.dto.post.response.PostCreateResponse;
 import katopia.fitcheck.dto.post.response.PostDetailResponse;
 import katopia.fitcheck.dto.post.response.PostLikeResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
+import katopia.fitcheck.dto.post.response.PostResponse;
 import katopia.fitcheck.dto.post.request.PostUpdateRequest;
 import katopia.fitcheck.dto.post.response.PostUpdateResponse;
 import katopia.fitcheck.service.post.PostService;
@@ -58,6 +59,17 @@ public class PostController implements PostApiSpec {
     ) {
         PostListResponse body = postService.list(size, after);
 
+        return APIResponse.ok(PostSuccessCode.POST_LISTED, body);
+    }
+
+    @GetMapping("/follow")
+    public ResponseEntity<APIResponse<PostResponse>> listFollowFeed(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @RequestParam(value = "size", required = false) String size,
+            @RequestParam(value = "after", required = false) String after
+    ) {
+        Long memberId = securitySupport.requireMemberId(principal);
+        PostResponse body = postService.listHomeFeed(memberId, size, after);
         return APIResponse.ok(PostSuccessCode.POST_LISTED, body);
     }
 
