@@ -14,6 +14,7 @@ import katopia.fitcheck.repository.comment.CommentRepository;
 import katopia.fitcheck.repository.member.MemberRepository;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
+import katopia.fitcheck.repository.post.PostBookmarkRepository;
 import katopia.fitcheck.repository.post.PostTagRepository;
 import katopia.fitcheck.repository.post.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class PostCommandService {
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostBookmarkRepository postBookmarkRepository;
     private final CommentRepository commentRepository;
     private final MemberRepository memberRepository;
     private final PostValidator postValidator;
@@ -79,6 +81,7 @@ public class PostCommandService {
         memberRepository.decrementPostCount(memberId);
         commentRepository.deleteByPostId(postId);
         postLikeRepository.deleteByPostId(postId);
+        postBookmarkRepository.deleteByPostId(postId);
         postTagRepository.deleteByPostId(postId);
         postRepository.delete(post);
     }

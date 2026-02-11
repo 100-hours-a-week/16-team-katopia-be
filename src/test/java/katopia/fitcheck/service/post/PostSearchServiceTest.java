@@ -6,6 +6,7 @@ import katopia.fitcheck.domain.post.PostImage;
 import katopia.fitcheck.dto.post.response.PostDetailResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
 import katopia.fitcheck.global.pagination.CursorPagingHelper;
+import katopia.fitcheck.repository.post.PostBookmarkRepository;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.repository.post.PostTagRepository;
@@ -45,6 +46,9 @@ class PostSearchServiceTest {
 
     @Mock
     private PostLikeRepository postLikeRepository;
+
+    @Mock
+    private PostBookmarkRepository postBookmarkRepository;
 
     @InjectMocks
     private PostSearchService postSearchService;
@@ -88,11 +92,13 @@ class PostSearchServiceTest {
         when(postFinder.findDetailByIdOrThrow(10L)).thenReturn(post);
         when(postTagRepository.findTagNamesByPostId(10L)).thenReturn(List.of("tag1", "tag2"));
         when(postLikeRepository.existsByMemberIdAndPostId(1L, 10L)).thenReturn(true);
+        when(postBookmarkRepository.existsByMemberIdAndPostId(1L, 10L)).thenReturn(false);
 
         PostDetailResponse response = postSearchService.getDetail(1L, 10L);
 
         assertThat(response.tags()).containsExactly("tag1", "tag2");
         assertThat(response.isLiked()).isTrue();
+        assertThat(response.isBookmarked()).isFalse();
     }
 
     private Post buildPost(Long id, LocalDateTime createdAt, String imageKey) {
