@@ -26,14 +26,16 @@ public record MemberProfileUpdateRequest(
 
         @Schema(
                 description = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY_DES,
-                example = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY
+                example = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         String profileImageObjectKey,
 
         @Schema(
                 description = SwaggerExamples.GENDER_DES,
                 example = SwaggerExamples.GENDER_M,
-                allowableValues = {"M", "F"}
+                allowableValues = {"M", "F"},
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         @GenderValue
         String gender,
@@ -41,7 +43,8 @@ public record MemberProfileUpdateRequest(
         @Schema(
                 description = SwaggerExamples.HEIGHT_DES,
                 example = SwaggerExamples.HEIGHT_175,
-                pattern = "^[0-9]+$"
+                pattern = "^[0-9]+$",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         @HeightValue
         String height,
@@ -49,7 +52,8 @@ public record MemberProfileUpdateRequest(
         @Schema(
                 description = SwaggerExamples.WEIGHT_DES,
                 example = SwaggerExamples.WEIGHT_70,
-                pattern = "^[0-9]+$"
+                pattern = "^[0-9]+$",
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
         @WeightValue
         String weight,
@@ -57,7 +61,7 @@ public record MemberProfileUpdateRequest(
         @Schema(
                 description = SwaggerExamples.NOTIFICATION_DES,
                 example = SwaggerExamples.NOTIFICATION_TRUE,
-                requiredMode = Schema.RequiredMode.REQUIRED
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED
         )
 
         Boolean enableRealtimeNotification,
@@ -69,7 +73,9 @@ public record MemberProfileUpdateRequest(
                 ),
                 schema = @Schema(
                         allowableValues = {"MINIMAL", "FEMININE", "STREET", "CASUAL", "CLASSIC", "SPORTY", "VINTAGE"}
-                )
+                ),
+                minItems = 0,
+                maxItems = 2
         )
         @StyleList
         List<String> style

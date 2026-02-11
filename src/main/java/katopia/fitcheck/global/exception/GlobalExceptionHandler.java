@@ -8,6 +8,7 @@ import katopia.fitcheck.global.exception.code.CommonErrorCode;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.exception.code.PostErrorCode;
 import katopia.fitcheck.global.exception.code.ResponseCode;
+import katopia.fitcheck.global.exception.code.VoteErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -34,6 +35,7 @@ public class GlobalExceptionHandler {
         registerCodes(PostErrorCode.values());
         registerCodes(CommentErrorCode.values());
         registerCodes(AuthErrorCode.values());
+        registerCodes(VoteErrorCode.values());
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)

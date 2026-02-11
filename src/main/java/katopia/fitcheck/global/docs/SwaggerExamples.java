@@ -31,6 +31,15 @@ public final class SwaggerExamples {
     public static final String TAG_LIST_DES = "태그 목록(최대 10개)";
     public static final String TAG_LIST = "[\"DAILY\", \"MINIMAL\"]";
     public static final String TAG_DES = "태그";
+    public static final String VOTE_TITLE_DES = "투표 제목";
+    public static final String VOTE_TITLE = "오늘의 코디 투표";
+    public static final String VOTE_IMAGE_OBJECT_KEY_LIST = "[\"votes/1/1700000000000-uuid.png\"]";
+    public static final String VOTE_IMAGE_OBJECT_KEY_EXAMPLE = "votes/1/1700000000000-uuid.png";
+    public static final String VOTE_ID_EXAMPLE = "1";
+    public static final String VOTE_ITEM_ID_DES = "투표 항목 ID";
+    public static final String VOTE_ITEM_ID_EXAMPLE = "10";
+    public static final String VOTE_ITEM_ID_LIST_DES = "투표 항목 ID 목록";
+    public static final String VOTE_ITEM_ID_LIST_EXAMPLE = "[10, 11]";
     public static final String PRESIGN_CATEGORY_DES = "업로드 유형 (PROFILE/POST/VOTE)";
     public static final String PRESIGN_CATEGORY_POST = "POST";
     public static final String PRESIGN_EXTENSIONS_DES = "확장자 목록 (JPG/JPEG/PNG/HEIC/WEBP)";
