@@ -2,16 +2,15 @@ package katopia.fitcheck.dto.vote.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.vote.Vote;
-import katopia.fitcheck.global.docs.SwaggerExamples;
-import org.springframework.cglib.core.Local;
+import katopia.fitcheck.global.docs.Docs;
 
 import java.time.LocalDateTime;
 
 @Schema(description = "투표 요약")
 public record VoteSummary(
-        @Schema(description = "투표 ID", example = SwaggerExamples.VOTE_ID_EXAMPLE)
+        @Schema(description = Docs.ID_DES, example = "1")
         Long id,
-        @Schema(description = SwaggerExamples.VOTE_TITLE_DES, example = SwaggerExamples.VOTE_TITLE)
+        @Schema(description = Docs.VOTE_TITLE_DES, example = Docs.VOTE_TITLE)
         String title,
         @Schema(description = "종료 여부", example = "false")
         boolean isClosed

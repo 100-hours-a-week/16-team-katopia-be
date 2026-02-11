@@ -4,6 +4,7 @@ import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.CommonErrorCode;
 import katopia.fitcheck.dto.s3.PresignRequest;
 import katopia.fitcheck.dto.s3.PresignResponse;
+import katopia.fitcheck.global.policy.Policy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +24,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PresignService {
-
-    private static final long MAX_SIZE_BYTES = 30L * 1024 * 1024;
-
     private final S3Presigner s3Presigner;
     private final S3PresignProperties props;
 
@@ -71,8 +69,8 @@ public class PresignService {
         if (props.s3() == null || !StringUtils.hasText(props.s3().bucket())) {
             throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
         }
-        long maxSize = props.maxSizeBytes() != null ? props.maxSizeBytes() : MAX_SIZE_BYTES;
-        if (maxSize > MAX_SIZE_BYTES) {
+        long maxSize = props.maxSizeBytes() != null ? props.maxSizeBytes() : Policy.PRESIGN_MAX_SIZE_BYTES;
+        if (maxSize > Policy.PRESIGN_MAX_SIZE_BYTES) {
             throw new BusinessException(CommonErrorCode.INVALID_INPUT_VALUE);
         }
     }

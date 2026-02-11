@@ -3,11 +3,10 @@ package katopia.fitcheck.global.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import katopia.fitcheck.global.exception.code.CommentErrorCode;
+import katopia.fitcheck.global.policy.Policy;
 import org.springframework.util.StringUtils;
 
 public class CommentContentValidator implements ConstraintValidator<CommentContent, String> {
-    private static final int MIN_LENGTH = 1, MAX_LENGTH = 200;
-
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (!StringUtils.hasText(value)) {
@@ -19,7 +18,10 @@ public class CommentContentValidator implements ConstraintValidator<CommentConte
             ValidationSupport.addViolation(context, CommentErrorCode.CONTENT_REQUIRED.getCode());
             return false;
         }
-        if (ValidationSupport.isOutOfRange(trimmed.length(), MIN_LENGTH, MAX_LENGTH)) {
+        if (ValidationSupport.isOutOfRange(
+                trimmed.length(),
+                Policy.COMMENT_CONTENT_MIN_LENGTH,
+                Policy.COMMENT_CONTENT_MAX_LENGTH)) {
             ValidationSupport.addViolation(context, CommentErrorCode.CONTENT_TOO_LONG.getCode());
             return false;
         }

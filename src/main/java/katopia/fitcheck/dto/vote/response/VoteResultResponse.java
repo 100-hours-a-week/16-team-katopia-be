@@ -3,7 +3,7 @@ package katopia.fitcheck.dto.vote.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.vote.Vote;
 import katopia.fitcheck.domain.vote.VoteItem;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -13,9 +13,9 @@ import java.util.List;
 @Builder
 @Schema(description = "투표 결과 응답")
 public record VoteResultResponse(
-        @Schema(description = "투표 ID", example = SwaggerExamples.VOTE_ID_EXAMPLE)
+        @Schema(description = Docs.ID_DES, example = "1")
         Long id,
-        @Schema(description = SwaggerExamples.VOTE_TITLE_DES, example = SwaggerExamples.VOTE_TITLE)
+        @Schema(description = Docs.VOTE_TITLE_DES, example = Docs.VOTE_TITLE)
         String title,
         @Schema(description = "투표 결과 항목")
         List<VoteResultItemResponse> items

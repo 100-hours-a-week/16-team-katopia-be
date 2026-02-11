@@ -5,7 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.post.Post;
 import katopia.fitcheck.domain.post.PostImage;
 import katopia.fitcheck.domain.post.Tag;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
+import katopia.fitcheck.global.policy.Policy;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -15,18 +16,18 @@ import java.util.stream.Collectors;
 
 @Builder
 public record PostCreateResponse(
-        @Schema(description = "게시글 ID", example = "1")
+        @Schema(description = Docs.ID_DES, example = "1")
         Long id,
-        @Schema(description = SwaggerExamples.POST_CONTENT_CREATE_DES, example = SwaggerExamples.POST_CONTENT_CREATE)
+        @Schema(description = Docs.POST_CONTENT_DES, example = Docs.POST_CONTENT)
         String content,
-        @Schema(description = "이미지 목록")
+        @Schema(description = Docs.POST_IMAGE_LIST_DES)
         List<PostImage> imageObjectKeys,
         @ArraySchema(
-                arraySchema = @Schema(description = SwaggerExamples.TAG_LIST_DES, example = SwaggerExamples.TAG_LIST),
-                schema = @Schema(description = SwaggerExamples.TAG_DES)
+                arraySchema = @Schema(description = Policy.TAG_LIST_DES, example = Docs.TAG_LIST),
+                schema = @Schema(description = Docs.TAG_DES)
         )
         List<String> tags,
-        @Schema(description = "작성 시각", example = SwaggerExamples.TIMESTAMP_EXAMPLE)
+        @Schema(description = Docs.CREATED_AT_DES, example = Docs.TIMESTAMP)
         LocalDateTime createdAt
 ) {
     public static PostCreateResponse of(Post post, Set<Tag> tags) {

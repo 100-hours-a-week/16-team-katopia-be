@@ -2,20 +2,20 @@ package katopia.fitcheck.dto.member.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.member.Member;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
 
 @Builder
 public record MemberProfileResponse(
-    @Schema(description = SwaggerExamples.MEMBER_ID_DES, example = SwaggerExamples.MEMBER_ID_EXAMPLE)
+    @Schema(description = Docs.ID_DES, example = "1")
     Long id,
-    @Schema(description = "프로필 정보")
+    @Schema(description = Docs.PROFILE_DES)
     MemberProfile profile,
-    @Schema(description = "집계 정보")
+    @Schema(description = Docs.AGGREGATE_DES)
     MemberAggregate aggregate,
-    @Schema(description = "수정 시각", example = SwaggerExamples.TIMESTAMP_EXAMPLE)
+    @Schema(description = Docs.UPDATED_AT_DES, example = Docs.TIMESTAMP)
     LocalDateTime updatedAt
 ) {
     public static MemberProfileResponse of(Member member) {

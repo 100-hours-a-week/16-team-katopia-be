@@ -3,15 +3,13 @@ package katopia.fitcheck.service.search;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.CommonErrorCode;
 import katopia.fitcheck.global.exception.code.ResponseCode;
+import katopia.fitcheck.global.policy.Policy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
 public class SearchValidator {
-
-    private static final int MIN_QUERY_LENGTH = 2;
-    private static final int MAX_QUERY_LENGTH = 100;
 
     public String requireQuery(String query) {
         return validateQuery(query, "query");
@@ -22,7 +20,7 @@ public class SearchValidator {
     }
 
     public String validateQuery(String query, String fieldName) {
-        return validateQuery(query, fieldName, MAX_QUERY_LENGTH);
+        return validateQuery(query, fieldName, Policy.SEARCH_MAX_QUERY_LENGTH);
     }
 
     public String validateQuery(String query, String fieldName, int maxLength) {
@@ -30,7 +28,7 @@ public class SearchValidator {
             throw new BusinessException(requiredValue(fieldName));
         }
         String trimmed = query.trim();
-        if (trimmed.length() < MIN_QUERY_LENGTH || trimmed.length() > maxLength) {
+        if (trimmed.length() < Policy.SEARCH_MIN_QUERY_LENGTH || trimmed.length() > maxLength) {
             throw new BusinessException(CommonErrorCode.INVALID_SEARCH_QUERY_LEN);
         }
         return trimmed;

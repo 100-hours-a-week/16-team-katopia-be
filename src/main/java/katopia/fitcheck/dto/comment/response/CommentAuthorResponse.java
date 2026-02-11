@@ -4,16 +4,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.global.constants.MemberDisplayConstants;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
 import lombok.Builder;
 
 @Builder
 public record CommentAuthorResponse(
-        @Schema(description = SwaggerExamples.MEMBER_ID_DES, example = SwaggerExamples.MEMBER_ID_EXAMPLE)
+        @Schema(description = Docs.ID_DES, example = "1")
         Long id,
-        @Schema(description = SwaggerExamples.NICKNAME_DES, example = SwaggerExamples.NICKNAME)
+        @Schema(description = Docs.NICKNAME_DES, example = Docs.NICKNAME)
         String nickname,
-        @Schema(description = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY_DES, example = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY)
+        @Schema(description = Docs.IMAGE_OBJECT_KEY_DES, example = Docs.IMAGE_OBJECT_KEY)
         String profileImageObjectKey
 ) {
     public static CommentAuthorResponse of(Member member) {

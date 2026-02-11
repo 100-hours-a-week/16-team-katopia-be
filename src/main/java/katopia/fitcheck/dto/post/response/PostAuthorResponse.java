@@ -4,22 +4,23 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.global.constants.MemberDisplayConstants;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
+import katopia.fitcheck.global.policy.Policy;
 import lombok.Builder;
 
 @Builder
 public record PostAuthorResponse(
-        @Schema(description = SwaggerExamples.MEMBER_ID_DES, example = SwaggerExamples.MEMBER_ID_EXAMPLE)
+        @Schema(description = Docs.ID_DES, example = "1")
         Long id,
-        @Schema(description = SwaggerExamples.NICKNAME_DES, example = SwaggerExamples.NICKNAME)
+        @Schema(description = Policy.NICKNAME_DES, example = Docs.NICKNAME)
         String nickname,
-        @Schema(description = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY_DES, example = SwaggerExamples.PROFILE_IMAGE_OBJECT_KEY)
+        @Schema(description = Docs.IMAGE_OBJECT_KEY_DES, example = Docs.IMAGE_OBJECT_KEY)
         String profileImageObjectKey,
-        @Schema(description = SwaggerExamples.GENDER_DES, example = SwaggerExamples.GENDER_M)
+        @Schema(description = Policy.GENDER_DES, example = Docs.GENDER)
         String gender,
-        @Schema(description = SwaggerExamples.HEIGHT_DES, example = SwaggerExamples.HEIGHT_175)
+        @Schema(description = Policy.HEIGHT_DES, example = Docs.HEIGHT)
         Short height,
-        @Schema(description = SwaggerExamples.WEIGHT_DES, example = SwaggerExamples.WEIGHT_70)
+        @Schema(description = Policy.WEIGHT_DES, example = Docs.WEIGHT)
         Short weight
 ) {
     public static PostAuthorResponse of(Member author) {

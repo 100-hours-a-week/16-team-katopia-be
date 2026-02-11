@@ -112,6 +112,18 @@ public class MemberController implements MemberApiSpec {
         return APIResponse.ok(MemberSuccessCode.PROFILE_FETCHED, responseBody);
     }
 
+    @GetMapping("/me/bookmarks")
+    @Override
+    public ResponseEntity<APIResponse<PostListResponse>> listMyBookmarks(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @RequestParam(value = "size", required = false) String size,
+            @RequestParam(value = "after", required = false) String after
+    ) {
+        Long memberId = securitySupport.requireMemberId(principal);
+        PostListResponse responseBody = postService.listBookmarks(memberId, size, after);
+        return APIResponse.ok(PostSuccessCode.POST_LISTED, responseBody);
+    }
+
 
     @PatchMapping
     @Override

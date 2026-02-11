@@ -1,7 +1,7 @@
 package katopia.fitcheck.dto.comment.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
 import katopia.fitcheck.domain.comment.Comment;
 import lombok.Builder;
 
@@ -9,13 +9,13 @@ import java.time.LocalDateTime;
 
 @Builder
 public record CommentSummary(
-        @Schema(description = "댓글 ID", example = "1")
+        @Schema(description = Docs.ID_DES, example = "1")
         Long id,
-        @Schema(description = "작성자 정보")
+        @Schema(description = Docs.AUTHOR_DES)
         CommentAuthorResponse author,
-        @Schema(description = "댓글 본문", example = "댓글입니다")
+        @Schema(description = Docs.COMMENT_CONTENT_DES, example = Docs.COMMENT_CONTENT)
         String content,
-        @Schema(description = "작성 시각", example = SwaggerExamples.TIMESTAMP_EXAMPLE)
+        @Schema(description = Docs.CREATED_AT_DES, example = Docs.TIMESTAMP)
         LocalDateTime createdAt
 ) {
     public static CommentSummary of(Comment comment) {

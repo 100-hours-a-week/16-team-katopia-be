@@ -1,18 +1,18 @@
 package katopia.fitcheck.dto.post.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import katopia.fitcheck.global.docs.SwaggerExamples;
+import katopia.fitcheck.global.docs.Docs;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
 
 @Builder
 public record PostSummary(
-        @Schema(description = "게시글 ID", example = "1")
+        @Schema(description = Docs.ID_DES, example = "1")
         Long id,
-        @Schema(description = "대표 이미지 오브젝트 키", example = "posts/1/1700000000000-uuid.png")
+        @Schema(description = Docs.IMAGE_OBJECT_KEY_DES, example = Docs.IMAGE_OBJECT_KEY)
         String imageObjectKey,
-        @Schema(description = "작성 시각", example = SwaggerExamples.TIMESTAMP_EXAMPLE)
+        @Schema(description = Docs.CREATED_AT_DES, example = Docs.TIMESTAMP)
         LocalDateTime createdAt
 ) {
     public static PostSummary of(Long id, String imageObjectKey, LocalDateTime createdAt) {

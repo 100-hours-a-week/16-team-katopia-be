@@ -10,6 +10,7 @@ import katopia.fitcheck.dto.post.response.PostResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
 import katopia.fitcheck.dto.post.response.PostSummary;
 import katopia.fitcheck.repository.member.MemberFollowRepository;
+import katopia.fitcheck.repository.post.PostBookmarkRepository;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.repository.post.PostTagNameProjection;
 import katopia.fitcheck.repository.post.PostTagRepository;
@@ -34,6 +35,7 @@ public class PostSearchService {
     private final PostFinder postFinder;
     private final MemberFinder memberFinder;
     private final MemberFollowRepository memberFollowRepository;
+    private final PostBookmarkRepository postBookmarkRepository;
     private final PostTagRepository postTagRepository;
     private final PostLikeRepository postLikeRepository;
 
@@ -87,7 +89,8 @@ public class PostSearchService {
 
         List<String> tags = postTagRepository.findTagNamesByPostId(postId);
         boolean isLiked = memberId != null && postLikeRepository.existsByMemberIdAndPostId(memberId, postId);
-        return PostDetailResponse.of(post, author, tags, isLiked);
+        boolean isBookmarked = memberId != null && postBookmarkRepository.existsByMemberIdAndPostId(memberId, postId);
+        return PostDetailResponse.of(post, author, tags, isLiked, isBookmarked);
     }
 
     @Transactional(readOnly = true)
@@ -107,6 +110,7 @@ public class PostSearchService {
         Map<Long, Post> postMap = loadFeedPosts(postIds);
         Map<Long, List<String>> tagsByPostId = loadTags(postMap.keySet());
         Set<Long> likedPostIds = postLikeRepository.findLikedPostIds(memberId, postIds);
+        Set<Long> bookmarkedPostIds = postBookmarkRepository.findBookmarkedPostIds(memberId, postIds);
 
         List<PostDetailResponse> posts = new ArrayList<>();
         for (Long postId : postIds) {
@@ -116,7 +120,8 @@ public class PostSearchService {
             }
             List<String> tags = tagsByPostId.getOrDefault(postId, List.of());
             boolean isLiked = likedPostIds.contains(postId);
-            posts.add(PostDetailResponse.of(post, post.getMember(), tags, isLiked));
+            boolean isBookmarked = bookmarkedPostIds.contains(postId);
+            posts.add(PostDetailResponse.of(post, post.getMember(), tags, isLiked, isBookmarked));
         }
 
         String nextCursor = null;

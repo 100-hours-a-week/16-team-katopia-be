@@ -4,20 +4,19 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import katopia.fitcheck.domain.member.StyleType;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
+import katopia.fitcheck.global.policy.Policy;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Locale;
 
 public class StyleListValidator implements ConstraintValidator<StyleList, List<String>> {
-    private static final int MAX_STYLE_COUNT = 2;
-
     @Override
     public boolean isValid(List<String> value, ConstraintValidatorContext context) {
         if (value == null || value.isEmpty()) {
             return true;
         }
-        if (value.size() > MAX_STYLE_COUNT) {
+        if (value.size() > Policy.STYLE_MAX_COUNT) {
             ValidationSupport.addViolation(context, MemberErrorCode.STYLE_LIMIT_EXCEEDED.getCode());
             return false;
         }
