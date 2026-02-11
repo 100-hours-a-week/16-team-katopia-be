@@ -134,25 +134,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Create new Launch Template version
-        id: create_lt_version
-        run: |
-          set -euo pipefail
-          NEW_VERSION=$(aws ec2 create-launch-template-version \
-            --launch-template-id "${{ secrets.PROD_LAUNCH_TEMPLATE_ID }}" \
-            --source-version '$Latest' \
-            --launch-template-data '{}' \
-            --query 'LaunchTemplateVersion.VersionNumber' \
-            --output text)
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Update ASG to use new Launch Template version
-        run: |
-          set -euo pipefail
-          aws autoscaling update-auto-scaling-group \
-            --auto-scaling-group-name "$ASG_NAME" \
-            --launch-template "LaunchTemplateId=${{ secrets.PROD_LAUNCH_TEMPLATE_ID }},Version=${{ steps.create_lt_version.outputs.new_version }}"
-
       - name: Start instance refresh
         id: start_instance_refresh
         run: |
@@ -160,4 +141,5 @@ jobs:
           aws autoscaling start-instance-refresh \
             --auto-scaling-group-name "$ASG_NAME" \
             --strategy Rolling \
+            --desired-configuration "LaunchTemplate={LaunchTemplateId=$LAUNCH_TEMPLATE_ID,Version=\$Latest}" \
             --preferences MinHealthyPercentage=$MIN_HEALTHY_PERCENTAGE,InstanceWarmup=$INSTANCE_WARMUP
