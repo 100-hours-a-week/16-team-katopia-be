@@ -10,7 +10,7 @@ import katopia.fitcheck.global.exception.AuthException;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.CommentErrorCode;
-import katopia.fitcheck.global.exception.code.PostErrorCode;
+import katopia.fitcheck.global.exception.code.CommonErrorCode;
 import katopia.fitcheck.repository.comment.CommentRepository;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.service.member.MemberFinder;
@@ -34,6 +34,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 class CommentCommandServiceTest {
@@ -68,7 +69,7 @@ class CommentCommandServiceTest {
 
         Member commenter = MemberTestFactory.member(2L);
 
-        doNothing().when(postFinder).requireExists(10L);
+//        doNothing().when(postFinder).requireExists(10L);
         when(postFinder.getReferenceById(10L)).thenReturn(post);
         when(memberFinder.getReferenceById(2L)).thenReturn(commenter);
 
@@ -84,14 +85,19 @@ class CommentCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-COMMENT-CMD-01 댓글 작성 실패(게시글 없음)")
-    void tcCommentCmd01_createFailsWhenPostMissing() {
-        doThrow(new BusinessException(PostErrorCode.POST_NOT_FOUND)).when(postFinder).requireExists(10L);
+    @DisplayName("TC-COMMENT-CMD-01 댓글 작성 실패(연관관계 오류)")
+    void tcCommentCmd01_createFailsWhenRelationInvalid() {
+        Member author = MemberTestFactory.member(1L);
+        Post post = Post.create(author, "content", List.of(PostImage.of(1, "img")));
+        ReflectionTestUtils.setField(post, "id", 10L);
+        when(postFinder.getReferenceById(10L)).thenReturn(post);
+        when(memberFinder.getReferenceById(1L)).thenReturn(author);
+        when(commentRepository.save(any())).thenThrow(new DataIntegrityViolationException("fk"));
 
         assertThatThrownBy(() -> commentCommandService.create(1L, 10L, new CommentRequest("hi")))
                 .isInstanceOf(BusinessException.class)
                 .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                .isEqualTo(PostErrorCode.POST_NOT_FOUND);
+                .isEqualTo(CommonErrorCode.INVALID_RELATION);
     }
 
     @Test
@@ -122,6 +128,20 @@ class CommentCommandServiceTest {
                 .isInstanceOf(AuthException.class)
                 .extracting(ex -> ((AuthException) ex).getErrorCode())
                 .isEqualTo(AuthErrorCode.ACCESS_DENIED);
+    }
+
+    @Test
+    @DisplayName("TC-COMMENT-CMD-07 댓글 수정 성공(본문 변경)")
+    void tcCommentCmd07_updateComment_updatesContent() {
+        doNothing().when(postFinder).requireExists(10L);
+        Comment comment = buildComment(1L, 10L, "before");
+        when(commentFinder.findByIdAndPostIdOrThrow(100L, 10L)).thenReturn(comment);
+        doNothing().when(commentValidator).validateOwner(eq(comment), eq(1L));
+
+        CommentResponse response = commentCommandService.update(1L, 10L, 100L, new CommentRequest("after"));
+
+        assertThat(response.content()).isEqualTo("after");
+        assertThat(comment.getContent()).isEqualTo("after");
     }
 
     @Test

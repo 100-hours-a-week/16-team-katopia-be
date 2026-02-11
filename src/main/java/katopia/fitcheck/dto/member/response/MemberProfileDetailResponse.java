@@ -13,6 +13,7 @@ public record MemberProfileDetailResponse(
     boolean enableRealtimeNotification,
     String email,
     MemberProfile profile,
+    MemberAggregate aggregate,
     LocalDateTime updatedAt
 ) {
     public static MemberProfileDetailResponse of(Member member) {
@@ -23,6 +24,7 @@ public record MemberProfileDetailResponse(
                 .enableRealtimeNotification(member.isEnableRealtimeNotification())
                 .email(member.getEmail())
                 .profile(MemberProfile.of(member))
+                .aggregate(member.getAggregate())
                 .updatedAt(member.getUpdatedAt())
                 .build();
     }

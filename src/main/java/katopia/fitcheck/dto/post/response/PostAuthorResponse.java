@@ -2,6 +2,7 @@ package katopia.fitcheck.dto.post.response;
 
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.domain.member.AccountStatus;
+import katopia.fitcheck.global.constants.MemberDisplayConstants;
 import lombok.Builder;
 
 @Builder
@@ -17,7 +18,7 @@ public record PostAuthorResponse(
         if (author.getAccountStatus() == AccountStatus.WITHDRAWN) {
             return PostAuthorResponse.builder()
                     .id(null)
-                    .nickname("알 수 없음")
+                    .nickname(MemberDisplayConstants.WITHDRAWN_NICKNAME)
                     .profileImageObjectKey(null)
                     .gender(null)
                     .height(null)

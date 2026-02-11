@@ -38,7 +38,7 @@ public class PresignService {
                 .map(ext -> buildPresign(memberId, request.category(), ext))
                 .collect(Collectors.toList());
 
-        return new PresignResponse(files);
+        return PresignResponse.of(files);
     }
 
     private PresignResponse.PresignUrl buildPresign(Long memberId, UploadCategory category, String extension) {

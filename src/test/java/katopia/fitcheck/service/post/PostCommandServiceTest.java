@@ -12,6 +12,7 @@ import katopia.fitcheck.dto.post.response.PostUpdateResponse;
 import katopia.fitcheck.global.exception.AuthException;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.repository.comment.CommentRepository;
+import katopia.fitcheck.repository.member.MemberRepository;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.repository.post.PostTagRepository;
@@ -53,6 +54,9 @@ class PostCommandServiceTest {
 
     @Mock
     private CommentRepository commentRepository;
+
+    @Mock
+    private MemberRepository memberRepository;
 
     @Mock
     private PostValidator postValidator;
@@ -102,6 +106,7 @@ class PostCommandServiceTest {
         assertThat(response.content()).isEqualTo("hello");
         assertThat(response.imageObjectKeys()).hasSize(2);
 
+        verify(memberRepository).incrementPostCount(1L);
         verify(tagRepository).saveAll(any());
     }
 
@@ -144,6 +149,7 @@ class PostCommandServiceTest {
 
         postCommandService.delete(1L, 10L);
 
+        verify(memberRepository).decrementPostCount(1L);
         verify(commentRepository).deleteByPostId(10L);
         verify(postLikeRepository).deleteByPostId(10L);
         verify(postTagRepository).deleteByPostId(10L);

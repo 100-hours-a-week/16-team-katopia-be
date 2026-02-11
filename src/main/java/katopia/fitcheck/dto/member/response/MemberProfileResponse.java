@@ -16,7 +16,7 @@ public record MemberProfileResponse(
         return MemberProfileResponse.builder()
                 .id(member.getId())
                 .profile(MemberProfile.of(member))
-                .aggregate(null) // TODO(v2): 프로필 조회 페이지 집계 섹션 추가
+                .aggregate(member.getAggregate())
                 .updatedAt(member.getUpdatedAt())
                 .build();
     }

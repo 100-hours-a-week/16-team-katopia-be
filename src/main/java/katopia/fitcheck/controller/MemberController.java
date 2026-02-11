@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import katopia.fitcheck.controller.spec.MemberApiSpec;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdateRequest;
 import katopia.fitcheck.dto.member.request.MemberSignupRequest;
+import katopia.fitcheck.dto.member.response.MemberFollowListResponse;
+import katopia.fitcheck.dto.member.response.MemberFollowResponse;
 import katopia.fitcheck.dto.member.response.MemberProfileDetailResponse;
 import katopia.fitcheck.dto.member.response.MemberProfileResponse;
 import katopia.fitcheck.dto.member.response.MemberSignupResponse;
@@ -131,5 +133,49 @@ public class MemberController implements MemberApiSpec {
         Long memberId = securitySupport.requireMemberId(principal);
         memberService.withdraw(memberId);
         return APIResponse.noContent(AuthSuccessCode.MEMBER_WITHDRAWN);
+    }
+
+    @PostMapping("/{memberId}/follow")
+    public ResponseEntity<APIResponse<MemberFollowResponse>> follow(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable Long memberId
+    ) {
+        Long followerId = securitySupport.requireMemberId(principal);
+        MemberFollowResponse body = memberService.follow(followerId, memberId);
+        return APIResponse.ok(MemberSuccessCode.FOLLOWED, body);
+    }
+
+    @DeleteMapping("/{memberId}/follow")
+    public ResponseEntity<APIResponse<MemberFollowResponse>> unfollow(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable Long memberId
+    ) {
+        Long followerId = securitySupport.requireMemberId(principal);
+        MemberFollowResponse body = memberService.unfollow(followerId, memberId);
+        return APIResponse.ok(MemberSuccessCode.UNFOLLOWED, body);
+    }
+
+    @GetMapping("/{memberId}/followers")
+    public ResponseEntity<APIResponse<MemberFollowListResponse>> listFollowers(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable Long memberId,
+            @RequestParam(value = "size", required = false) String size,
+            @RequestParam(value = "after", required = false) String after
+    ) {
+        securitySupport.requireMemberId(principal);
+        MemberFollowListResponse responseBody = memberService.listFollowers(memberId, size, after);
+        return APIResponse.ok(MemberSuccessCode.FOLLOW_LIST_FETCHED, responseBody);
+    }
+
+    @GetMapping("/{memberId}/followings")
+    public ResponseEntity<APIResponse<MemberFollowListResponse>> listFollowings(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable Long memberId,
+            @RequestParam(value = "size", required = false) String size,
+            @RequestParam(value = "after", required = false) String after
+    ) {
+        securitySupport.requireMemberId(principal);
+        MemberFollowListResponse responseBody = memberService.listFollowings(memberId, size, after);
+        return APIResponse.ok(MemberSuccessCode.FOLLOW_LIST_FETCHED, responseBody);
     }
 }

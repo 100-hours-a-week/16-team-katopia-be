@@ -11,4 +11,8 @@ public record PostLikeResponse(
     public static PostLikeResponse of(Post post) {
         return new PostLikeResponse(post.getId(), post.getLikeCount());
     }
+
+    public static PostLikeResponse of(Long postId, long likeCount) {
+        return new PostLikeResponse(postId, likeCount);
+    }
 }

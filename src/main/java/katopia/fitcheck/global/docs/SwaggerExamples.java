@@ -37,6 +37,14 @@ public final class SwaggerExamples {
     public static final String PRESIGN_EXTENSIONS_EXAMPLE = "[\"jpg\",\"png\"]";
     public static final String PRESIGN_EXTENSION_DES = "확장자";
     public static final String PRESIGN_EXTENSION_EXAMPLE = "jpg";
+    public static final String MEMBER_ID_DES = "회원 ID";
+    public static final String MEMBER_ID_EXAMPLE = "1";
+    public static final String FOLLOW_ID_DES = "팔로우 관계 ID";
+    public static final String FOLLOW_ID_EXAMPLE = "100";
+    public static final String FOLLOW_CREATED_AT_DES = "팔로우 생성 시각";
+    public static final String FOLLOW_CREATED_AT_EXAMPLE = "2026-02-10T12:00:00";
+    public static final String FOLLOW_CURSOR_DES = "커서(createdAt|followId)";
+    public static final String FOLLOW_CURSOR_EXAMPLE = "2026-02-10T12:00:00|100";
 
     private SwaggerExamples() {
     }

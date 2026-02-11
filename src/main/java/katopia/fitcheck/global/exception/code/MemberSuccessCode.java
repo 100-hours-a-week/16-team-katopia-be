@@ -11,7 +11,10 @@ public enum MemberSuccessCode implements ResponseCode {
 
     PROFILE_UPDATED(HttpStatus.OK, "MEMBER-S-003", "회원 정보가 수정되었습니다."),
     PROFILE_FETCHED(HttpStatus.OK, "MEMBER-S-004", "프로필 조회가 성공적으로 완료되었습니다."),
-    MEMBER_DELETED(HttpStatus.NO_CONTENT, "MEMBER-S-005", "회원이 삭제되었습니다.")
+    MEMBER_DELETED(HttpStatus.NO_CONTENT, "MEMBER-S-005", "회원이 삭제되었습니다."),
+    FOLLOWED(HttpStatus.CREATED, "MEMBER-S-006", "팔로우가 완료되었습니다."),
+    UNFOLLOWED(HttpStatus.OK, "MEMBER-S-007", "언팔로우가 완료되었습니다."),
+    FOLLOW_LIST_FETCHED(HttpStatus.OK, "MEMBER-S-008", "팔로우 목록 조회가 완료되었습니다.")
     ;
 
     private final HttpStatus status;

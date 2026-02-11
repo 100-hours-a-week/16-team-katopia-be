@@ -5,6 +5,7 @@ import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.domain.member.StyleType;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdateRequest;
 import katopia.fitcheck.dto.member.response.MemberProfileDetailResponse;
+import katopia.fitcheck.dto.member.response.MemberProfileResponse;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.repository.member.MemberRepository;
@@ -71,7 +72,6 @@ class MemberProfileServiceTest {
                         member.isEnableRealtimeNotification(),
                         Set.copyOf(member.getStyles())
                 ));
-
         MemberProfileDetailResponse response = memberProfileService.updateProfile(1L, request);
 
         assertThat(member.getNickname()).isEqualTo("nickname");
@@ -179,4 +179,40 @@ class MemberProfileServiceTest {
                 .extracting(ex -> ((BusinessException) ex).getErrorCode())
                 .isEqualTo(MemberErrorCode.NOT_FOUND_WITHDRAWN_MEMBER);
     }
+
+    @Test
+    @DisplayName("TC-MEMBER-PROFILE-05 프로필 조회 성공(팔로우 집계 포함)")
+    void tcMemberProfile05_getProfile_returnsAggregate() {
+        Member member = MemberTestFactory.builder(1L, "nickname")
+                .postCount(2L)
+                .followingCount(3L)
+                .followerCount(4L)
+                .build();
+        when(memberFinder.findPublicProfileByIdOrThrow(eq(1L))).thenReturn(member);
+
+        MemberProfileResponse response = memberProfileService.getProfile(1L);
+
+        assertThat(response.aggregate().postCount()).isEqualTo(2L);
+        assertThat(response.aggregate().followingCount()).isEqualTo(3L);
+        assertThat(response.aggregate().followerCount()).isEqualTo(4L);
+    }
+
+    @Test
+    @DisplayName("TC-MEMBER-PROFILE-06 내 프로필 조회 성공(팔로우 집계 포함)")
+    void tcMemberProfile06_getProfileDetail_returnsAggregate() {
+        Member member = MemberTestFactory.builder(1L, "nickname")
+                .postCount(1L)
+                .followingCount(5L)
+                .followerCount(6L)
+                .build();
+        when(memberFinder.findActiveByIdOrThrow(eq(1L))).thenReturn(member);
+
+
+        MemberProfileDetailResponse response = memberProfileService.getProfileDetail(1L);
+
+        assertThat(response.aggregate().postCount()).isEqualTo(1L);
+        assertThat(response.aggregate().followingCount()).isEqualTo(5L);
+        assertThat(response.aggregate().followerCount()).isEqualTo(6L);
+    }
+
 }

@@ -6,10 +6,10 @@ import java.util.List;
 
 @Builder
 public record MemberSearchResponse(
-        List<MemberSummary> members,
+        List<MemberSearchSummary> members,
         String nextCursor
 ) implements SearchResultCount {
-    public static MemberSearchResponse of(List<MemberSummary> members, String nextCursor) {
+    public static MemberSearchResponse of(List<MemberSearchSummary> members, String nextCursor) {
         return MemberSearchResponse.builder()
                 .members(members)
                 .nextCursor(nextCursor)
