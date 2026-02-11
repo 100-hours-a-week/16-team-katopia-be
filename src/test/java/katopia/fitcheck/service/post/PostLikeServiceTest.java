@@ -44,30 +44,8 @@ class PostLikeServiceTest {
     private PostLikeService postLikeService;
 
     @Test
-    @DisplayName("TC-POST-LIKE-01 좋아요 실패(중복)")
-    void tcPostLike01_alreadyLiked_throws() {
-        when(postLikeRepository.existsByMemberIdAndPostId(eq(1L), eq(10L))).thenReturn(true);
-
-        assertThatThrownBy(() -> postLikeService.like(1L, 10L))
-                .isInstanceOf(BusinessException.class)
-                .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                .isEqualTo(PostLikeErrorCode.ALREADY_LIKED);
-    }
-
-    @Test
-    @DisplayName("TC-POST-LIKE-02 좋아요 해제 실패(기록 없음)")
-    void tcPostLike02_notFoundLike_throws() {
-        when(postLikeRepository.findByMemberIdAndPostId(eq(1L), eq(10L))).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> postLikeService.unlike(1L, 10L))
-                .isInstanceOf(BusinessException.class)
-                .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                .isEqualTo(PostLikeErrorCode.NOT_FOUND_LIKE);
-    }
-
-    @Test
-    @DisplayName("TC-POST-LIKE-03 좋아요 성공(연관 엔티티/카운트 증가)")
-    void tcPostLike03_likeSuccess_incrementsCount() {
+    @DisplayName("TC-POST-LIKE-S-01 좋아요 성공(연관 엔티티/카운트 증가)")
+    void tcPostLikeS01_likeSuccess_incrementsCount() {
         Member member = MemberTestFactory.member(1L);
         Post post = Post.create(member, "content", List.of(PostImage.of(1, "img")));
         ReflectionTestUtils.setField(post, "id", 10L);
@@ -78,5 +56,27 @@ class PostLikeServiceTest {
         when(postFinder.findByIdOrThrow(10L)).thenReturn(post);
 
         postLikeService.like(1L, 10L);
+    }
+
+    @Test
+    @DisplayName("TC-POST-LIKE-F-01 좋아요 실패(중복)")
+    void tcPostLikeF01_alreadyLiked_throws() {
+        when(postLikeRepository.existsByMemberIdAndPostId(eq(1L), eq(10L))).thenReturn(true);
+
+        assertThatThrownBy(() -> postLikeService.like(1L, 10L))
+                .isInstanceOf(BusinessException.class)
+                .extracting(ex -> ((BusinessException) ex).getErrorCode())
+                .isEqualTo(PostLikeErrorCode.ALREADY_LIKED);
+    }
+
+    @Test
+    @DisplayName("TC-POST-LIKE-F-02 좋아요 해제 실패(기록 없음)")
+    void tcPostLikeF02_notFoundLike_throws() {
+        when(postLikeRepository.findByMemberIdAndPostId(eq(1L), eq(10L))).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postLikeService.unlike(1L, 10L))
+                .isInstanceOf(BusinessException.class)
+                .extracting(ex -> ((BusinessException) ex).getErrorCode())
+                .isEqualTo(PostLikeErrorCode.NOT_FOUND_LIKE);
     }
 }

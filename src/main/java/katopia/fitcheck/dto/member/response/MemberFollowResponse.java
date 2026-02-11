@@ -11,6 +11,7 @@ public record MemberFollowResponse(
         Long targetId,
         @Schema(description = "대상 닉네임", example = SwaggerExamples.NICKNAME)
         String targetNickname,
+        @Schema(description = "대상 집계 정보")
         FollowAggregate aggregate
 ) {
     public static MemberFollowResponse of(Member target, boolean isFollowing) {

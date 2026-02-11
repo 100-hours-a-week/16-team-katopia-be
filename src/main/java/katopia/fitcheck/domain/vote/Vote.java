@@ -71,7 +71,7 @@ public class Vote {
         }
     }
 
-    public static Vote create(Member member, String title, LocalDateTime expiresAt, List<VoteItem> items) {
+    static Vote create(Member member, String title, LocalDateTime expiresAt, List<VoteItem> items) {
         return Vote.builder()
                 .member(member)
                 .title(title)
@@ -81,12 +81,14 @@ public class Vote {
     }
 
     public static Vote create(Member member, VoteCreateRequest request) {
-        String normalizedTitle = request.title() == null ? null : request.title().trim();
+        String normalizedTitle = request.title().trim();
         LocalDateTime expiresAt = LocalDateTime.now().plusHours(DEFAULT_EXPIRES_HOURS);
-        return create(member, normalizedTitle, expiresAt, List.of());
+        Vote vote = create(member, normalizedTitle, expiresAt, List.of());
+        vote.addItemsFromKeys(request.imageObjectKeys());
+        return vote;
     }
 
-    public void addItemsFromKeys(List<String> imageObjectKeys) {
+    private void addItemsFromKeys(List<String> imageObjectKeys) {
         if (imageObjectKeys == null || imageObjectKeys.isEmpty()) {
             return;
         }
@@ -95,9 +97,5 @@ public class Vote {
             items.add(VoteItem.of(this, order, key));
             order += 1;
         }
-    }
-
-    public boolean isClosed(LocalDateTime now) {
-        return !expiresAt.isAfter(now);
     }
 }

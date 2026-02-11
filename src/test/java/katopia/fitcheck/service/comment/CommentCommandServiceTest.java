@@ -61,8 +61,8 @@ class CommentCommandServiceTest {
     private CommentCommandService commentCommandService;
 
     @Test
-    @DisplayName("TC-COMMENT-CMD-06 댓글 생성 성공(연관 엔티티/카운트 증가)")
-    void tcCommentCmd06_createComment_incrementsCount() {
+    @DisplayName("TC-COMMENT-CMD-S-01 댓글 생성 성공(연관 엔티티/카운트 증가)")
+    void tcCommentCmdS01_createComment_incrementsCount() {
         Member author = MemberTestFactory.member(1L);
         Post post = Post.create(author, "content", List.of(PostImage.of(1, "img")));
         ReflectionTestUtils.setField(post, "id", 10L);
@@ -85,8 +85,22 @@ class CommentCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-COMMENT-CMD-01 댓글 작성 실패(연관관계 오류)")
-    void tcCommentCmd01_createFailsWhenRelationInvalid() {
+    @DisplayName("TC-COMMENT-CMD-S-02 댓글 수정 성공(본문 변경)")
+    void tcCommentCmdS02_updateComment_updatesContent() {
+        doNothing().when(postFinder).requireExists(10L);
+        Comment comment = buildComment(1L, 10L, "before");
+        when(commentFinder.findByIdAndPostIdOrThrow(100L, 10L)).thenReturn(comment);
+        doNothing().when(commentValidator).validateOwner(eq(comment), eq(1L));
+
+        CommentResponse response = commentCommandService.update(1L, 10L, 100L, new CommentRequest("after"));
+
+        assertThat(response.content()).isEqualTo("after");
+        assertThat(comment.getContent()).isEqualTo("after");
+    }
+
+    @Test
+    @DisplayName("TC-COMMENT-CMD-F-01 댓글 작성 실패(연관관계 오류)")
+    void tcCommentCmdF01_createFailsWhenRelationInvalid() {
         Member author = MemberTestFactory.member(1L);
         Post post = Post.create(author, "content", List.of(PostImage.of(1, "img")));
         ReflectionTestUtils.setField(post, "id", 10L);
@@ -101,8 +115,8 @@ class CommentCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-COMMENT-CMD-02 댓글 수정 실패(댓글 없음)")
-    void tcCommentCmd02_updateFailsWhenCommentMissing() {
+    @DisplayName("TC-COMMENT-CMD-F-02 댓글 수정 실패(댓글 없음)")
+    void tcCommentCmdF02_updateFailsWhenCommentMissing() {
         doNothing().when(postFinder).requireExists(10L);
         doThrow(new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND))
                 .when(commentFinder)
@@ -115,8 +129,8 @@ class CommentCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-COMMENT-CMD-03 댓글 수정 실패(작성자 아님)")
-    void tcCommentCmd03_updateFailsWhenNotOwner() {
+    @DisplayName("TC-COMMENT-CMD-F-03 댓글 수정 실패(작성자 아님)")
+    void tcCommentCmdF03_updateFailsWhenNotOwner() {
         doNothing().when(postFinder).requireExists(10L);
         Comment comment = buildComment(1L, 10L, "hi");
         when(commentFinder.findByIdAndPostIdOrThrow(100L, 10L)).thenReturn(comment);
@@ -131,22 +145,8 @@ class CommentCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-COMMENT-CMD-07 댓글 수정 성공(본문 변경)")
-    void tcCommentCmd07_updateComment_updatesContent() {
-        doNothing().when(postFinder).requireExists(10L);
-        Comment comment = buildComment(1L, 10L, "before");
-        when(commentFinder.findByIdAndPostIdOrThrow(100L, 10L)).thenReturn(comment);
-        doNothing().when(commentValidator).validateOwner(eq(comment), eq(1L));
-
-        CommentResponse response = commentCommandService.update(1L, 10L, 100L, new CommentRequest("after"));
-
-        assertThat(response.content()).isEqualTo("after");
-        assertThat(comment.getContent()).isEqualTo("after");
-    }
-
-    @Test
-    @DisplayName("TC-COMMENT-CMD-04 댓글 삭제 실패(작성자 아님)")
-    void tcCommentCmd04_deleteFailsWhenNotOwner() {
+    @DisplayName("TC-COMMENT-CMD-F-04 댓글 삭제 실패(작성자 아님)")
+    void tcCommentCmdF04_deleteFailsWhenNotOwner() {
         doNothing().when(postFinder).requireExists(10L);
         Comment comment = buildComment(1L, 10L, "hi");
         when(commentFinder.findByIdAndPostIdOrThrow(100L, 10L)).thenReturn(comment);
@@ -161,8 +161,8 @@ class CommentCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-COMMENT-CMD-05 댓글 삭제 실패(댓글 없음)")
-    void tcCommentCmd05_deleteFailsWhenCommentMissing() {
+    @DisplayName("TC-COMMENT-CMD-F-05 댓글 삭제 실패(댓글 없음)")
+    void tcCommentCmdF05_deleteFailsWhenCommentMissing() {
         doNothing().when(postFinder).requireExists(10L);
         doThrow(new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND))
                 .when(commentFinder)

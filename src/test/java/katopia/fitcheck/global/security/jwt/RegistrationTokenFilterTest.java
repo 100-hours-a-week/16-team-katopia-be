@@ -37,8 +37,24 @@ class RegistrationTokenFilterTest {
     private RegistrationTokenFilter filter;
 
     @Test
-    @DisplayName("TC-REG-FILTER-01 회원가입 쿠키로 리프레시 요청 차단")
-    void tcRegFilter01_blocksRegistrationCookieOnRefresh() throws ServletException, IOException {
+    @DisplayName("TC-REG-FILTER-S-01 회원가입 요청 쿠키 정상 처리")
+    void tcRegFilterS01_setsRegistrationMemberId() throws ServletException, IOException {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/members");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        when(jwtProvider.extractCookieValue(any(HttpServletRequest.class), eq(JwtProvider.REGISTRATION_COOKIE)))
+                .thenReturn("reg");
+        when(jwtProvider.extractMemberId("reg", JwtProvider.TokenType.REGISTRATION)).thenReturn(1L);
+        doNothing().when(chain).doFilter(any(), any());
+
+        filter.doFilter(request, response, chain);
+
+        verify(chain).doFilter(any(), any());
+    }
+
+    @Test
+    @DisplayName("TC-REG-FILTER-F-01 회원가입 쿠키로 리프레시 요청 차단")
+    void tcRegFilterF01_blocksRegistrationCookieOnRefresh() throws ServletException, IOException {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", JwtProvider.REFRESH_PATH);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
@@ -61,8 +77,8 @@ class RegistrationTokenFilterTest {
     }
 
     @Test
-    @DisplayName("TC-REG-FILTER-02 회원가입 요청 시 등록 쿠키 미존재")
-    void tcRegFilter02_blocksMissingRegistrationCookie() throws ServletException, IOException {
+    @DisplayName("TC-REG-FILTER-F-02 회원가입 요청 시 등록 쿠키 미존재")
+    void tcRegFilterF02_blocksMissingRegistrationCookie() throws ServletException, IOException {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/members");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
@@ -73,21 +89,5 @@ class RegistrationTokenFilterTest {
                 .isInstanceOf(AuthException.class)
                 .extracting(ex -> ((AuthException) ex).getErrorCode())
                 .isEqualTo(AuthErrorCode.NOT_FOUND_TEMP_TOKEN);
-    }
-
-    @Test
-    @DisplayName("TC-REG-FILTER-03 회원가입 요청 시 등록 쿠키 정상 처리")
-    void tcRegFilter03_setsRegistrationMemberId() throws ServletException, IOException {
-        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/members");
-        MockHttpServletResponse response = new MockHttpServletResponse();
-
-        when(jwtProvider.extractCookieValue(any(HttpServletRequest.class), eq(JwtProvider.REGISTRATION_COOKIE)))
-                .thenReturn("reg");
-        when(jwtProvider.extractMemberId("reg", JwtProvider.TokenType.REGISTRATION)).thenReturn(1L);
-        doNothing().when(chain).doFilter(any(), any());
-
-        filter.doFilter(request, response, chain);
-
-        verify(chain).doFilter(any(), any());
     }
 }

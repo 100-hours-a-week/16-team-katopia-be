@@ -43,7 +43,6 @@ public class VoteService {
     public VoteCreateResponse create(Long memberId, VoteCreateRequest request) {
         Member member = memberFinder.findActiveByIdOrThrow(memberId);
         Vote vote = Vote.create(member, request);
-        vote.addItemsFromKeys(request.imageObjectKeys());
         Vote saved = voteRepository.save(vote);
         return VoteCreateResponse.of(saved);
     }
@@ -52,9 +51,10 @@ public class VoteService {
     public VoteListResponse listMine(Long memberId, String sizeValue, String after) {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<Vote> votes = loadVotes(memberId, size, after);
-        LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now();
+
         List<VoteSummary> summaries = votes.stream()
-                .map(vote -> VoteSummary.of(vote.getId(), vote.getTitle(), vote.isClosed(now)))
+                .map(vote -> VoteSummary.of(vote, now))
                 .toList();
 
         String nextCursor = null;
@@ -81,11 +81,12 @@ public class VoteService {
     @Transactional
     public VoteResultResponse participate(Long memberId, Long voteId, VoteParticipationRequest request) {
         Vote vote = findVoteOrThrow(voteId);
-        LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now();
+
         if (vote.getMember().getId().equals(memberId)) {
             throw new BusinessException(VoteErrorCode.SELF_PARTICIPATION_NOT_ALLOWED);
         }
-        if (vote.isClosed(now)) {
+        if (!vote.getExpiresAt().isAfter(now)) {
             throw new BusinessException(VoteErrorCode.VOTE_CLOSED);
         }
         if (voteParticipationRepository.existsByVoteIdAndMemberId(voteId, memberId)) {

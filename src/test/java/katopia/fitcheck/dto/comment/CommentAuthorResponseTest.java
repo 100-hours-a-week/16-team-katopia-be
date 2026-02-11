@@ -17,7 +17,7 @@ class CommentAuthorResponseTest {
     class WithdrawnCases {
 
         @Test
-        @DisplayName("TC-COMMENT-AUTHOR-01 탈퇴 회원은 닉네임을 탈퇴 회원으로 표시")
+        @DisplayName("TC-COMMENT-AUTHOR-S-01 탈퇴 회원은 닉네임을 탈퇴 회원으로 표시")
         void tcCommentAuthor01_withdrawnMember_returnsWithdrawnNickname() {
             Member member = Member.builder()
                     .id(1L)
@@ -38,7 +38,7 @@ class CommentAuthorResponseTest {
     class ActiveCases {
 
         @Test
-        @DisplayName("TC-COMMENT-AUTHOR-02 활성 회원은 원본 닉네임 반환")
+        @DisplayName("TC-COMMENT-AUTHOR-S-02 활성 회원은 원본 닉네임 반환")
         void tcCommentAuthor02_activeMember_returnsNickname() {
             Member member = Member.builder()
                     .id(1L)

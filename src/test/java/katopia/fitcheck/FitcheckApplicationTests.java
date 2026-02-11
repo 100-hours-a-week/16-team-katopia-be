@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class FitcheckApplicationTests {
 
     @Test
-    @DisplayName("TC-BOOT-01 스프링 컨텍스트 로딩")
+    @DisplayName("TC-BOOT-S-01 스프링 컨텍스트 로딩")
     void contextLoads() {
     }
 

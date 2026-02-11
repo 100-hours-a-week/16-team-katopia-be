@@ -42,8 +42,8 @@ class AuthTokenServiceTest {
     private AuthTokenService authTokenService;
 
     @Test
-    @DisplayName("TC-AUTH-REFRESH-01 토큰 재발급 실패(토큰 파싱 실패)")
-    void tcAuthRefresh01_invalidToken() {
+    @DisplayName("TC-AUTH-SVC-F-01 토큰 재발급 실패(토큰 파싱 실패)")
+    void tcAuthSvcF01_invalidToken() {
         when(jwtProvider.extractMemberId(eq("rt"), eq(JwtProvider.TokenType.REFRESH))).thenReturn(null);
 
         assertThatThrownBy(() -> authTokenService.refreshTokens("rt"))
@@ -53,8 +53,8 @@ class AuthTokenServiceTest {
     }
 
     @Test
-    @DisplayName("TC-AUTH-REFRESH-02 토큰 재발급 실패(미등록 토큰)")
-    void tcAuthRefresh02_missingTokenEntity() {
+    @DisplayName("TC-AUTH-SVC-F-02 토큰 재발급 실패(미등록 토큰)")
+    void tcAuthSvcF02_missingTokenEntity() {
         when(jwtProvider.extractMemberId(eq("rt"), eq(JwtProvider.TokenType.REFRESH))).thenReturn(1L);
         when(refreshTokenService.hash("rt")).thenReturn("hash");
         when(refreshTokenService.findByTokenHash("hash")).thenReturn(Optional.empty());
@@ -66,8 +66,8 @@ class AuthTokenServiceTest {
     }
 
     @Test
-    @DisplayName("TC-AUTH-REFRESH-03 토큰 재발급 실패(폐기/만료)")
-    void tcAuthRefresh03_revokedOrExpiredToken() {
+    @DisplayName("TC-AUTH-SVC-F-03 토큰 재발급 실패(폐기/만료)")
+    void tcAuthSvcF03_revokedOrExpiredToken() {
         when(jwtProvider.extractMemberId(eq("rt"), eq(JwtProvider.TokenType.REFRESH))).thenReturn(1L);
         when(refreshTokenService.hash("rt")).thenReturn("hash");
         RefreshToken entity = RefreshToken.issue(1L, "hash", LocalDateTime.now().minusDays(1));
@@ -83,8 +83,8 @@ class AuthTokenServiceTest {
     }
 
     @Test
-    @DisplayName("TC-AUTH-REFRESH-04 토큰 재발급 실패(탈퇴 회원)")
-    void tcAuthRefresh04_withdrawnMember() {
+    @DisplayName("TC-AUTH-SVC-F-04 토큰 재발급 실패(탈퇴 회원)")
+    void tcAuthSvcF04_withdrawnMember() {
         when(jwtProvider.extractMemberId(eq("rt"), eq(JwtProvider.TokenType.REFRESH))).thenReturn(1L);
         when(refreshTokenService.hash("rt")).thenReturn("hash");
         RefreshToken entity = RefreshToken.issue(1L, "hash", LocalDateTime.now().plusDays(1));

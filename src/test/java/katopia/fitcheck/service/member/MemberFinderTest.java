@@ -30,8 +30,8 @@ class MemberFinderTest {
     private MemberFinder memberFinder;
 
     @Test
-    @DisplayName("TC-MEMBER-FINDER-01 활성 회원 조회 성공")
-    void tcMemberFinder01_findActiveById_returnsMember() {
+    @DisplayName("TC-MEMBER-FINDER-S-01 활성 회원 조회 성공")
+    void tcMemberFinderS01_findActiveById_returnsMember() {
         Member member = MemberTestFactory.builder(1L, "member")
                 .accountStatus(AccountStatus.ACTIVE)
                 .build();
@@ -44,8 +44,8 @@ class MemberFinderTest {
     }
 
     @Test
-    @DisplayName("TC-MEMBER-FINDER-02 활성 회원 조회 실패(미존재/비활성)")
-    void tcMemberFinder02_findActiveById_throws() {
+    @DisplayName("TC-MEMBER-FINDER-F-01 활성 회원 조회 실패(미존재/비활성)")
+    void tcMemberFinderF01_findActiveById_throws() {
         when(memberRepository.findByIdAndAccountStatus(eq(1L), eq(AccountStatus.ACTIVE)))
                 .thenReturn(Optional.empty());
 

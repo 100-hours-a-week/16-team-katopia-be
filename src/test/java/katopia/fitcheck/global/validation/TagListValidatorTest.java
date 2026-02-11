@@ -23,24 +23,32 @@ class TagListValidatorTest {
     }
 
     @Test
-    @DisplayName("TC-POST-TAG-01 태그 null")
-    void tcPostTag01_nullTags_isValid() {
+    @DisplayName("TC-POST-TAG-S-01 태그 null")
+    void tcPostTagS01_nullTags_isValid() {
         Set<ConstraintViolation<TagRequest>> violations = validator.validate(new TagRequest(null));
 
         assertThat(violations).isEmpty();
     }
 
     @Test
-    @DisplayName("TC-POST-TAG-02 태그 빈 리스트")
-    void tcPostTag02_emptyTags_isValid() {
+    @DisplayName("TC-POST-TAG-S-02 태그 빈 리스트")
+    void tcPostTagS02_emptyTags_isValid() {
         Set<ConstraintViolation<TagRequest>> violations = validator.validate(new TagRequest(List.of()));
 
         assertThat(violations).isEmpty();
     }
 
     @Test
-    @DisplayName("TC-POST-TAG-03 태그 개수 초과")
-    void tcPostTag03_exceedMaxCount_returnsError() {
+    @DisplayName("TC-POST-TAG-S-03 태그 유효성 성공")
+    void tcPostTagS03_validTags_isValid() {
+        Set<ConstraintViolation<TagRequest>> violations = validator.validate(new TagRequest(List.of("DAILY", "MINIMAL")));
+
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    @DisplayName("TC-POST-TAG-F-01 태그 개수 초과")
+    void tcPostTagF01_exceedMaxCount_returnsError() {
         List<String> tags = List.of("t1","t2","t3","t4","t5","t6","t7","t8","t9","t10","t11");
         Set<ConstraintViolation<TagRequest>> violations = validator.validate(new TagRequest(tags));
 
@@ -48,28 +56,20 @@ class TagListValidatorTest {
     }
 
     @Test
-    @DisplayName("TC-POST-TAG-04 태그 공백 실패")
-    void tcPostTag04_blankTag_returnsError() {
+    @DisplayName("TC-POST-TAG-F-02 태그 공백 실패")
+    void tcPostTagF02_blankTag_returnsError() {
         Set<ConstraintViolation<TagRequest>> violations = validator.validate(new TagRequest(List.of(" ")));
 
         assertSingleViolationWithMessage(violations, PostErrorCode.TAG_LENGTH_INVALID.getCode());
     }
 
     @Test
-    @DisplayName("TC-POST-TAG-05 태그 길이 위반")
-    void tcPostTag05_exceedTagLength_returnsError() {
+    @DisplayName("TC-POST-TAG-F-03 태그 길이 위반")
+    void tcPostTagF03_exceedTagLength_returnsError() {
         String longTag = "a".repeat(21);
         Set<ConstraintViolation<TagRequest>> violations = validator.validate(new TagRequest(List.of(longTag)));
 
         assertSingleViolationWithMessage(violations, PostErrorCode.TAG_LENGTH_INVALID.getCode());
-    }
-
-    @Test
-    @DisplayName("TC-POST-TAG-06 태그 유효성 성공")
-    void tcPostTag06_validTags_isValid() {
-        Set<ConstraintViolation<TagRequest>> violations = validator.validate(new TagRequest(List.of("DAILY", "MINIMAL")));
-
-        assertThat(violations).isEmpty();
     }
 
     private void assertSingleViolationWithMessage(Set<? extends ConstraintViolation<?>> violations, String message) {

@@ -23,24 +23,32 @@ class StyleListValidatorTest {
     }
 
     @Test
-    @DisplayName("TC-STYLE-01 스타일 없음(null) 성공")
-    void tcStyle01_nullList_isValid() {
+    @DisplayName("TC-STYLE-S-01 스타일 없음(null) 성공")
+    void tcStyleS01_nullList_isValid() {
         Set<ConstraintViolation<StyleRequest>> violations = validator.validate(new StyleRequest(null));
 
         assertThat(violations).isEmpty();
     }
 
     @Test
-    @DisplayName("TC-STYLE-02 스타일 빈 리스트 성공")
-    void tcStyle02_emptyList_isValid() {
+    @DisplayName("TC-STYLE-S-02 스타일 빈 리스트 성공")
+    void tcStyleS02_emptyList_isValid() {
         Set<ConstraintViolation<StyleRequest>> violations = validator.validate(new StyleRequest(List.of()));
 
         assertThat(violations).isEmpty();
     }
 
     @Test
-    @DisplayName("TC-STYLE-03 스타일 개수 초과 실패")
-    void tcStyle03_exceedLimit_returnsError() {
+    @DisplayName("TC-STYLE-S-03 유효성 성공")
+    void tcStyleS03_validStyles_isValid() {
+        Set<ConstraintViolation<StyleRequest>> violations = validator.validate(new StyleRequest(List.of("MINIMAL", "CASUAL")));
+
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    @DisplayName("TC-STYLE-F-01 스타일 개수 초과 실패")
+    void tcStyleF01_exceedLimit_returnsError() {
         Set<ConstraintViolation<StyleRequest>> violations = validator.validate(
                 new StyleRequest(List.of("MINIMAL", "CASUAL", "SPORTY"))
         );
@@ -49,27 +57,19 @@ class StyleListValidatorTest {
     }
 
     @Test
-    @DisplayName("TC-STYLE-04 공백 포함 스타일 실패")
-    void tcStyle04_blankStyle_returnsError() {
+    @DisplayName("TC-STYLE-F-02 공백 포함 스타일 실패")
+    void tcStyleF02_blankStyle_returnsError() {
         Set<ConstraintViolation<StyleRequest>> violations = validator.validate(new StyleRequest(List.of(" ")));
 
         assertSingleViolationWithMessage(violations, MemberErrorCode.INVALID_STYLE_FORMAT.getCode());
     }
 
     @Test
-    @DisplayName("TC-STYLE-05 유효하지 않은 값 실패")
-    void tcStyle05_invalidStyle_returnsError() {
+    @DisplayName("TC-STYLE-F-03 유효하지 않은 값 실패")
+    void tcStyleF03_invalidStyle_returnsError() {
         Set<ConstraintViolation<StyleRequest>> violations = validator.validate(new StyleRequest(List.of("UNKNOWN")));
 
         assertSingleViolationWithMessage(violations, MemberErrorCode.INVALID_STYLE_FORMAT.getCode());
-    }
-
-    @Test
-    @DisplayName("TC-STYLE-06 유효성 성공")
-    void tcStyle06_validStyles_isValid() {
-        Set<ConstraintViolation<StyleRequest>> violations = validator.validate(new StyleRequest(List.of("MINIMAL", "CASUAL")));
-
-        assertThat(violations).isEmpty();
     }
 
     private void assertSingleViolationWithMessage(Set<? extends ConstraintViolation<?>> violations, String message) {

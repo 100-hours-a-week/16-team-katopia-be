@@ -71,7 +71,7 @@ class PostCommandServiceTest {
     private PostCommandService postCommandService;
 
     @Test
-    @DisplayName("TC-POST-CMD-01 게시글 생성: 본문/이미지/태그 정규화 후 저장")
+    @DisplayName("TC-POST-CMD-S-01 게시글 생성: 본문/이미지/태그 정규화 후 저장")
     void create_normalizesContentImagesAndTags() {
         Member member = MemberTestFactory.member(1L);
         when(memberFinder.getReferenceById(1L)).thenReturn(member);
@@ -111,7 +111,7 @@ class PostCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-POST-CMD-02 게시글 수정: 본문 업데이트 및 태그 동기화")
+    @DisplayName("TC-POST-CMD-S-02 게시글 수정: 본문 업데이트 및 태그 동기화")
     void update_updatesContentAndSyncsTags() {
         Member member = MemberTestFactory.member(1L);
         Post post = Post.create(member, "old", List.of(PostImage.of(1, "img")));
@@ -139,7 +139,7 @@ class PostCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-POST-CMD-03 게시글 삭제: 댓글/좋아요/태그 정리 후 삭제")
+    @DisplayName("TC-POST-CMD-S-03 게시글 삭제: 댓글/좋아요/태그 정리 후 삭제")
     void delete_removesRelatedData() {
         Member member = MemberTestFactory.member(1L);
         Post post = Post.create(member, "content", List.of(PostImage.of(1, "img")));
@@ -157,7 +157,7 @@ class PostCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-POST-CMD-04 게시글 생성: 태그 누락 시 빈 태그 처리")
+    @DisplayName("TC-POST-CMD-S-04 게시글 생성: 태그 누락 시 빈 태그 처리")
     void create_allowsNullTags() {
         Member member = MemberTestFactory.member(1L);
         when(memberFinder.getReferenceById(1L)).thenReturn(member);
@@ -183,7 +183,7 @@ class PostCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-POST-UPDATE-01 게시글 수정 실패(작성자 아님)")
+    @DisplayName("TC-POST-CMD-F-01 게시글 수정 실패(작성자 아님)")
     void update_failsWhenNotOwner() {
         Member owner = MemberTestFactory.member(1L);
         Post post = Post.create(owner, "content", List.of(PostImage.of(1, "img")));
@@ -199,7 +199,7 @@ class PostCommandServiceTest {
     }
 
     @Test
-    @DisplayName("TC-POST-DELETE-01 게시글 삭제 실패(작성자 아님)")
+    @DisplayName("TC-POST-CMD-F-02 게시글 삭제 실패(작성자 아님)")
     void delete_failsWhenNotOwner() {
         Member owner = MemberTestFactory.member(1L);
         Post post = Post.create(owner, "content", List.of(PostImage.of(1, "img")));

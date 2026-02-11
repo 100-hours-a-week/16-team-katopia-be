@@ -17,6 +17,7 @@ public record VoteResultResponse(
         Long id,
         @Schema(description = SwaggerExamples.VOTE_TITLE_DES, example = SwaggerExamples.VOTE_TITLE)
         String title,
+        @Schema(description = "투표 결과 항목")
         List<VoteResultItemResponse> items
 ) {
     public static VoteResultResponse of(Vote vote, List<VoteItem> items) {

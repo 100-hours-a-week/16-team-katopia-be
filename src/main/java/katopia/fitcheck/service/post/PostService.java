@@ -3,6 +3,7 @@ package katopia.fitcheck.service.post;
 import katopia.fitcheck.dto.post.request.PostCreateRequest;
 import katopia.fitcheck.dto.post.response.PostCreateResponse;
 import katopia.fitcheck.dto.post.response.PostDetailResponse;
+import katopia.fitcheck.dto.post.response.PostResponse;
 import katopia.fitcheck.dto.post.response.PostLikeResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
 import katopia.fitcheck.dto.post.request.PostUpdateRequest;
@@ -32,6 +33,10 @@ public class PostService {
 
     public PostDetailResponse getDetail(Long memberId, Long postId) {
         return postSearchService.getDetail(memberId, postId);
+    }
+
+    public PostResponse listHomeFeed(Long memberId, String sizeValue, String after) {
+        return postSearchService.listHomeFeed(memberId, sizeValue, after);
     }
 
     public PostUpdateResponse update(Long memberId, Long postId, PostUpdateRequest request) {

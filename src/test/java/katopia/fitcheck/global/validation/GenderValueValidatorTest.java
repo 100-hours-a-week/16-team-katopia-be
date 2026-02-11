@@ -23,40 +23,40 @@ class GenderValueValidatorTest {
     }
 
     @Test
-    @DisplayName("TC-GENDER-01 필수값 누락(null) 실패")
-    void tcGender01_nullGender_returnsRequiredError() {
-        Set<ConstraintViolation<GenderRequest>> violations = validator.validate(new GenderRequest(null));
-
-        assertSingleViolationWithMessage(violations, CommonErrorCode.REQUIRED_VALUE.getCode() + ":성별");
-    }
-
-    @Test
-    @DisplayName("TC-GENDER-02 필수값 누락(빈 문자열) 실패")
-    void tcGender02_emptyGender_returnsRequiredError() {
-        Set<ConstraintViolation<GenderRequest>> violations = validator.validate(new GenderRequest(""));
-
-        assertSingleViolationWithMessage(violations, CommonErrorCode.REQUIRED_VALUE.getCode() + ":성별");
-    }
-
-    @Test
-    @DisplayName("TC-GENDER-03 유효하지 않은 값 실패")
-    void tcGender03_invalidGender_returnsFormatError() {
-        Set<ConstraintViolation<GenderRequest>> violations = validator.validate(new GenderRequest("X"));
-
-        assertSingleViolationWithMessage(violations, MemberErrorCode.INVALID_GENDER_FORMAT.getCode());
-    }
-
-    @Test
-    @DisplayName("TC-GENDER-04 유효성 성공(대문자)")
-    void tcGender04_uppercaseGender_isValid() {
+    @DisplayName("TC-GENDER-S-01 유효성 성공(대문자)")
+    void tcGenderS01_uppercaseGender_isValid() {
         Set<ConstraintViolation<GenderRequest>> violations = validator.validate(new GenderRequest("M"));
 
         assertThat(violations).isEmpty();
     }
 
     @Test
-    @DisplayName("TC-GENDER-05 유효하지 않은 값 실패(소문자)")
-    void tcGender05_lowercaseGender_isValid() {
+    @DisplayName("TC-GENDER-F-01 필수값 누락(null) 실패")
+    void tcGenderF01_nullGender_returnsRequiredError() {
+        Set<ConstraintViolation<GenderRequest>> violations = validator.validate(new GenderRequest(null));
+
+        assertSingleViolationWithMessage(violations, CommonErrorCode.REQUIRED_VALUE.getCode() + ":성별");
+    }
+
+    @Test
+    @DisplayName("TC-GENDER-F-02 필수값 누락(빈 문자열) 실패")
+    void tcGenderF02_emptyGender_returnsRequiredError() {
+        Set<ConstraintViolation<GenderRequest>> violations = validator.validate(new GenderRequest(""));
+
+        assertSingleViolationWithMessage(violations, CommonErrorCode.REQUIRED_VALUE.getCode() + ":성별");
+    }
+
+    @Test
+    @DisplayName("TC-GENDER-F-03 유효하지 않은 값 실패")
+    void tcGenderF03_invalidGender_returnsFormatError() {
+        Set<ConstraintViolation<GenderRequest>> violations = validator.validate(new GenderRequest("X"));
+
+        assertSingleViolationWithMessage(violations, MemberErrorCode.INVALID_GENDER_FORMAT.getCode());
+    }
+
+    @Test
+    @DisplayName("TC-GENDER-F-04 유효하지 않은 값 실패(소문자)")
+    void tcGenderF04_lowercaseGender_isValid() {
         Set<ConstraintViolation<GenderRequest>> violations = validator.validate(new GenderRequest("f"));
 
         assertSingleViolationWithMessage(violations, MemberErrorCode.INVALID_GENDER_FORMAT.getCode());
