@@ -49,6 +49,31 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             Pageable pageable
     );
 
+    @Query("""
+            select m from Member m
+            where m.accountStatus = :status
+              and m.id in :ids
+            order by m.createdAt desc, m.id desc
+            """)
+    List<Member> findActiveByIdsOrderByLatest(
+            @Param("status") AccountStatus status,
+            @Param("ids") List<Long> ids
+    );
+
+    @Query("""
+            select m from Member m
+            where m.accountStatus = :status
+              and (:excludeEmpty = true or m.id not in :excludeIds)
+            order by m.createdAt desc, m.id desc
+            """)
+    List<Member> findLatestActive(
+            @Param("status") AccountStatus status,
+            @Param("excludeEmpty") boolean excludeEmpty,
+            @Param("excludeIds") List<Long> excludeIds,
+            Pageable pageable
+    );
+
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             update Member m

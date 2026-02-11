@@ -57,6 +57,7 @@ public final class SwaggerExamples {
     public static final String FOLLOW_CREATED_AT_EXAMPLE = "2026-01-01T12:34:56Z";
     public static final String FOLLOW_CURSOR_DES = "커서(createdAt|followId)";
     public static final String FOLLOW_CURSOR_EXAMPLE = "2026-01-01T12:34:56Z|100";
+    public static final String PAGE_SIZE_EXAMPLE = "20";
 
     private SwaggerExamples() {
     }
