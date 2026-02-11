@@ -16,8 +16,8 @@ class S3PresignConfigTest {
     private final S3PresignConfig config = new S3PresignConfig();
 
     @Test
-    @DisplayName("TC-PRESIGN-CONFIG-01 credentials 누락 시 기본 Provider 사용")
-    void tcPresignConfig01_missingCredentials_usesDefaultProvider() {
+    @DisplayName("TC-PRESIGN-CONFIG-S-01 credentials 누락 시 기본 Provider 사용")
+    void tcPresignConfigS01_missingCredentials_usesDefaultProvider() {
         S3PresignProperties props = new S3PresignProperties(
                 "ap-northeast-2",
                 new S3PresignProperties.S3("bucket"),
@@ -34,8 +34,8 @@ class S3PresignConfigTest {
     }
 
     @Test
-    @DisplayName("TC-PRESIGN-CONFIG-02 sessionToken 존재 시 SessionCredentials 사용")
-    void tcPresignConfig02_sessionToken_usesSessionCredentials() {
+    @DisplayName("TC-PRESIGN-CONFIG-S-02 sessionToken 존재 시 SessionCredentials 사용")
+    void tcPresignConfigS02_sessionToken_usesSessionCredentials() {
         S3PresignProperties props = new S3PresignProperties(
                 "ap-northeast-2",
                 new S3PresignProperties.S3("bucket"),
@@ -58,8 +58,8 @@ class S3PresignConfigTest {
     }
 
     @Test
-    @DisplayName("TC-PRESIGN-CONFIG-03 기본 자격증명 사용")
-    void tcPresignConfig03_basicCredentials() {
+    @DisplayName("TC-PRESIGN-CONFIG-S-03 기본 자격증명 사용")
+    void tcPresignConfigS03_basicCredentials() {
         S3PresignProperties props = new S3PresignProperties(
                 "ap-northeast-2",
                 new S3PresignProperties.S3("bucket"),

@@ -42,8 +42,8 @@ class MemberProfileServiceTest {
     private MemberProfileService memberProfileService;
 
     @Test
-    @DisplayName("TC-MEMBER-PROFILE-04 프로필 수정 성공(선택값 누락)")
-    void tcMemberProfile04_updateWithOptionalNulls_keepsExisting() {
+    @DisplayName("TC-MEMBER-PROFILE-S-01 프로필 수정 성공(선택값 누락)")
+    void tcMemberProfileS01_updateWithOptionalNulls_keepsExisting() {
         Member member = MemberTestFactory.builder(1L, "nickname")
                 .profileImageObjectKey("profiles/1/old.png")
                 .gender(Gender.M)
@@ -85,8 +85,42 @@ class MemberProfileServiceTest {
     }
 
     @Test
-    @DisplayName("TC-MEMBER-PROFILE-01 프로필 수정 실패(탈퇴 회원)")
-    void tcMemberProfile01_updateWithdrawnMember_throws() {
+    @DisplayName("TC-MEMBER-PROFILE-S-02 프로필 조회 성공(팔로우 집계 포함)")
+    void tcMemberProfileS02_getProfile_returnsAggregate() {
+        Member member = MemberTestFactory.builder(1L, "nickname")
+                .postCount(2L)
+                .followingCount(3L)
+                .followerCount(4L)
+                .build();
+        when(memberFinder.findPublicProfileByIdOrThrow(eq(1L))).thenReturn(member);
+
+        MemberProfileResponse response = memberProfileService.getProfile(1L);
+
+        assertThat(response.aggregate().postCount()).isEqualTo(2L);
+        assertThat(response.aggregate().followingCount()).isEqualTo(3L);
+        assertThat(response.aggregate().followerCount()).isEqualTo(4L);
+    }
+
+    @Test
+    @DisplayName("TC-MEMBER-PROFILE-S-03 내 프로필 조회 성공(팔로우 집계 포함)")
+    void tcMemberProfileS03_getProfileDetail_returnsAggregate() {
+        Member member = MemberTestFactory.builder(1L, "nickname")
+                .postCount(1L)
+                .followingCount(5L)
+                .followerCount(6L)
+                .build();
+        when(memberFinder.findActiveByIdOrThrow(eq(1L))).thenReturn(member);
+
+        MemberProfileDetailResponse response = memberProfileService.getProfileDetail(1L);
+
+        assertThat(response.aggregate().postCount()).isEqualTo(1L);
+        assertThat(response.aggregate().followingCount()).isEqualTo(5L);
+        assertThat(response.aggregate().followerCount()).isEqualTo(6L);
+    }
+
+    @Test
+    @DisplayName("TC-MEMBER-PROFILE-F-01 프로필 수정 실패(탈퇴 회원)")
+    void tcMemberProfileF01_updateWithdrawnMember_throws() {
         Member member = MemberTestFactory.builder(1L, "nickname")
                 .accountStatus(katopia.fitcheck.domain.member.AccountStatus.WITHDRAWN)
                 .build();
@@ -110,8 +144,8 @@ class MemberProfileServiceTest {
     }
 
     @Test
-    @DisplayName("TC-MEMBER-PROFILE-02 프로필 수정 실패(닉네임 중복)")
-    void tcMemberProfile02_updateDuplicateNickname_throws() {
+    @DisplayName("TC-MEMBER-PROFILE-F-02 프로필 수정 실패(닉네임 중복)")
+    void tcMemberProfileF02_updateDuplicateNickname_throws() {
         Member member = MemberTestFactory.member(1L);
         when(memberFinder.findByIdOrThrow(eq(1L))).thenReturn(member);
 
@@ -143,8 +177,8 @@ class MemberProfileServiceTest {
     }
 
     @Test
-    @DisplayName("TC-MEMBER-PROFILE-03 프로필 수정 실패(성별/키/몸무게 파싱 오류)")
-    void tcMemberProfile03_updateInvalidProfile_throws() {
+    @DisplayName("TC-MEMBER-PROFILE-F-03 프로필 수정 실패(성별/키/몸무게 파싱 오류)")
+    void tcMemberProfileF03_updateInvalidProfile_throws() {
         Member member = MemberTestFactory.member(1L);
         when(memberFinder.findByIdOrThrow(eq(1L))).thenReturn(member);
 
@@ -167,8 +201,8 @@ class MemberProfileServiceTest {
     }
 
     @Test
-    @DisplayName("TC-MEMBER-WITHDRAW-01 회원 탈퇴 실패(이미 탈퇴)")
-    void tcMemberWithdraw01_alreadyWithdrawn_throws() {
+    @DisplayName("TC-MEMBER-WITHDRAW-F-01 회원 탈퇴 실패(이미 탈퇴)")
+    void tcMemberWithdrawF01_alreadyWithdrawn_throws() {
         Member member = MemberTestFactory.builder(1L, "nickname")
                 .accountStatus(katopia.fitcheck.domain.member.AccountStatus.WITHDRAWN)
                 .build();
@@ -178,41 +212,6 @@ class MemberProfileServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting(ex -> ((BusinessException) ex).getErrorCode())
                 .isEqualTo(MemberErrorCode.NOT_FOUND_WITHDRAWN_MEMBER);
-    }
-
-    @Test
-    @DisplayName("TC-MEMBER-PROFILE-05 프로필 조회 성공(팔로우 집계 포함)")
-    void tcMemberProfile05_getProfile_returnsAggregate() {
-        Member member = MemberTestFactory.builder(1L, "nickname")
-                .postCount(2L)
-                .followingCount(3L)
-                .followerCount(4L)
-                .build();
-        when(memberFinder.findPublicProfileByIdOrThrow(eq(1L))).thenReturn(member);
-
-        MemberProfileResponse response = memberProfileService.getProfile(1L);
-
-        assertThat(response.aggregate().postCount()).isEqualTo(2L);
-        assertThat(response.aggregate().followingCount()).isEqualTo(3L);
-        assertThat(response.aggregate().followerCount()).isEqualTo(4L);
-    }
-
-    @Test
-    @DisplayName("TC-MEMBER-PROFILE-06 내 프로필 조회 성공(팔로우 집계 포함)")
-    void tcMemberProfile06_getProfileDetail_returnsAggregate() {
-        Member member = MemberTestFactory.builder(1L, "nickname")
-                .postCount(1L)
-                .followingCount(5L)
-                .followerCount(6L)
-                .build();
-        when(memberFinder.findActiveByIdOrThrow(eq(1L))).thenReturn(member);
-
-
-        MemberProfileDetailResponse response = memberProfileService.getProfileDetail(1L);
-
-        assertThat(response.aggregate().postCount()).isEqualTo(1L);
-        assertThat(response.aggregate().followingCount()).isEqualTo(5L);
-        assertThat(response.aggregate().followerCount()).isEqualTo(6L);
     }
 
 }

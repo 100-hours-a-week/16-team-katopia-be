@@ -23,51 +23,51 @@ class WeightValueValidatorTest {
     }
 
     @Test
-    @DisplayName("TC-WEIGHT-01 필수값 누락(null) 실패")
-    void tcWeight01_nullWeight_returnsRequiredError() {
+    @DisplayName("TC-WEIGHT-S-01 유효성 성공")
+    void tcWeightS01_validWeight_isValid() {
+        Set<ConstraintViolation<WeightRequest>> violations = validator.validate(new WeightRequest("70"));
+
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    @DisplayName("TC-WEIGHT-F-01 필수값 누락(null) 실패")
+    void tcWeightF01_nullWeight_returnsRequiredError() {
         Set<ConstraintViolation<WeightRequest>> violations = validator.validate(new WeightRequest(null));
 
         assertSingleViolationWithMessage(violations, CommonErrorCode.REQUIRED_VALUE.getCode() + ":몸무게");
     }
 
     @Test
-    @DisplayName("TC-WEIGHT-02 필수값 누락(빈 문자열) 실패")
-    void tcWeight02_emptyWeight_returnsRequiredError() {
+    @DisplayName("TC-WEIGHT-F-02 필수값 누락(빈 문자열) 실패")
+    void tcWeightF02_emptyWeight_returnsRequiredError() {
         Set<ConstraintViolation<WeightRequest>> violations = validator.validate(new WeightRequest(""));
 
         assertSingleViolationWithMessage(violations, CommonErrorCode.REQUIRED_VALUE.getCode() + ":몸무게");
     }
 
     @Test
-    @DisplayName("TC-WEIGHT-03 숫자 형식 오류")
-    void tcWeight03_invalidFormat_returnsFormatError() {
+    @DisplayName("TC-WEIGHT-F-03 숫자 형식 오류")
+    void tcWeightF03_invalidFormat_returnsFormatError() {
         Set<ConstraintViolation<WeightRequest>> violations = validator.validate(new WeightRequest("7a"));
 
         assertSingleViolationWithMessage(violations, MemberErrorCode.INVALID_WEIGHT_FORMAT.getCode());
     }
 
     @Test
-    @DisplayName("TC-WEIGHT-04 범위 하한 위반")
-    void tcWeight04_belowMin_returnsRangeError() {
+    @DisplayName("TC-WEIGHT-F-04 범위 하한 위반")
+    void tcWeightF04_belowMin_returnsRangeError() {
         Set<ConstraintViolation<WeightRequest>> violations = validator.validate(new WeightRequest("19"));
 
         assertSingleViolationWithMessage(violations, MemberErrorCode.INVALID_WEIGHT_RANGE.getCode());
     }
 
     @Test
-    @DisplayName("TC-WEIGHT-05 범위 상한 위반")
-    void tcWeight05_aboveMax_returnsRangeError() {
+    @DisplayName("TC-WEIGHT-F-05 범위 상한 위반")
+    void tcWeightF05_aboveMax_returnsRangeError() {
         Set<ConstraintViolation<WeightRequest>> violations = validator.validate(new WeightRequest("501"));
 
         assertSingleViolationWithMessage(violations, MemberErrorCode.INVALID_WEIGHT_RANGE.getCode());
-    }
-
-    @Test
-    @DisplayName("TC-WEIGHT-06 유효성 성공")
-    void tcWeight06_validWeight_isValid() {
-        Set<ConstraintViolation<WeightRequest>> violations = validator.validate(new WeightRequest("70"));
-
-        assertThat(violations).isEmpty();
     }
 
     private void assertSingleViolationWithMessage(Set<? extends ConstraintViolation<?>> violations, String message) {

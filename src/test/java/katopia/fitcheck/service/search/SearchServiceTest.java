@@ -42,8 +42,8 @@ class SearchServiceTest {
     private SearchService searchService;
 
     @Test
-    @DisplayName("TC-SEARCH-USER-01 계정 검색 시 팔로잉 여부 포함")
-    void tcSearchUser01_includesFollowingStatus() {
+    @DisplayName("TC-SEARCH-S-04 계정 검색 시 팔로잉 여부 포함")
+    void tcSearchS04_includesFollowingStatus() {
         Member member1 = MemberTestFactory.member(1L, "alice");
         Member member2 = MemberTestFactory.member(2L, "bob");
         when(searchValidator.requireQuery("al")).thenReturn("al");

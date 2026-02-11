@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -254,4 +255,41 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("status") String status,
             @Param("size") int size
     );
+
+    @Query("""
+            select p.id from Post p
+            join p.member m
+            where m.accountStatus = :status
+              and m.id in :memberIds
+            order by p.createdAt desc, p.id desc
+            """)
+    List<Long> findFeedPostIdsLatest(
+            @Param("memberIds") List<Long> memberIds,
+            @Param("status") AccountStatus status,
+            Pageable pageable
+    );
+
+    @Query("""
+            select p.id from Post p
+            join p.member m
+            where m.accountStatus = :status
+              and m.id in :memberIds
+              and ((p.createdAt < :createdAt) or (p.createdAt = :createdAt and p.id < :id))
+            order by p.createdAt desc, p.id desc
+            """)
+    List<Long> findFeedPostIdsPageAfter(
+            @Param("memberIds") List<Long> memberIds,
+            @Param("status") AccountStatus status,
+            @Param("createdAt") LocalDateTime createdAt,
+            @Param("id") Long id,
+            Pageable pageable
+    );
+
+    @Query("""
+            select distinct p from Post p
+            join fetch p.member m
+            left join fetch p.images i
+            where p.id in :postIds
+            """)
+    List<Post> findFeedDetailsByPostIds(@Param("postIds") Set<Long> postIds);
 }

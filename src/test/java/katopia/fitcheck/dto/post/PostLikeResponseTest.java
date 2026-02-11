@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PostLikeResponseTest {
 
     @Test
-    @DisplayName("TC-POST-LIKE-RESP-01 좋아요 응답 변환")
+    @DisplayName("TC-POST-LIKE-RESP-S-01 좋아요 응답 변환")
     void tcPostLikeResp01_of_returnsIdAndLikeCount() {
         Member author = MemberTestFactory.member(1L);
         Post post = Post.create(author, "content", List.of(PostImage.of(1, "img")));

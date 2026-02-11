@@ -1,6 +1,8 @@
 package katopia.fitcheck.global;
 
 import katopia.fitcheck.global.exception.code.ResponseCode;
+import io.swagger.v3.oas.annotations.media.Schema;
+import katopia.fitcheck.global.docs.SwaggerExamples;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +15,15 @@ import java.util.Map;
 @Getter
 @AllArgsConstructor
 public class APIResponse<T> {
+    @Schema(description = "성공 여부", example = "true")
     private final boolean success;
+    @Schema(description = "응답 메시지", example = "요청이 성공했습니다.")
     private String message;
+    @Schema(description = "응답 코드", example = "COMMON-S-000")
     private String code;
+    @Schema(description = "응답 데이터", example = "{}")
     private T data;
+    @Schema(description = "응답 시각(UTC)", example = SwaggerExamples.TIMESTAMP_EXAMPLE)
     private Instant timestamp;
 
     private static Instant now() {

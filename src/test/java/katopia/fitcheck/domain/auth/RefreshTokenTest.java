@@ -14,7 +14,7 @@ class RefreshTokenTest {
     class RevokeCases {
 
         @Test
-        @DisplayName("TC-REFRESH-TOKEN-01 revoke 호출 시 revokedAt 설정")
+        @DisplayName("TC-REFRESH-S-01 revoke 호출 시 revokedAt 설정")
         void tcRefreshToken01_revoke_setsRevokedAt() {
             RefreshToken token = RefreshToken.issue(1L, "hash", LocalDateTime.now().plusDays(1));
             LocalDateTime now = LocalDateTime.now();
@@ -26,7 +26,7 @@ class RefreshTokenTest {
         }
 
         @Test
-        @DisplayName("TC-REFRESH-TOKEN-02 revoke는 한번만 적용")
+        @DisplayName("TC-REFRESH-S-02 revoke는 한번만 적용")
         void tcRefreshToken02_revoke_onlyOnce() {
             RefreshToken token = RefreshToken.issue(1L, "hash", LocalDateTime.now().plusDays(1));
             LocalDateTime first = LocalDateTime.now().minusMinutes(1);

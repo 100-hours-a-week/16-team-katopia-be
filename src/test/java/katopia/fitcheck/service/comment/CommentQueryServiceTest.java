@@ -44,7 +44,7 @@ class CommentQueryServiceTest {
     private CommentQueryService commentQueryService;
 
     @Test
-    @DisplayName("TC-COMMENT-QUERY-01 댓글 목록: 최신 목록과 다음 커서 생성")
+    @DisplayName("TC-COMMENT-QUERY-S-01 댓글 목록: 최신 목록과 다음 커서 생성")
     void list_returnsNextCursorWhenPageFull() {
         Post post = buildPost(10L);
         Comment first = buildComment(post, 1L, LocalDateTime.of(2026, 2, 1, 10, 0));
@@ -61,7 +61,7 @@ class CommentQueryServiceTest {
     }
 
     @Test
-    @DisplayName("TC-COMMENT-QUERY-02 댓글 목록: 커서 이후 페이지 조회")
+    @DisplayName("TC-COMMENT-QUERY-S-02 댓글 목록: 커서 이후 페이지 조회")
     void list_usesAfterCursor() {
         Post post = buildPost(10L);
         Comment last = buildComment(post, 3L, LocalDateTime.of(2026, 2, 1, 8, 0));
@@ -83,7 +83,7 @@ class CommentQueryServiceTest {
     }
 
     @Test
-    @DisplayName("TC-COMMENT-QUERY-03 댓글 목록 실패(게시글 없음)")
+    @DisplayName("TC-COMMENT-QUERY-F-01 댓글 목록 실패(게시글 없음)")
     void list_throwsWhenPostMissing() {
         doThrow(new BusinessException(PostErrorCode.POST_NOT_FOUND))
                 .when(postFinder)

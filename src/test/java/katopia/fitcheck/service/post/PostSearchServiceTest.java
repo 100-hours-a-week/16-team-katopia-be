@@ -50,7 +50,7 @@ class PostSearchServiceTest {
     private PostSearchService postSearchService;
 
     @Test
-    @DisplayName("TC-POST-QUERY-01 게시글 목록: 최신 목록과 다음 커서 생성")
+    @DisplayName("TC-POST-QUERY-S-01 게시글 목록: 최신 목록과 다음 커서 생성")
     void list_returnsNextCursorWhenPageFull() {
         Post first = buildPost(1L, LocalDateTime.of(2026, 2, 1, 10, 0), "img1");
         Post last = buildPost(2L, LocalDateTime.of(2026, 2, 1, 9, 0), "img2");
@@ -66,7 +66,7 @@ class PostSearchServiceTest {
     }
 
     @Test
-    @DisplayName("TC-POST-QUERY-02 회원별 게시글 목록: 멤버 검증 후 목록 조회")
+    @DisplayName("TC-POST-QUERY-S-02 회원별 게시글 목록: 멤버 검증 후 목록 조회")
     void listByMember_validatesMemberAndLoadsPosts() {
         Post post = buildPost(1L, LocalDateTime.of(2026, 2, 1, 10, 0), "img1");
         when(postRepository.findLatestByMemberId(eq(1L), eq(PageRequest.of(0, 1)))).thenReturn(List.of(post));
@@ -79,7 +79,7 @@ class PostSearchServiceTest {
     }
 
     @Test
-    @DisplayName("TC-POST-QUERY-03 게시글 상세: 태그와 좋아요 여부 포함")
+    @DisplayName("TC-POST-QUERY-S-03 게시글 상세: 태그와 좋아요 여부 포함")
     void getDetail_returnsTagsAndLikeState() {
         Member author = MemberTestFactory.member(7L);
         Post post = Post.create(author, "content", List.of(PostImage.of(1, "img1")));

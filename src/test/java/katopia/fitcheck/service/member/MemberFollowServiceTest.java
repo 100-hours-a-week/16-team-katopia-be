@@ -45,32 +45,8 @@ class MemberFollowServiceTest {
     private MemberFollowService memberFollowService;
 
     @Test
-    @DisplayName("TC-MEMBER-FOLLOW-01 팔로우 실패(자기 자신)")
-    void tcMemberFollow01_selfFollow_throws() {
-        assertThatThrownBy(() -> memberFollowService.follow(1L, 1L))
-                .isInstanceOf(BusinessException.class)
-                .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                .isEqualTo(MemberErrorCode.SELF_FOLLOW_NOT_ALLOWED);
-    }
-
-    @Test
-    @DisplayName("TC-MEMBER-FOLLOW-02 팔로우 실패(중복 팔로우)")
-    void tcMemberFollow02_alreadyFollowing_throws() {
-        Member follower = activeMember(1L, "follower");
-        Member followed = activeMember(2L, "followed");
-        when(memberFinder.findActiveByIdOrThrow(1L)).thenReturn(follower);
-        when(memberFinder.findActiveByIdOrThrow(2L)).thenReturn(followed);
-        when(memberFollowRepository.existsByFollowerIdAndFollowedId(1L, 2L)).thenReturn(true);
-
-        assertThatThrownBy(() -> memberFollowService.follow(1L, 2L))
-                .isInstanceOf(BusinessException.class)
-                .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                .isEqualTo(MemberErrorCode.ALREADY_FOLLOWING);
-    }
-
-    @Test
-    @DisplayName("TC-MEMBER-FOLLOW-03 팔로우 성공(응답 집계 포함)")
-    void tcMemberFollow03_followSuccess_returnsAggregate() {
+    @DisplayName("TC-MEMBER-FOLLOW-S-01 팔로우 성공(응답 집계 포함)")
+    void tcMemberFollowS01_followSuccess_returnsAggregate() {
         Member follower = activeMember(1L, "follower");
         Member followed = MemberTestFactory.builder(2L, "target")
                 .accountStatus(AccountStatus.ACTIVE)
@@ -100,28 +76,8 @@ class MemberFollowServiceTest {
     }
 
     @Test
-    @DisplayName("TC-MEMBER-FOLLOW-04 언팔로우 실패(자기 자신)")
-    void tcMemberFollow04_selfUnfollow_throws() {
-        assertThatThrownBy(() -> memberFollowService.unfollow(1L, 1L))
-                .isInstanceOf(BusinessException.class)
-                .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                .isEqualTo(MemberErrorCode.SELF_FOLLOW_NOT_ALLOWED);
-    }
-
-    @Test
-    @DisplayName("TC-MEMBER-FOLLOW-05 언팔로우 실패(중복 언팔로우/관계 없음)")
-    void tcMemberFollow05_notFollowing_throws() {
-        when(memberFollowRepository.findByFollowerIdAndFollowedId(1L, 2L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> memberFollowService.unfollow(1L, 2L))
-                .isInstanceOf(BusinessException.class)
-                .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                .isEqualTo(MemberErrorCode.NOT_FOLLOWING);
-    }
-
-    @Test
-    @DisplayName("TC-MEMBER-FOLLOW-06 언팔로우 성공(응답 집계 포함)")
-    void tcMemberFollow06_unfollowSuccess_returnsAggregate() {
+    @DisplayName("TC-MEMBER-FOLLOW-S-02 언팔로우 성공(응답 집계 포함)")
+    void tcMemberFollowS02_unfollowSuccess_returnsAggregate() {
         Member follower = activeMember(1L, "follower");
         Member followed = MemberTestFactory.builder(2L, "target")
                 .accountStatus(AccountStatus.ACTIVE)
@@ -149,8 +105,8 @@ class MemberFollowServiceTest {
     }
 
     @Test
-    @DisplayName("TC-MEMBER-FOLLOW-07 팔로워 목록 조회 성공(커서 포함)")
-    void tcMemberFollow07_listFollowers_returnsCursor() {
+    @DisplayName("TC-MEMBER-FOLLOW-S-03 팔로워 목록 조회 성공(커서 포함)")
+    void tcMemberFollowS03_listFollowers_returnsCursor() {
         Member member = activeMember(2L, "target");
         when(memberFinder.findPublicProfileByIdOrThrow(2L)).thenReturn(member);
 
@@ -168,8 +124,8 @@ class MemberFollowServiceTest {
     }
 
     @Test
-    @DisplayName("TC-MEMBER-FOLLOW-08 팔로잉 목록 조회 성공(커서 포함)")
-    void tcMemberFollow08_listFollowings_returnsCursor() {
+    @DisplayName("TC-MEMBER-FOLLOW-S-04 팔로잉 목록 조회 성공(커서 포함)")
+    void tcMemberFollowS04_listFollowings_returnsCursor() {
         Member member = activeMember(2L, "target");
         when(memberFinder.findPublicProfileByIdOrThrow(2L)).thenReturn(member);
 
@@ -184,6 +140,50 @@ class MemberFollowServiceTest {
         assertThat(response.members()).hasSize(1);
         assertThat(response.members().getFirst().id()).isEqualTo(3L);
         assertThat(response.nextCursor()).isEqualTo(CursorPagingHelper.encodeCursor(createdAt, 12L));
+    }
+
+    @Test
+    @DisplayName("TC-MEMBER-FOLLOW-F-01 팔로우 실패(자기 자신)")
+    void tcMemberFollowF01_selfFollow_throws() {
+        assertThatThrownBy(() -> memberFollowService.follow(1L, 1L))
+                .isInstanceOf(BusinessException.class)
+                .extracting(ex -> ((BusinessException) ex).getErrorCode())
+                .isEqualTo(MemberErrorCode.SELF_FOLLOW_NOT_ALLOWED);
+    }
+
+    @Test
+    @DisplayName("TC-MEMBER-FOLLOW-F-02 팔로우 실패(중복 팔로우)")
+    void tcMemberFollowF02_alreadyFollowing_throws() {
+        Member follower = activeMember(1L, "follower");
+        Member followed = activeMember(2L, "followed");
+        when(memberFinder.findActiveByIdOrThrow(1L)).thenReturn(follower);
+        when(memberFinder.findActiveByIdOrThrow(2L)).thenReturn(followed);
+        when(memberFollowRepository.existsByFollowerIdAndFollowedId(1L, 2L)).thenReturn(true);
+
+        assertThatThrownBy(() -> memberFollowService.follow(1L, 2L))
+                .isInstanceOf(BusinessException.class)
+                .extracting(ex -> ((BusinessException) ex).getErrorCode())
+                .isEqualTo(MemberErrorCode.ALREADY_FOLLOWING);
+    }
+
+    @Test
+    @DisplayName("TC-MEMBER-FOLLOW-F-03 언팔로우 실패(자기 자신)")
+    void tcMemberFollowF03_selfUnfollow_throws() {
+        assertThatThrownBy(() -> memberFollowService.unfollow(1L, 1L))
+                .isInstanceOf(BusinessException.class)
+                .extracting(ex -> ((BusinessException) ex).getErrorCode())
+                .isEqualTo(MemberErrorCode.SELF_FOLLOW_NOT_ALLOWED);
+    }
+
+    @Test
+    @DisplayName("TC-MEMBER-FOLLOW-F-04 언팔로우 실패(중복 언팔로우/관계 없음)")
+    void tcMemberFollowF04_notFollowing_throws() {
+        when(memberFollowRepository.findByFollowerIdAndFollowedId(1L, 2L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> memberFollowService.unfollow(1L, 2L))
+                .isInstanceOf(BusinessException.class)
+                .extracting(ex -> ((BusinessException) ex).getErrorCode())
+                .isEqualTo(MemberErrorCode.NOT_FOLLOWING);
     }
 
     private Member activeMember(Long id, String nickname) {

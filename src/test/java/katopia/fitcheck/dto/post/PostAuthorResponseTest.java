@@ -18,7 +18,7 @@ class PostAuthorResponseTest {
     class WithdrawnCases {
 
         @Test
-        @DisplayName("TC-POST-AUTHOR-01 탈퇴 회원은 프로필 정보를 숨김")
+        @DisplayName("TC-POST-AUTHOR-S-01 탈퇴 회원은 프로필 정보를 숨김")
         void tcPostAuthor01_withdrawnMember_hidesProfile() {
             Member member = Member.builder()
                     .id(1L)
@@ -43,7 +43,7 @@ class PostAuthorResponseTest {
     class ActiveCases {
 
         @Test
-        @DisplayName("TC-POST-AUTHOR-02 활성 회원은 원본 프로필 정보를 반환")
+        @DisplayName("TC-POST-AUTHOR-S-02 활성 회원은 원본 프로필 정보를 반환")
         void tcPostAuthor02_activeMember_returnsProfile() {
             Member member = Member.builder()
                     .id(1L)

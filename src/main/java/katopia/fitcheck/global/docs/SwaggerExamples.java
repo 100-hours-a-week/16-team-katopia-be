@@ -40,6 +40,9 @@ public final class SwaggerExamples {
     public static final String VOTE_ITEM_ID_EXAMPLE = "10";
     public static final String VOTE_ITEM_ID_LIST_DES = "투표 항목 ID 목록";
     public static final String VOTE_ITEM_ID_LIST_EXAMPLE = "[10, 11]";
+    public static final String VOTE_CURSOR_DES = "커서(createdAt|id)";
+    public static final String VOTE_CURSOR_EXAMPLE = "2026-01-01T12:34:56Z|5";
+    public static final String TIMESTAMP_EXAMPLE = "2026-01-01T12:34:56Z";
     public static final String PRESIGN_CATEGORY_DES = "업로드 유형 (PROFILE/POST/VOTE)";
     public static final String PRESIGN_CATEGORY_POST = "POST";
     public static final String PRESIGN_EXTENSIONS_DES = "확장자 목록 (JPG/JPEG/PNG/HEIC/WEBP)";
@@ -51,9 +54,9 @@ public final class SwaggerExamples {
     public static final String FOLLOW_ID_DES = "팔로우 관계 ID";
     public static final String FOLLOW_ID_EXAMPLE = "100";
     public static final String FOLLOW_CREATED_AT_DES = "팔로우 생성 시각";
-    public static final String FOLLOW_CREATED_AT_EXAMPLE = "2026-02-10T12:00:00";
+    public static final String FOLLOW_CREATED_AT_EXAMPLE = "2026-01-01T12:34:56Z";
     public static final String FOLLOW_CURSOR_DES = "커서(createdAt|followId)";
-    public static final String FOLLOW_CURSOR_EXAMPLE = "2026-02-10T12:00:00|100";
+    public static final String FOLLOW_CURSOR_EXAMPLE = "2026-01-01T12:34:56Z|100";
 
     private SwaggerExamples() {
     }

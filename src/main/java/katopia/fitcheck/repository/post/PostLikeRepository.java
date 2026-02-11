@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+import java.util.Set;
 import java.util.Optional;
 
 public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
@@ -14,4 +16,14 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     @Query("delete from PostLike pl where pl.post.id = :postId")
     void deleteByPostId(Long postId);
     void deleteByMemberId(Long memberId);
+
+    @Query("""
+            select pl.post.id from PostLike pl
+            where pl.member.id = :memberId
+              and pl.post.id in :postIds
+            """)
+    Set<Long> findLikedPostIds(
+            Long memberId,
+            List<Long> postIds
+    );
 }

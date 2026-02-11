@@ -22,9 +22,6 @@ import lombok.NoArgsConstructor;
         name = "vote_items",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_vote_items_vote_order", columnNames = {"vote_id", "sort_order"})
-        },
-        indexes = {
-                @Index(name = "idx_vote_items_order", columnList = "vote_id, sort_order")
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

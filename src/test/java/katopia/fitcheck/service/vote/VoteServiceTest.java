@@ -19,10 +19,10 @@ import katopia.fitcheck.repository.vote.VoteParticipationRepository;
 import katopia.fitcheck.repository.vote.VoteRepository;
 import katopia.fitcheck.service.member.MemberFinder;
 import katopia.fitcheck.support.MemberTestFactory;
+import katopia.fitcheck.domain.vote.VoteTestFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -58,36 +58,34 @@ class VoteServiceTest {
     private VoteService voteService;
 
     @Test
-    @DisplayName("TC-VOTE-01 투표 생성: 이미지 키 반환")
+    @DisplayName("TC-VOTE-S-01 투표 생성: 이미지 키 반환")
     void create_returnsImageKeys() {
         Member member = MemberTestFactory.member(1L);
         when(memberFinder.findActiveByIdOrThrow(1L)).thenReturn(member);
 
-        ArgumentCaptor<Vote> voteCaptor = ArgumentCaptor.forClass(Vote.class);
-        when(voteRepository.save(voteCaptor.capture())).thenAnswer(invocation -> {
+        when(voteRepository.save(any(Vote.class))).thenAnswer(invocation -> {
             Vote vote = invocation.getArgument(0);
             ReflectionTestUtils.setField(vote, "id", 10L);
             return vote;
         });
 
         VoteCreateRequest request = new VoteCreateRequest(
-                "투표 제목",
+                "title",
                 List.of("votes/1/a.png", "votes/1/b.png")
         );
 
         VoteCreateResponse response = voteService.create(1L, request);
 
-        Vote saved = voteCaptor.getValue();
-        assertThat(saved.getItems()).hasSize(2);
         assertThat(response.id()).isEqualTo(10L);
+        assertThat(response.title()).isEqualTo("title");
         assertThat(response.imageObjectKeys()).containsExactly("votes/1/a.png", "votes/1/b.png");
     }
 
     @Test
-    @DisplayName("TC-VOTE-02 내 투표 목록: 커서 생성")
+    @DisplayName("TC-VOTE-S-02 내 투표 목록: 커서 생성")
     void listMine_buildsCursor() {
         LocalDateTime createdAt = LocalDateTime.of(2026, 2, 11, 10, 0, 0);
-        Vote vote = Vote.create(MemberTestFactory.member(1L), "title", createdAt.plusHours(1), List.of());
+        Vote vote = VoteTestFactory.vote(MemberTestFactory.member(1L), "title", createdAt.plusHours(1));
         ReflectionTestUtils.setField(vote, "id", 5L);
         ReflectionTestUtils.setField(vote, "createdAt", createdAt);
         when(voteRepository.findLatestByMemberId(eq(1L), eq(PageRequest.of(0, 1))))
@@ -100,9 +98,9 @@ class VoteServiceTest {
     }
 
     @Test
-    @DisplayName("TC-VOTE-03 참여 가능한 최신 투표 조회")
+    @DisplayName("TC-VOTE-S-03 참여 가능한 최신 투표 조회")
     void findLatestCandidate_returnsLatest() {
-        Vote vote = Vote.create(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1), List.of());
+        Vote vote = VoteTestFactory.vote(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1));
         ReflectionTestUtils.setField(vote, "id", 10L);
         when(voteRepository.findLatestCandidate(eq(1L), any(), eq(PageRequest.of(0, 1))))
                 .thenReturn(List.of(vote));
@@ -119,10 +117,10 @@ class VoteServiceTest {
     }
 
     @Test
-    @DisplayName("TC-VOTE-04 투표 참여: 결과 반환")
+    @DisplayName("TC-VOTE-S-04 투표 참여: 결과 반환")
     void participate_returnsResult() {
         Member member = MemberTestFactory.member(1L);
-        Vote vote = Vote.create(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1), List.of());
+        Vote vote = VoteTestFactory.vote(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1));
         ReflectionTestUtils.setField(vote, "id", 10L);
         when(voteRepository.findById(10L)).thenReturn(java.util.Optional.of(vote));
         when(voteParticipationRepository.existsByVoteIdAndMemberId(10L, 1L)).thenReturn(false);
@@ -149,9 +147,9 @@ class VoteServiceTest {
     }
 
     @Test
-    @DisplayName("TC-VOTE-05 투표 참여 실패: 중복 투표 항목")
+    @DisplayName("TC-VOTE-F-01 투표 참여 실패: 중복 투표 항목")
     void participate_failsWhenDuplicateItems() {
-        Vote vote = Vote.create(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1), List.of());
+        Vote vote = VoteTestFactory.vote(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1));
         ReflectionTestUtils.setField(vote, "id", 10L);
         when(voteRepository.findById(10L)).thenReturn(java.util.Optional.of(vote));
         when(voteParticipationRepository.existsByVoteIdAndMemberId(10L, 1L)).thenReturn(false);
@@ -165,9 +163,9 @@ class VoteServiceTest {
     }
 
     @Test
-    @DisplayName("TC-VOTE-06 투표 결과 조회 실패: 참여/작성자 아님")
+    @DisplayName("TC-VOTE-F-02 투표 결과 조회 실패: 참여/작성자 아님")
     void getResult_failsWhenNotParticipant() {
-        Vote vote = Vote.create(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1), List.of());
+        Vote vote = VoteTestFactory.vote(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1));
         ReflectionTestUtils.setField(vote, "id", 10L);
         when(voteRepository.findById(10L)).thenReturn(java.util.Optional.of(vote));
         when(voteParticipationRepository.existsByVoteIdAndMemberId(10L, 1L)).thenReturn(false);
@@ -179,9 +177,9 @@ class VoteServiceTest {
     }
 
     @Test
-    @DisplayName("TC-VOTE-07 투표 삭제: 작성자만 삭제 가능")
+    @DisplayName("TC-VOTE-F-03 투표 삭제 실패: 작성자 아님")
     void delete_requiresOwner() {
-        Vote vote = Vote.create(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1), List.of());
+        Vote vote = VoteTestFactory.vote(MemberTestFactory.member(2L), "title", LocalDateTime.now().plusHours(1));
         ReflectionTestUtils.setField(vote, "id", 10L);
         when(voteRepository.findById(10L)).thenReturn(java.util.Optional.of(vote));
 

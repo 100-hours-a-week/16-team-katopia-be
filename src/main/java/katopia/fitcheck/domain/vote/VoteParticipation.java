@@ -25,9 +25,6 @@ import java.time.LocalDateTime;
         name = "vote_participations",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uidx_vote_participations_vote_member", columnNames = {"vote_id", "member_id"})
-        },
-        indexes = {
-                @Index(name = "idx_vote_participations_vote_member", columnList = "vote_id, member_id")
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

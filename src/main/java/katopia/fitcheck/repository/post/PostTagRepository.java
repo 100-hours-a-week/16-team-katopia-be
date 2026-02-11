@@ -27,4 +27,13 @@ public interface PostTagRepository extends JpaRepository<PostTag, Long> {
             order by t.id asc
             """)
     List<String> findTagNamesByPostId(@Param("postId") Long postId);
+
+    @Query("""
+            select pt.post.id as postId, t.name as name
+            from PostTag pt
+            join pt.tag t
+            where pt.post.id in :postIds
+            order by pt.post.id asc, t.id asc
+            """)
+    List<PostTagNameProjection> findTagNamesByPostIds(@Param("postIds") List<Long> postIds);
 }
