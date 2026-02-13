@@ -95,6 +95,8 @@ public final class Docs {
             UPDATED_AT_DES = "수정 시간",
             READ_AT_DES = "읽음 시간",
             TIMESTAMP = "2026-01-01T12:34:56Z",
+            FIRST_TIME = "2026-01-01T12:34:56",
+            SECOND_TIME = "2026-01-01T12:34:57",
             AUTHOR_DES = "작성자",
             ORDER_DES = "순서";
 

@@ -7,7 +7,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum NotificationErrorCode implements ResponseCode {
-    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-E-001", "알림을 찾을 수 없습니다.");
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI-E-001", "알림을 찾을 수 없습니다."),
+    NOTIFICATION_ALREADY_READ(HttpStatus.NOT_FOUND, "NOTI-E-002", "이미 읽은 알림입니다.");
 
     private final HttpStatus status;
     private final String code;

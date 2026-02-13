@@ -1,7 +1,6 @@
 package katopia.fitcheck.global.policy;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 
 public final class Policy {
@@ -79,11 +78,11 @@ public final class Policy {
     public static final String PRESIGN_EXTENSION_DES = "확장자";
 
     public static final String
+            SYSTEM = "system",
             FOLLOW_MESSAGE = "%s님이 팔로우했습니다.",
             POST_LIKE_MESSAGE = "%s님이 게시글을 좋아합니다.",
             POST_COMMENT_MESSAGE = "%s님이 댓글을 남겼습니다.",
-            VOTE_CLOSED_MESSAGE = "투표가 종료되었습니다.",
-            CHAT_MESSAGE = "%s: %s";
+            VOTE_CLOSED_MESSAGE = "투표가 종료되었습니다.";
 
     public static final String
             NOTIFICATION_TYPE_FOLLOW = "FOLLOW",

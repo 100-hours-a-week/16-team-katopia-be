@@ -46,6 +46,9 @@ public class NotificationService {
     public NotificationSummary markRead(Long memberId, Long notificationId) {
         Notification notification = notificationRepository.findByIdAndRecipientId(notificationId, memberId)
                 .orElseThrow(() -> new BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
+        if (notification.getReadAt() != null) {
+            throw new BusinessException(NotificationErrorCode.NOTIFICATION_ALREADY_READ);
+        }
         notification.markRead(LocalDateTime.now());
         return NotificationSummary.of(notification);
     }
@@ -77,10 +80,10 @@ public class NotificationService {
             String messageFormat,
             Long referenceId
     ) {
-        if (actor.getId().equals(recipient.getId())) {
+        if (actor != null && actor.getId().equals(recipient.getId())) {
             return;
         }
-        String message = String.format(messageFormat, actor.getNickname());
+        String message = actor == null ? messageFormat : String.format(messageFormat, actor.getNickname());
         Notification notification = Notification.of(recipient, actor, type, message, referenceId);
         notificationRepository.save(notification);
         // TODO: Redis/RabbitMQ 연동으로 실시간 전송/재시도 큐 처리

@@ -100,7 +100,7 @@ public class Notification {
                 .recipient(recipient)
                 .actor(actor)
                 .notificationType(type)
-                .actorNicknameSnapshot(actor != null ? actor.getNickname() : "system")
+                .actorNicknameSnapshot(actor != null ? actor.getNickname() : Policy.SYSTEM)
                 .actorProfileImageObjectKeySnapshot(actor != null ? actor.getProfileImageObjectKey() : null)
                 .message(message)
                 .referenceId(referenceId)
