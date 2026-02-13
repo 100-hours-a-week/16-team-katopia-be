@@ -11,6 +11,7 @@ import katopia.fitcheck.service.member.MemberFinder;
 import katopia.fitcheck.domain.post.Post;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.service.post.PostFinder;
+import katopia.fitcheck.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class CommentCommandService {
     private final CommentValidator commentValidator;
     private final CommentFinder commentFinder;
     private final PostFinder postFinder;
+    private final NotificationService notificationService;
 
     @Transactional
     public CommentResponse create(Long memberId, Long postId, CommentRequest request) {
@@ -36,7 +38,9 @@ public class CommentCommandService {
         Comment comment = Comment.create(post, member, request.content());
         try {
             Comment saved = commentRepository.save(comment);
+            // TODO: 댓글 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
             postRepository.incrementCommentCount(postId);
+            notificationService.createPostComment(member, post.getMember(), postId);
             return CommentResponse.of(saved);
         } catch (DataIntegrityViolationException ex) {
             throw new BusinessException(CommonErrorCode.INVALID_RELATION);
@@ -59,6 +63,7 @@ public class CommentCommandService {
         Comment comment = commentFinder.findByIdAndPostIdOrThrow(commentId, postId);
         commentValidator.validateOwner(comment, memberId);
         commentRepository.delete(comment);
+        // TODO: 댓글 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
         postRepository.decrementCommentCount(postId);
     }
 }

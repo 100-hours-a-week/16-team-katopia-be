@@ -101,7 +101,6 @@ public class VoteService {
 
         Member member = memberFinder.findActiveByIdOrThrow(memberId);
         voteParticipationRepository.save(VoteParticipation.of(vote, member, now));
-
         List<VoteItem> items = voteItemRepository.findByVoteIdOrderBySortOrder(voteId);
         return VoteResultResponse.of(vote, items);
     }

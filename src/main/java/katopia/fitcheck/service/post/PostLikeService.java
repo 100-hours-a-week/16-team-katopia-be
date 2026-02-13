@@ -9,6 +9,7 @@ import katopia.fitcheck.domain.post.PostLike;
 import katopia.fitcheck.dto.post.response.PostLikeResponse;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
+import katopia.fitcheck.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class PostLikeService {
     private final PostRepository postRepository;
     private final MemberFinder memberFinder;
     private final PostFinder postFinder;
+    private final NotificationService notificationService;
 
     @Transactional
     public PostLikeResponse like(Long memberId, Long postId) {
@@ -32,7 +34,9 @@ public class PostLikeService {
         Member member = memberFinder.findByIdOrThrow(memberId);
         PostLike like = PostLike.of(member, post);
         postLikeRepository.save(like);
+        // TODO: 좋아요 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
         postRepository.incrementLikeCount(postId);
+        notificationService.createPostLike(member, post.getMember(), postId);
         long likeCount = resolveLikeCount(postId);
         return PostLikeResponse.of(post.getId(), likeCount);
     }
@@ -43,6 +47,7 @@ public class PostLikeService {
                 .orElseThrow(() -> new BusinessException(PostLikeErrorCode.NOT_FOUND_LIKE));
         Post post = like.getPost();
         postLikeRepository.delete(like);
+        // TODO: 좋아요 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
         postRepository.decrementLikeCount(post.getId());
         resolveLikeCount(post.getId());
     }
