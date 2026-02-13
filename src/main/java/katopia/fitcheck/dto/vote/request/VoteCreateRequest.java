@@ -21,7 +21,7 @@ public record VoteCreateRequest(
         String title,
 
         @ArraySchema(
-                arraySchema = @Schema(description = Docs.IMAGE_OBJECT_KEY_LIST_DES, example = Docs.VOTE_IMAGE_OBJECT_KEY_LIST),
+                arraySchema = @Schema(description = Docs.IMAGE_OBJECT_KEY_LIST_DES, example = Docs.IMAGE_OBJECT_KEY_LIST),
                 schema = @Schema(description = Docs.IMAGE_OBJECT_KEY_DES),
                 minItems = Policy.VOTE_IMAGE_MIN_COUNT,
                 maxItems = Policy.VOTE_IMAGE_MAX_COUNT

@@ -56,6 +56,7 @@ public class PostCommandService {
         post.replaceTags(buildPostTags(post, tagEntities));
 
         Post saved = postRepository.save(post);
+        // TODO: 게시글 수 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
         memberRepository.incrementPostCount(memberId);
         return PostCreateResponse.of(saved, tagEntities);
     }
@@ -78,6 +79,7 @@ public class PostCommandService {
     public void delete(Long memberId, Long postId) {
         Post post = postFinder.findByIdOrThrow(postId);
         postValidator.validateOwner(post, memberId);
+        // TODO: 게시글 수 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
         memberRepository.decrementPostCount(memberId);
         commentRepository.deleteByPostId(postId);
         postLikeRepository.deleteByPostId(postId);

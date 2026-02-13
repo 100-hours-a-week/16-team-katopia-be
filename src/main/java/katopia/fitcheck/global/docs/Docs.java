@@ -26,6 +26,14 @@ public final class Docs {
             FOLLOW_STATUS = "팔로우 여부",
             FOLLOWING_STATUS = "팔로잉 여부";
 
+    // Notification
+    public static final String
+            NOTIFICATION_LIST_DES = "알림 목록",
+            NOTIFICATION_TYPE_DES = "알림 타입",
+            NOTIFICATION_TYPE_EXAMPLE = Policy.NOTIFICATION_TYPE_POST_LIKE,
+            NOTIFICATION_MESSAGE_DES = "알림 메시지",
+            NOTIFICATION_MESSAGE = "member_2님이 게시글을 좋아합니다.";
+
 
     // Aggregate
     public static final String
@@ -62,11 +70,8 @@ public final class Docs {
     // Vote
     public static final String VOTE_TITLE_DES = "투표 제목",
             VOTE_TITLE = "오늘의 코디 투표",
-            VOTE_IMAGE_OBJECT_KEY_LIST = "[\"votes/1/1700000000000-uuid.png\"]",
-            VOTE_IMAGE_OBJECT_KEY_EXAMPLE = "votes/1/1700000000000-uuid.png",
-            VOTE_ITEM_ID_DES = "투표 항목 ID",
             VOTE_ITEM_ID_LIST_DES = "투표 항목 ID 목록",
-            VOTE_ITEM_ID_LIST_EXAMPLE = "[10, 11]";
+            VOTE_ITEM_ID_LIST_EXAMPLE = "[1, 2]";
 
 
     // Presign/Upload
@@ -84,10 +89,11 @@ public final class Docs {
     // Common
     public static final String ID_DES = "식별자 ID",
             PAGE_DES = "페이지 크기", PAGE = Policy.DEFAULT_PAGE_SIZE + "",
-            CURSOR = "2026-01-01T12:34:56Z|1", CURSOR_DES = "커서 (createdAt|id)",
+            CURSOR = "2026-01-01T12:34:56|1", CURSOR_DES = "커서 (createdAt|id)",
             CURSOR_PAGING_DES = "커서 기반 인피니티 스크롤을 지원합니다.",
             CREATED_AT_DES = "생성 시간",
             UPDATED_AT_DES = "수정 시간",
+            READ_AT_DES = "읽음 시간",
             TIMESTAMP = "2026-01-01T12:34:56Z",
             AUTHOR_DES = "작성자",
             ORDER_DES = "순서";

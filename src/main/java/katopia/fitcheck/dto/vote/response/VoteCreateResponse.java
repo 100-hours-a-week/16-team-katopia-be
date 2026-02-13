@@ -14,7 +14,7 @@ public record VoteCreateResponse(
         Long id,
         @Schema(description = Docs.VOTE_TITLE_DES, example = Docs.VOTE_TITLE)
         String title,
-        @Schema(description = Docs.IMAGE_OBJECT_KEY_LIST_DES, example = Docs.VOTE_IMAGE_OBJECT_KEY_LIST)
+        @Schema(description = Docs.IMAGE_OBJECT_KEY_LIST_DES, example = Docs.IMAGE_OBJECT_KEY_LIST)
         List<String> imageObjectKeys
 ) {
     public static VoteCreateResponse of(Vote vote) {

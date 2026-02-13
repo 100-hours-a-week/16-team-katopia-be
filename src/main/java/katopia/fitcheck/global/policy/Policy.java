@@ -1,6 +1,8 @@
 package katopia.fitcheck.global.policy;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 
 public final class Policy {
 
@@ -53,15 +55,16 @@ public final class Policy {
 
     // Upload policy
     public static final long PRESIGN_MAX_SIZE_BYTES = 30L * 1024 * 1024;
-    public static final java.util.List<String> PRESIGN_ALLOWED_EXTENSIONS =
-            java.util.List.of("jpg", "jpeg", "png", "heic", "webp");
+
+    public static final int IMAGE_OBJECT_KEY_MAX_LENGTH = 1024;
+    public static final java.util.List<String> PRESIGN_ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "heic", "webp");
 
     // Auth policy
     public static final Duration JWT_ACCESS_TOKEN_TTL = Duration.ofMinutes(15);
     public static final Duration JWT_REFRESH_TOKEN_TTL = Duration.ofDays(14);
     public static final Duration JWT_REGISTRATION_TOKEN_TTL = Duration.ofMinutes(10);
 
-    // Swagger descriptions
+    // descriptions
     public static final String NICKNAME_DES =
             "닉네임 (한글/영문/숫자/._, 최대 " + NICKNAME_MAX_LENGTH + "자)";
     public static final String GENDER_DES = "성별 (M/F)";
@@ -71,9 +74,22 @@ public final class Policy {
             "몸무게(kg) 숫자 문자열 (" + WEIGHT_MIN + "~" + WEIGHT_MAX + ")";
     public static final String TAG_LIST_DES =
             "태그 목록(최대 " + TAG_MAX_COUNT + "개)";
-    public static final String PRESIGN_CATEGORY_DESCRIPTION = "업로드 유형 (PROFILE/POST/VOTE)";
-    public static final String PRESIGN_EXTENSIONS_DESCRIPTION = "확장자 목록 (JPG/JPEG/PNG/HEIC/WEBP)";
-    public static final String PRESIGN_EXTENSION_DESCRIPTION = "확장자";
+    public static final String PRESIGN_CATEGORY_DES = "업로드 유형 (PROFILE/POST/VOTE)";
+    public static final String PRESIGN_EXTENSIONS_DES = "확장자 목록: jpg | jpeg | png | heic | webp";
+    public static final String PRESIGN_EXTENSION_DES = "확장자";
+
+    public static final String
+            FOLLOW_MESSAGE = "%s님이 팔로우했습니다.",
+            POST_LIKE_MESSAGE = "%s님이 게시글을 좋아합니다.",
+            POST_COMMENT_MESSAGE = "%s님이 댓글을 남겼습니다.",
+            VOTE_CLOSED_MESSAGE = "투표가 종료되었습니다.",
+            CHAT_MESSAGE = "%s: %s";
+
+    public static final String
+            NOTIFICATION_TYPE_FOLLOW = "FOLLOW",
+            NOTIFICATION_TYPE_POST_LIKE = "POST_LIKE",
+            NOTIFICATION_TYPE_POST_COMMENT = "POST_COMMENT",
+            NOTIFICATION_TYPE_VOTE_CLOSED = "VOTE_CLOSED";
 
     private Policy() {
     }

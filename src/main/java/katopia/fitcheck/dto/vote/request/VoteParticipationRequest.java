@@ -11,7 +11,7 @@ import java.util.List;
 public record VoteParticipationRequest(
         @ArraySchema(
                 arraySchema = @Schema(description = Docs.VOTE_ITEM_ID_LIST_DES, example = Docs.VOTE_ITEM_ID_LIST_EXAMPLE),
-                schema = @Schema(description = Docs.VOTE_ITEM_ID_DES, example = "1"),
+                schema = @Schema(description = Docs.ID_DES, example = "1"),
                 minItems = Policy.VOTE_IMAGE_MIN_COUNT,
                 maxItems = Policy.VOTE_IMAGE_MAX_COUNT
         )

@@ -12,14 +12,14 @@ import java.util.List;
 @ValidPresignRequest
 public record PresignRequest(
         @Schema(
-                description = Policy.PRESIGN_CATEGORY_DESCRIPTION,
+                description = Policy.PRESIGN_CATEGORY_DES,
                 example = Docs.PRESIGN_CATEGORY_POST,
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         UploadCategory category,
         @ArraySchema(
-                arraySchema = @Schema(description = Policy.PRESIGN_EXTENSIONS_DESCRIPTION, example = Docs.PRESIGN_EXTENSIONS_EXAMPLE),
-                schema = @Schema(description = Policy.PRESIGN_EXTENSION_DESCRIPTION, example = Docs.PRESIGN_EXTENSION_EXAMPLE)
+                arraySchema = @Schema(description = Policy.PRESIGN_EXTENSIONS_DES, example = Docs.PRESIGN_EXTENSIONS_EXAMPLE),
+                schema = @Schema(description = Policy.PRESIGN_EXTENSION_DES, example = Docs.PRESIGN_EXTENSION_EXAMPLE)
         )
         List<String> extensions
 ) {
