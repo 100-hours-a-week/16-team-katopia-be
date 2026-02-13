@@ -95,6 +95,27 @@ class CommentCommandServiceTest {
     }
 
     @Test
+    @DisplayName("TC-TRIGGER-S-04 댓글 생성 시 알림 트리거")
+    void tcTriggerS04_comment_triggersNotification() {
+        Member author = MemberTestFactory.member(AUTHOR_ID);
+        Post post = Post.create(author, "content", List.of(PostImage.of(1, "img")));
+        ReflectionTestUtils.setField(post, "id", POST_ID);
+
+        Member commenter = MemberTestFactory.member(COMMENTER_ID);
+
+        when(postFinder.getReferenceById(POST_ID)).thenReturn(post);
+        when(memberFinder.getReferenceById(COMMENTER_ID)).thenReturn(commenter);
+
+        Comment saved = Comment.create(post, commenter, "hi");
+        ReflectionTestUtils.setField(saved, "id", COMMENT_ID);
+        when(commentRepository.save(any())).thenReturn(saved);
+
+        commentCommandService.create(COMMENTER_ID, POST_ID, new CommentRequest("hi"));
+
+        verify(notificationService).createPostComment(eq(commenter), eq(post.getMember()), eq(POST_ID));
+    }
+
+    @Test
     @DisplayName("TC-COMMENT-CMD-S-02 댓글 수정 성공(본문 변경)")
     void tcCommentCmdS02_updateComment_updatesContent() {
         doNothing().when(postFinder).requireExists(POST_ID);
