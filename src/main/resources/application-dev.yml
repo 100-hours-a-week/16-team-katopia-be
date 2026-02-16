@@ -48,10 +48,10 @@ spring:
       port: ${REDIS_PORT:6379}
 
   rabbitmq:
-    host: ${RABBIT_HOST}
-    port: ${RABBIT_PORT}
-    username: ${RABBIT_USERNAME}
-    password: ${RABBIT_PASSWORD}
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
 
 app:
   jwt:
