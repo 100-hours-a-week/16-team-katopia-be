@@ -31,6 +31,7 @@ public class NotificationService {
     private final PostFinder postFinder;
     private final VoteItemRepository voteItemRepository;
     private final MemberFinder memberFinder;
+    private final NotificationRealtimePublisher realtimePublisher;
 
     @Transactional(readOnly = true)
     public NotificationListResponse getList(Long memberId, String sizeValue, String after) {
@@ -59,6 +60,17 @@ public class NotificationService {
         }
         notification.markRead(LocalDateTime.now());
         return NotificationSummary.of(notification);
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationSummary> getLatestUnread(Long memberId, int size) {
+        List<Notification> notifications = notificationRepository.findLatestUnreadByRecipientId(
+                memberId,
+                PageRequest.of(0, size)
+        );
+        return notifications.stream()
+                .map(NotificationSummary::of)
+                .toList();
     }
 
     @Transactional
@@ -113,6 +125,7 @@ public class NotificationService {
         String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(type, actor, refId);
         Notification notification = Notification.of(recipient, actor, type, message, refId, imageObjectKeySnapshot);
         notificationRepository.save(notification);
+        realtimePublisher.publish(notification);
         // TODO: Redis/RabbitMQ 연동으로 실시간 전송/재시도 큐 처리
     }
 

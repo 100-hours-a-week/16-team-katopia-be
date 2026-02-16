@@ -32,5 +32,16 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             Pageable pageable
     );
 
+    @Query("""
+            select n from Notification n
+            where n.recipient.id = :recipientId
+              and n.readAt is null
+            order by n.createdAt desc, n.id desc
+            """)
+    List<Notification> findLatestUnreadByRecipientId(
+            @Param("recipientId") Long recipientId,
+            Pageable pageable
+    );
+
     java.util.Optional<Notification> findByIdAndRecipientId(Long id, Long recipientId);
 }

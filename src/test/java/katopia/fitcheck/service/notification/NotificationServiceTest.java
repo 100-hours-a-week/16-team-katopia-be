@@ -61,6 +61,8 @@ class NotificationServiceTest {
     private VoteItemRepository voteItemRepository;
     @Mock
     private MemberFinder memberFinder;
+    @Mock
+    private NotificationRealtimePublisher realtimePublisher;
 
     @InjectMocks
     private NotificationService notificationService;
