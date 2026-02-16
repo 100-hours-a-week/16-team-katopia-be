@@ -76,7 +76,7 @@ class PostLikeServiceTest {
 
         postLikeService.like(MEMBER_ID, POST_ID);
 
-        verify(notificationService).createPostLike(eq(member), eq(author), eq(POST_ID));
+        verify(notificationService).createPostLike(eq(MEMBER_ID), eq(POST_ID));
     }
 
     @Test
@@ -94,7 +94,7 @@ class PostLikeServiceTest {
 
         postLikeService.like(MEMBER_ID, POST_ID);
 
-        verify(notificationService).createPostLike(eq(member), eq(author), eq(POST_ID));
+        verify(notificationService).createPostLike(eq(MEMBER_ID), eq(POST_ID));
     }
 
     @Test

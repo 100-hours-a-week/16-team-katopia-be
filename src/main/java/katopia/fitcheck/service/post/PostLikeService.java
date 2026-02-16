@@ -36,7 +36,7 @@ public class PostLikeService {
         postLikeRepository.save(like);
         // TODO: 좋아요 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
         postRepository.incrementLikeCount(postId);
-        notificationService.createPostLike(member, post.getMember(), postId);
+        notificationService.createPostLike(memberId, postId);
         long likeCount = resolveLikeCount(postId);
         return PostLikeResponse.of(post.getId(), likeCount);
     }

@@ -15,6 +15,7 @@ import katopia.fitcheck.global.pagination.CursorPagingHelper;
 import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.repository.notification.NotificationRepository;
 import katopia.fitcheck.repository.vote.VoteItemRepository;
+import katopia.fitcheck.service.member.MemberFinder;
 import katopia.fitcheck.service.post.PostFinder;
 import katopia.fitcheck.support.MemberTestFactory;
 import katopia.fitcheck.support.NotificationTestFactory;
@@ -58,6 +59,8 @@ class NotificationServiceTest {
     private PostFinder postFinder;
     @Mock
     private VoteItemRepository voteItemRepository;
+    @Mock
+    private MemberFinder memberFinder;
 
     @InjectMocks
     private NotificationService notificationService;
@@ -117,8 +120,10 @@ class NotificationServiceTest {
             Member actor = MemberTestFactory.member(ACTOR_ID);
             Member recipient = MemberTestFactory.member(RECIPIENT_ID);
             ReflectionTestUtils.setField(actor, "profileImageObjectKey", "profile/2/cover.png");
+            when(memberFinder.findByIdOrThrow(ACTOR_ID)).thenReturn(actor);
+            when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
 
-            notificationService.createFollow(actor, recipient);
+            notificationService.createFollow(ACTOR_ID, RECIPIENT_ID);
 
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
             verify(notificationRepository).save(captor.capture());
@@ -134,12 +139,13 @@ class NotificationServiceTest {
         @DisplayName("TC-TRIGGER-S-02 투표 종료 시 알림 트리거")
         void tcTriggerS02_createVoteClosed_savesNotification() {
             Member recipient = MemberTestFactory.member(RECIPIENT_ID);
+            when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
             VoteItem voteItem = mock(VoteItem.class);
             when(voteItem.getImageObjectKey()).thenReturn(VOTE_IMAGE_OBJECT_KEY);
             when(voteItemRepository.findFirstByVoteIdOrderBySortOrderAsc(99L))
                     .thenReturn(Optional.of(voteItem));
 
-            notificationService.createVoteClosed(recipient, 99L);
+            notificationService.createVoteClosed(RECIPIENT_ID, 99L);
 
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
             verify(notificationRepository).save(captor.capture());
@@ -156,12 +162,15 @@ class NotificationServiceTest {
         @DisplayName("TC-TRIGGER-S-06 게시글 좋아요 시 첫 이미지 스냅샷 저장")
         void tcTriggerS03_createPostLike_savesFirstImageSnapshot() {
             Member actor = MemberTestFactory.member(ACTOR_ID);
-            Member recipient = MemberTestFactory.member(RECIPIENT_ID);
             Post post = createPostWithImage(IMAGE_OBJECT_KEY);
 
             when(postFinder.findByIdOrThrow(REFERENCE_ID)).thenReturn(post);
+            when(memberFinder.findByIdOrThrow(ACTOR_ID)).thenReturn(actor);
+            when(postFinder.findMemberIdByPostIdOrThrow(REFERENCE_ID)).thenReturn(RECIPIENT_ID);
+            Member recipient = MemberTestFactory.member(RECIPIENT_ID);
+            when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
 
-            notificationService.createPostLike(actor, recipient, REFERENCE_ID);
+            notificationService.createPostLike(ACTOR_ID, REFERENCE_ID);
 
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
             verify(notificationRepository).save(captor.capture());
@@ -176,12 +185,15 @@ class NotificationServiceTest {
         @DisplayName("TC-TRIGGER-S-07 댓글 생성 시 첫 이미지 스냅샷 저장")
         void tcTriggerS04_createPostComment_savesFirstImageSnapshot() {
             Member actor = MemberTestFactory.member(ACTOR_ID);
-            Member recipient = MemberTestFactory.member(RECIPIENT_ID);
             Post post = createPostWithImage(IMAGE_OBJECT_KEY);
 
             when(postFinder.findByIdOrThrow(REFERENCE_ID)).thenReturn(post);
+            when(memberFinder.findByIdOrThrow(ACTOR_ID)).thenReturn(actor);
+            when(postFinder.findMemberIdByPostIdOrThrow(REFERENCE_ID)).thenReturn(RECIPIENT_ID);
+            Member recipient = MemberTestFactory.member(RECIPIENT_ID);
+            when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
 
-            notificationService.createPostComment(actor, recipient, REFERENCE_ID);
+            notificationService.createPostComment(ACTOR_ID, REFERENCE_ID);
 
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
             verify(notificationRepository).save(captor.capture());
@@ -195,9 +207,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("TC-TRIGGER-S-05 본인 행위는 알림 저장하지 않음")
         void tcTriggerS05_createFollow_skipsSelfNotification() {
-            Member actor = MemberTestFactory.member(ACTOR_ID);
-
-            notificationService.createFollow(actor, actor);
+            notificationService.createFollow(ACTOR_ID, ACTOR_ID);
 
             verify(notificationRepository, never()).save(any());
         }

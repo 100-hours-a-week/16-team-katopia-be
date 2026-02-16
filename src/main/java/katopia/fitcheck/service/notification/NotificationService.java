@@ -13,6 +13,7 @@ import katopia.fitcheck.global.pagination.CursorPagingHelper;
 import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.repository.notification.NotificationRepository;
 import katopia.fitcheck.repository.vote.VoteItemRepository;
+import katopia.fitcheck.service.member.MemberFinder;
 import katopia.fitcheck.service.post.PostFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +30,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final PostFinder postFinder;
     private final VoteItemRepository voteItemRepository;
+    private final MemberFinder memberFinder;
 
     @Transactional(readOnly = true)
     public NotificationListResponse getList(Long memberId, String sizeValue, String after) {
@@ -60,22 +62,40 @@ public class NotificationService {
     }
 
     @Transactional
-    public void createFollow(Member actor, Member recipient) {
-        createNotification(actor, recipient, NotificationType.FOLLOW, Policy.FOLLOW_MESSAGE, actor.getId());
+    public void createFollow(Long actorId, Long recipientId) {
+        if (actorId.equals(recipientId)) {
+            return;
+        }
+        Member actor = memberFinder.findByIdOrThrow(actorId);
+        Member recipient = memberFinder.findByIdOrThrow(recipientId);
+        createNotification(actor, recipient, NotificationType.FOLLOW, Policy.FOLLOW_MESSAGE, actorId);
     }
 
     @Transactional
-    public void createPostLike(Member actor, Member recipient, Long postId) {
+    public void createPostLike(Long actorId, Long postId) {
+        Long recipientId = postFinder.findMemberIdByPostIdOrThrow(postId);
+        if (actorId.equals(recipientId)) {
+            return;
+        }
+        Member actor = memberFinder.findByIdOrThrow(actorId);
+        Member recipient = memberFinder.findByIdOrThrow(recipientId);
         createNotification(actor, recipient, NotificationType.POST_LIKE, Policy.POST_LIKE_MESSAGE, postId);
     }
 
     @Transactional
-    public void createPostComment(Member actor, Member recipient, Long postId) {
+    public void createPostComment(Long actorId, Long postId) {
+        Long recipientId = postFinder.findMemberIdByPostIdOrThrow(postId);
+        if (actorId.equals(recipientId)) {
+            return;
+        }
+        Member actor = memberFinder.findByIdOrThrow(actorId);
+        Member recipient = memberFinder.findByIdOrThrow(recipientId);
         createNotification(actor, recipient, NotificationType.POST_COMMENT, Policy.POST_COMMENT_MESSAGE, postId);
     }
 
     @Transactional
-    public void createVoteClosed(Member recipient, Long voteId) {
+    public void createVoteClosed(Long recipientId, Long voteId) {
+        Member recipient = memberFinder.findByIdOrThrow(recipientId);
         createNotification(null, recipient, NotificationType.VOTE_CLOSED, Policy.VOTE_CLOSED_MESSAGE, voteId);
     }
 

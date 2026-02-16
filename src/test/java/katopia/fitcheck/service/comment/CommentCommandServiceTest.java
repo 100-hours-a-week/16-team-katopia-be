@@ -78,7 +78,6 @@ class CommentCommandServiceTest {
 
         Member commenter = MemberTestFactory.member(COMMENTER_ID);
 
-//        doNothing().when(postFinder).requireExists(POST_ID);
         when(postFinder.getReferenceById(POST_ID)).thenReturn(post);
         when(memberFinder.getReferenceById(COMMENTER_ID)).thenReturn(commenter);
 
@@ -91,7 +90,7 @@ class CommentCommandServiceTest {
         assertThat(response.content()).isEqualTo("hi");
         verify(commentRepository).save(any());
         verify(postRepository).incrementCommentCount(eq(POST_ID));
-        verify(notificationService).createPostComment(eq(commenter), eq(post.getMember()), eq(POST_ID));
+        verify(notificationService).createPostComment(eq(COMMENTER_ID), eq(POST_ID));
     }
 
     @Test
@@ -112,7 +111,7 @@ class CommentCommandServiceTest {
 
         commentCommandService.create(COMMENTER_ID, POST_ID, new CommentRequest("hi"));
 
-        verify(notificationService).createPostComment(eq(commenter), eq(post.getMember()), eq(POST_ID));
+        verify(notificationService).createPostComment(eq(COMMENTER_ID), eq(POST_ID));
     }
 
     @Test
