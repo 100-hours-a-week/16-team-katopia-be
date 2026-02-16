@@ -22,7 +22,11 @@
 
 - 테이블 정의서: `docs/table/NOTIFICATIONS.md`
 - ref_id는 notification_type으로 해석해 대상 리소스를 식별한다.
-- actor 정보는 스냅샷으로 저장한다.
+- 알림 목록 응답의 메타(meta)로 행위자 스냅샷을 제공한다.
+- imageObjectKeySnapshot은 알림 유형에 따라 대상 이미지를 스냅샷한다.
+  - FOLLOW: 팔로우한 사용자 프로필 이미지
+  - POST_LIKE/POST_COMMENT: 게시글 첫 번째 이미지
+  - VOTE_CLOSED: 투표 첫 번째 이미지
 - notification_type은 ENUM으로 관리한다.
 - 투표 종료 알림은 투표 생성자와 참여자에게 발송한다.
 
@@ -37,4 +41,4 @@
 
 ## 비동기 연동
 
-- SSE/브로커/재전송 정책은 `docs/domain-tech-spec/ASYNC_TECH_SPEC.md` 참고
+- SSE/브로커/재전송 정책은 [`docs/domain-tech-spec/ASYNC_TECH_SPEC.md`](/docs/domain-tech-spec/ASYNC_TECH_SPEC.md) 참고

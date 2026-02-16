@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VoteItemRepository extends JpaRepository<VoteItem, Long> {
 
@@ -16,6 +17,8 @@ public interface VoteItemRepository extends JpaRepository<VoteItem, Long> {
             order by vi.sortOrder asc
             """)
     List<VoteItem> findByVoteIdOrderBySortOrder(@Param("voteId") Long voteId);
+
+    Optional<VoteItem> findFirstByVoteIdOrderBySortOrderAsc(Long voteId);
 
     @Query("""
             select vi from VoteItem vi

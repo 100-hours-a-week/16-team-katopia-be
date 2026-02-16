@@ -37,6 +37,10 @@
 - Redis 역할
   - 실시간 전달 전용(Pub/Sub).
   - 저장/재처리는 RabbitMQ + DB로 수행.
+- 알림 저장 정책
+  - 알림 저장은 MQ 소비자가 비동기로 처리한다.
+  - 실시간 전송은 best-effort로 처리하며, 실패 시 알림함 조회로 보완한다.
+- RabbitMQ vs Redis Streams 비교(알림 비동기 기준)
 
 ## 이벤트 스키마(메시지 포맷)
 
@@ -63,6 +67,29 @@
   - `chat_persist_dlq`
   - `chat_fanout_dlq`
 
+## 공통 재처리/재시도 정책(베이스라인)
+
+- 공통 원칙
+  - at-least-once 소비를 기본으로 한다.
+  - eventId(UUID)를 멱등 키로 사용한다.
+  - 실패 시 재시도 후 DLQ로 격리한다.
+- 재시도 규칙(초안)
+  - 재시도 횟수: 3회
+  - 백오프: 200ms -> 1s -> 3s
+  - confirm/처리 타임아웃: 2초
+- TODO(도메인별 조정 필요)
+  - 알림/채팅/집계별 재시도 횟수와 백오프 조정
+  - DLQ 재처리 주체 및 방식 정의(자동/수동/배치)
+
+## 알림 도메인 재처리 정책
+
+- 저장 실패
+  - DB 저장 실패는 재시도 후 DLQ로 격리한다.
+  - DLQ는 수동/배치 재처리로 운영한다.
+- 실시간 전송 실패
+  - SSE 전송 실패는 재시도하지 않고 버린다.
+  - 알림함 조회로 보완한다.
+
 ## 비동기 작업(Worker) 로직
 
 ### NotificationWorker
@@ -78,6 +105,27 @@
 
 ### RealtimeFanoutWorker
 - Redis Pub/Sub로 실시간 팬아웃
+
+## 실시간 알림 흐름(요약)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Client as Client
+  participant API as API Server
+  participant MQ as RabbitMQ
+  participant Worker as NotificationWorker
+  participant DB as MySQL
+  participant Redis as Redis Pub/Sub
+
+  Client->>API: 알림 트리거 요청(팔로우/좋아요/댓글/투표 등)
+  API->>MQ: 이벤트 발행(domain_events)
+  MQ-->>Worker: 이벤트 전달
+  Worker->>DB: 알림 저장(스냅샷 포함)
+  Worker->>Redis: Pub/Sub 발행
+  Redis-->>API: SSE 연결로 팬아웃
+  API-->>Client: SSE 알림 전달
+```
 
 ## 집계 카운트 처리 정책 (댓글/게시글/좋아요)
 
@@ -119,6 +167,11 @@ data: {"id":1,"type":"POST_LIKE","message":"...","refId":100}
 ### 동시 접속 제한
 - 사용자당 SSE 연결은 1개만 허용한다.
 - 신규 연결이 들어오면 기존 연결을 종료한다.
+
+### 운영/스케일링 고려
+- SSE 연결은 장시간 유지되므로, 서버 스레드 점유가 최소화되도록 비동기(서블릿 async) 처리로 운용한다.
+- 수평 확장 시 Sticky Session 또는 Redis Pub/Sub으로 인스턴스 간 팬아웃을 고려한다.
+  - SSE 연결은 인스턴스 로컬에 매달리므로 라우팅 정책이 중요하다.
 
 ## 알림 저장/보관 정책
 

@@ -4,17 +4,17 @@ spring:
       on-profile: local
 
 
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      client-type: lettuce
-
-  rabbitmq:
-    host: ${RABBIT_HOST:localhost}
-    port: ${RABBIT_PORT:5672}
-    username: ${RABBIT_USERNAME:guest}
-    password: ${RABBIT_PASSWORD:guest}
+#  data:
+#    redis:
+#      host: ${REDIS_HOST:localhost}
+#      port: ${REDIS_PORT:6379}
+#      client-type: lettuce
+#
+#  rabbitmq:
+#    host: ${RABBIT_HOST:localhost}
+#    port: ${RABBIT_PORT:5672}
+#    username: ${RABBIT_USERNAME:guest}
+#    password: ${RABBIT_PASSWORD:guest}
 
   docker:
     compose:

@@ -56,14 +56,14 @@ public class Notification {
     @Column(name = "actor_nickname_snapshot", length = 20, nullable = false)
     private String actorNicknameSnapshot;
 
-    @Column(name = "actor_profile_image_object_key_snapshot", length = Policy.IMAGE_OBJECT_KEY_MAX_LENGTH)
-    private String actorProfileImageObjectKeySnapshot;
+    @Column(name = "image_object_key_snapshot", length = Policy.IMAGE_OBJECT_KEY_MAX_LENGTH)
+    private String imageObjectKeySnapshot;
 
     @Column(name = "message", length = 255, nullable = false)
     private String message;
 
     @Column(name = "ref_id", nullable = false)
-    private Long referenceId;
+    private Long refId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -77,33 +77,34 @@ public class Notification {
                          Member actor,
                          NotificationType notificationType,
                          String actorNicknameSnapshot,
-                         String actorProfileImageObjectKeySnapshot,
+                         String imageObjectKeySnapshot,
                          String message,
-                         Long referenceId
+                         Long refId
     ) {
         this.recipient = recipient;
         this.actor = actor;
         this.notificationType = notificationType;
         this.actorNicknameSnapshot = actorNicknameSnapshot;
-        this.actorProfileImageObjectKeySnapshot = actorProfileImageObjectKeySnapshot;
+        this.imageObjectKeySnapshot = imageObjectKeySnapshot;
         this.message = message;
-        this.referenceId = referenceId;
+        this.refId = refId;
     }
 
     public static Notification of(Member recipient,
                                   Member actor,
                                   NotificationType type,
                                   String message,
-                                  Long referenceId
+                                  Long refId,
+                                  String imageObjectKeySnapshot
     ) {
         return Notification.builder()
                 .recipient(recipient)
                 .actor(actor)
                 .notificationType(type)
                 .actorNicknameSnapshot(actor != null ? actor.getNickname() : Policy.SYSTEM)
-                .actorProfileImageObjectKeySnapshot(actor != null ? actor.getProfileImageObjectKey() : null)
+                .imageObjectKeySnapshot(imageObjectKeySnapshot)
                 .message(message)
-                .referenceId(referenceId)
+                .refId(refId)
                 .build();
     }
 
