@@ -17,10 +17,11 @@ public final class NotificationTestFactory {
                                             Member actor,
                                             NotificationType type,
                                             String message,
-                                            Long referenceId,
+                                            Long refId,
+                                            String imageObjectKeySnapshot,
                                             LocalDateTime createdAt,
                                             LocalDateTime readAt) {
-        Notification notification = Notification.of(recipient, actor, type, message, referenceId);
+        Notification notification = Notification.of(recipient, actor, type, message, refId, imageObjectKeySnapshot);
         ReflectionTestUtils.setField(notification, "id", id);
         ReflectionTestUtils.setField(notification, "createdAt", createdAt);
         ReflectionTestUtils.setField(notification, "readAt", readAt);

@@ -17,9 +17,9 @@ public record NotificationSummary(
         @Schema(description = Docs.NOTIFICATION_MESSAGE_DES, example = Docs.NOTIFICATION_MESSAGE)
         String message,
         @Schema(description = Docs.ID_DES, example = "1")
-        Long referenceId,
+        Long refId,
         @Schema(description = Docs.AUTHOR_DES)
-        NotificationActor actor,
+        NotificationMeta meta,
         @Schema(description = Docs.CREATED_AT_DES, example = Docs.TIMESTAMP)
         LocalDateTime createdAt,
         @Schema(description = Docs.READ_AT_DES, example = Docs.TIMESTAMP)
@@ -30,8 +30,8 @@ public record NotificationSummary(
                 .id(notification.getId())
                 .type(notification.getNotificationType())
                 .message(notification.getMessage())
-                .referenceId(notification.getReferenceId())
-                .actor(NotificationActor.of(notification))
+                .refId(notification.getRefId())
+                .meta(NotificationMeta.of(notification))
                 .createdAt(notification.getCreatedAt())
                 .readAt(notification.getReadAt())
                 .build();

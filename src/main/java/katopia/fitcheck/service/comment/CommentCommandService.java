@@ -31,7 +31,6 @@ public class CommentCommandService {
 
     @Transactional
     public CommentResponse create(Long memberId, Long postId, CommentRequest request) {
-        // postFinder.requireExists(postId);
         Post post = postFinder.getReferenceById(postId);
         Member member = memberFinder.getReferenceById(memberId);
 
@@ -40,7 +39,7 @@ public class CommentCommandService {
             Comment saved = commentRepository.save(comment);
             // TODO: 댓글 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
             postRepository.incrementCommentCount(postId);
-            notificationService.createPostComment(member, post.getMember(), postId);
+            notificationService.createPostComment(memberId, postId);
             return CommentResponse.of(saved);
         } catch (DataIntegrityViolationException ex) {
             throw new BusinessException(CommonErrorCode.INVALID_RELATION);

@@ -73,7 +73,7 @@ class MemberFollowServiceTest {
 
         MemberFollowResponse response = memberFollowService.follow(1L, 2L);
 
-        verify(notificationService).createFollow(eq(follower), eq(followed));
+        verify(notificationService).createFollow(eq(1L), eq(2L));
         assertThat(response.isFollowing()).isTrue();
         assertThat(response.targetId()).isEqualTo(2L);
         assertThat(response.targetNickname()).isEqualTo("target");

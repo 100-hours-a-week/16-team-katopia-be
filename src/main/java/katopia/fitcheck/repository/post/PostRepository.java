@@ -103,6 +103,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Long> findIdsByMemberId(@Param("memberId") Long memberId);
 
     @Query("""
+            select p.member.id from Post p where p.id = :postId
+            """)
+    java.util.Optional<Long> findMemberIdByPostId(@Param("postId") Long postId);
+
+    @Query("""
             select p from Post p
             join p.member m
             where m.accountStatus = :status
