@@ -63,6 +63,9 @@ public final class Policy {
     public static final Duration JWT_REFRESH_TOKEN_TTL = Duration.ofDays(14);
     public static final Duration JWT_REGISTRATION_TOKEN_TTL = Duration.ofMinutes(10);
 
+    // SSE policy
+    public static final Duration SSE_TIMEOUT = Duration.ofHours(1);
+
     // descriptions
     public static final String NICKNAME_DES =
             "닉네임 (한글/영문/숫자/._, 최대 " + NICKNAME_MAX_LENGTH + "자)";
