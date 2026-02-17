@@ -61,6 +61,8 @@ class NotificationServiceTest {
     private VoteItemRepository voteItemRepository;
     @Mock
     private MemberFinder memberFinder;
+    @Mock
+    private NotificationRealtimePublisher realtimePublisher;
 
     @InjectMocks
     private NotificationService notificationService;
@@ -107,6 +109,21 @@ class NotificationServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .extracting(ex -> ((BusinessException) ex).getErrorCode())
                     .isEqualTo(NotificationErrorCode.NOTIFICATION_ALREADY_READ);
+        }
+
+        @Test
+        @DisplayName("TC-NOTIFICATION-S-02 미읽음 알림 목록 조회 성공")
+        void tcNotificationS02_getLatestUnread_returnsSummaries() {
+            Member recipient = MemberTestFactory.member(RECIPIENT_ID);
+            Notification notification = createNotification(REFERENCE_ID, recipient, LocalDateTime.now());
+
+            when(notificationRepository.findLatestUnreadByRecipientId(eq(RECIPIENT_ID), eq(PageRequest.of(0, 10))))
+                    .thenReturn(List.of(notification));
+
+            List<NotificationSummary> summaries = notificationService.getLatestUnread(RECIPIENT_ID, 10);
+
+            assertThat(summaries).hasSize(1);
+            assertThat(summaries.getFirst().id()).isEqualTo(notification.getId());
         }
     }
 

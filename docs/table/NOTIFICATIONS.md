@@ -41,7 +41,6 @@
 - `idx_notifications_recipient_created (recipient_id, created_at)`: 수신자별 최신순 목록 조회 최적화.
 
 ## 6) 운영 정책
-- 읽음(read_at) 기록 후 7일 경과 시 삭제.
-- 미읽음은 삭제하지 않고 유지.
+- 생성일 기준 30일 경과 시 읽음 여부와 무관하게 삭제.
 - 알림 내용 보존을 위해 스냅샷(actor 닉네임/이미지) 저장
 - 알림 이미지 스냅샷은 유형별로 다르게 채운다(FOLLOW: actor 프로필, POST_LIKE/POST_COMMENT: 게시글 첫 이미지, VOTE_CLOSED: 투표 첫 이미지).

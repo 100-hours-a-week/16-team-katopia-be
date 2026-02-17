@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface NotificationApiSpec {
 
@@ -44,4 +45,9 @@ public interface NotificationApiSpec {
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long notificationId
     );
+
+    @Operation(summary = "알림 SSE 연결", description = "실시간 알림 스트림을 연결합니다.")
+    @ApiResponse(responseCode = "200", description = "SSE 연결 성공")
+    @ApiResponse(responseCode = "401", description = Docs.AT_MISSING_OR_INVALID_DES, content = @Content)
+    SseEmitter connectNotificationStream(@AuthenticationPrincipal MemberPrincipal principal);
 }

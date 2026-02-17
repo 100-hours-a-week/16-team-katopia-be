@@ -16,7 +16,7 @@
 
 - 저장형 알림(DB 저장 우선)
 - 알림 목록 조회는 커서 기반 인피니티 스크롤
-- 읽음 처리/보관 정책은 테이블 정의서 기준
+- 보관 정책은 테이블 정의서 기준(생성일 30일 기준)
 
 ### 데이터 스키마
 
@@ -34,6 +34,7 @@
 
 - 알림 목록: `GET /api/notifications`
 - 읽음 처리: `PATCH /api/notifications/{id}`
+- SSE 연결: `GET /api/notifications/stream`
 
 ## 보안 고려사항
 

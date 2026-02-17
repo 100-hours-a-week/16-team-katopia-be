@@ -4,8 +4,18 @@
 | TC ID | 설명 | GIVEN | WHEN | THEN |
 | --- | --- | --- | --- | --- |
 | TC-NOTIFICATION-S-01 | 알림 읽음 처리 성공 | 알림 존재 | markRead 호출 | readAt 갱신 |
+| TC-NOTIFICATION-S-02 | 미읽음 알림 목록 조회 성공 | 미읽음 존재 | getLatestUnread 호출 | 목록 반환 |
 | TC-NOTIFICATION-F-01 | 알림 읽음 처리 실패(알림 없음) | 알림 미존재 | markRead 호출 | NOTIFICATION-E-001 반환 |
 | TC-NOTIFICATION-F-02 | 알림 읽음 처리 실패(이미 읽음) | readAt 존재 | markRead 호출 | NOTIFICATION-E-002 반환 |
+
+## 알림 SSE(Unit)
+| TC ID | 설명 | GIVEN | WHEN | THEN |
+| --- | --- | --- | --- | --- |
+| TC-NOTIFICATION-SSE-S-01 | SSE 연결 시 emitter 저장 | 신규 연결 | connect 호출 | emitter 저장 |
+| TC-NOTIFICATION-SSE-S-02 | 동일 사용자 SSE 연결 교체 | 기존 연결 존재 | connect 호출 | emitter 교체 |
+| TC-NOTIFICATION-SSE-S-03 | 미연결 대상 전송 무시 | emitter 없음 | send 호출 | 예외 없음 |
+| TC-NOTIFICATION-SSE-S-04 | SSE 발행은 수신자 기준 | 알림 존재 | publish 호출 | recipientId로 send |
+| TC-NOTIFICATION-SSE-S-05 | SSE 연결 시 미읽음 전송 시도 | 미읽음 2건 | connect 호출 | send 2회 호출 |
 
 ## 알림 트리거(Unit)
 | TC ID | 설명 | GIVEN | WHEN | THEN |
