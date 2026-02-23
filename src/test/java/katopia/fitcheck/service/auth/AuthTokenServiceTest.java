@@ -56,8 +56,8 @@ class AuthTokenServiceTest {
     @DisplayName("TC-AUTH-SVC-F-02 토큰 재발급 실패(미등록 토큰)")
     void tcAuthSvcF02_missingTokenEntity() {
         when(jwtProvider.extractMemberId(eq("rt"), eq(JwtProvider.TokenType.REFRESH))).thenReturn(1L);
-        when(refreshTokenService.hash("rt")).thenReturn("hash");
-        when(refreshTokenService.findByTokenHash("hash")).thenReturn(Optional.empty());
+        String tokenHash = RefreshTokenHashSupport.hash("rt");
+        when(refreshTokenService.findByTokenHash(tokenHash)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> authTokenService.refreshTokens("rt"))
                 .isInstanceOf(AuthException.class)
@@ -69,10 +69,10 @@ class AuthTokenServiceTest {
     @DisplayName("TC-AUTH-SVC-F-03 토큰 재발급 실패(폐기/만료)")
     void tcAuthSvcF03_revokedOrExpiredToken() {
         when(jwtProvider.extractMemberId(eq("rt"), eq(JwtProvider.TokenType.REFRESH))).thenReturn(1L);
-        when(refreshTokenService.hash("rt")).thenReturn("hash");
-        RefreshToken entity = RefreshToken.issue(1L, "hash", LocalDateTime.now().minusDays(1));
+        String tokenHash = RefreshTokenHashSupport.hash("rt");
+        RefreshToken entity = RefreshToken.issue(1L, tokenHash, LocalDateTime.now().minusDays(1));
         ReflectionTestUtils.setField(entity, "revokedAt", LocalDateTime.now());
-        when(refreshTokenService.findByTokenHash("hash")).thenReturn(Optional.of(entity));
+        when(refreshTokenService.findByTokenHash(tokenHash)).thenReturn(Optional.of(entity));
 
         assertThatThrownBy(() -> authTokenService.refreshTokens("rt"))
                 .isInstanceOf(AuthException.class)
@@ -86,9 +86,9 @@ class AuthTokenServiceTest {
     @DisplayName("TC-AUTH-SVC-F-04 토큰 재발급 실패(탈퇴 회원)")
     void tcAuthSvcF04_withdrawnMember() {
         when(jwtProvider.extractMemberId(eq("rt"), eq(JwtProvider.TokenType.REFRESH))).thenReturn(1L);
-        when(refreshTokenService.hash("rt")).thenReturn("hash");
-        RefreshToken entity = RefreshToken.issue(1L, "hash", LocalDateTime.now().plusDays(1));
-        when(refreshTokenService.findByTokenHash("hash")).thenReturn(Optional.of(entity));
+        String tokenHash = RefreshTokenHashSupport.hash("rt");
+        RefreshToken entity = RefreshToken.issue(1L, tokenHash, LocalDateTime.now().plusDays(1));
+        when(refreshTokenService.findByTokenHash(tokenHash)).thenReturn(Optional.of(entity));
         when(memberRepository.existsByIdAndAccountStatus(1L, katopia.fitcheck.domain.member.AccountStatus.WITHDRAWN))
                 .thenReturn(true);
 

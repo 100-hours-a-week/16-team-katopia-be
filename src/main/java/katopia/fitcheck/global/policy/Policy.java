@@ -38,7 +38,8 @@ public final class Policy {
     // Vote policy
     public static final int
             VOTE_TITLE_MIN_LENGTH = 1, VOTE_TITLE_MAX_LENGTH = 20,
-            VOTE_IMAGE_MIN_COUNT = 1, VOTE_IMAGE_MAX_COUNT = 5;
+            VOTE_IMAGE_MIN_COUNT = 1, VOTE_IMAGE_MAX_COUNT = 5,
+            VOTE_DEFAULT_EXPIRES_HOURS = 24;
 
     // Search policy
     public static final int
@@ -62,9 +63,16 @@ public final class Policy {
     public static final Duration JWT_ACCESS_TOKEN_TTL = Duration.ofMinutes(15);
     public static final Duration JWT_REFRESH_TOKEN_TTL = Duration.ofDays(14);
     public static final Duration JWT_REGISTRATION_TOKEN_TTL = Duration.ofMinutes(10);
+    public static final String REFRESH_TOKEN_CLEANUP_CRON = "0 0 4 * * *";
+    public static final String REFRESH_TOKEN_HASH_ALGORITHM = "SHA-256";
 
     // SSE policy
-    public static final Duration SSE_TIMEOUT = Duration.ofHours(1);
+    public static final Duration SSE_TIMEOUT = Duration.ofMinutes(30);
+    public static final Duration SSE_CLEANUP_INTERVAL = SSE_TIMEOUT.multipliedBy(2);
+    public static final Duration SSE_HEARTBEAT_INTERVAL = Duration.ofSeconds(20);
+    public static final int SSE_MAX_CONNECTIONS = 3;
+    public static final int SSE_UNREAD_LIMIT = 10;
+    public static final Duration COMMENT_COUNT_BATCH_INTERVAL = Duration.ofSeconds(10);
 
     // descriptions
     public static final String NICKNAME_DES =
@@ -82,10 +90,10 @@ public final class Policy {
 
     public static final String
             SYSTEM = "system",
-            FOLLOW_MESSAGE = "%s님이 팔로우했습니다.",
-            POST_LIKE_MESSAGE = "%s님이 게시글을 좋아합니다.",
-            POST_COMMENT_MESSAGE = "%s님이 댓글을 남겼습니다.",
-            VOTE_CLOSED_MESSAGE = "투표가 종료되었습니다.";
+            FOLLOW_MESSAGE = "%s님이 팔로우하기 시작했습니다.",
+            POST_LIKE_MESSAGE = "%s님이 게시물에 좋아요를 눌렀습니다. ",
+            POST_COMMENT_MESSAGE = "%s님이 게시물에 댓글을 남겼습니다.",
+            VOTE_CLOSED_MESSAGE = "투표 %s이 종료되었습니다.";
 
     public static final String
             NOTIFICATION_TYPE_FOLLOW = "FOLLOW",
