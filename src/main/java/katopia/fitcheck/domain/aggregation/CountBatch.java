@@ -59,4 +59,16 @@ public class CountBatch {
     ) {
         return new CountBatch(processedFrom, processedTo, appliedPostCount, appliedDelta);
     }
+
+    public void update(
+            LocalDateTime processedFrom,
+            LocalDateTime processedTo,
+            int appliedPostCount,
+            int appliedDelta
+    ) {
+        this.processedFrom = processedFrom;
+        this.processedTo = processedTo;
+        this.appliedPostCount = appliedPostCount;
+        this.appliedDelta = appliedDelta;
+    }
 }

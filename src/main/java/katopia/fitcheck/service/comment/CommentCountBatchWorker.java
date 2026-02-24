@@ -65,7 +65,13 @@ public class CommentCountBatchWorker {
         if (appliedPostCount == 0) {
             return;
         }
-        countBatchRepository.save(CountBatch.of(LocalDateTime.now(), LocalDateTime.now(), appliedPostCount, (int) appliedDelta));
+        LocalDateTime now = LocalDateTime.now();
+        CountBatch batch = countBatchRepository.findTopByOrderByIdDesc().orElse(null);
+        if (batch == null) {
+            countBatchRepository.save(CountBatch.of(now, now, appliedPostCount, (int) appliedDelta));
+            return;
+        }
+        batch.update(now, now, appliedPostCount, (int) appliedDelta);
     }
 
     private long getAndResetDelta(String key) {
