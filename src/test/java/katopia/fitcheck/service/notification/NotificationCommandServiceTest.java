@@ -6,12 +6,6 @@ import katopia.fitcheck.domain.notification.NotificationType;
 import katopia.fitcheck.domain.post.Post;
 import katopia.fitcheck.domain.post.PostImage;
 import katopia.fitcheck.domain.vote.VoteItem;
-import katopia.fitcheck.dto.notification.response.NotificationListResponse;
-import katopia.fitcheck.dto.notification.response.NotificationSummary;
-import katopia.fitcheck.global.docs.Docs;
-import katopia.fitcheck.global.exception.BusinessException;
-import katopia.fitcheck.global.exception.code.NotificationErrorCode;
-import katopia.fitcheck.global.pagination.CursorPagingHelper;
 import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.repository.notification.NotificationRepository;
 import katopia.fitcheck.repository.vote.VoteItemRepository;
@@ -27,7 +21,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -35,16 +28,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class NotificationServiceTest {
+class NotificationCommandServiceTest {
 
     private static final Long RECIPIENT_ID = 1L;
     private static final Long ACTOR_ID = 2L;
@@ -65,82 +56,22 @@ class NotificationServiceTest {
     private NotificationRealtimePublisher realtimePublisher;
 
     @InjectMocks
-    private NotificationService notificationService;
+    private NotificationCommandService notificationService;
 
     @Nested
-    @DisplayName("Notification Service")
-    class NotificationServiceCases {
-
-        @Test
-        @DisplayName("TC-NOTIFICATION-S-01 알림 읽음 처리 성공")
-        void tcNotificationS01_markRead_updatesReadAt() {
-            Member recipient = MemberTestFactory.member(RECIPIENT_ID);
-            Notification notification = createNotification(REFERENCE_ID, recipient, LocalDateTime.now());
-
-            when(notificationRepository.findByIdAndRecipientId(NOTIFICATION_ID, RECIPIENT_ID)).thenReturn(Optional.of(notification));
-
-            NotificationSummary summary = notificationService.markRead(RECIPIENT_ID, NOTIFICATION_ID);
-
-            assertThat(summary.readAt()).isNotNull();
-        }
-
-        @Test
-        @DisplayName("TC-NOTIFICATION-F-01 알림 읽음 처리 실패(알림 없음)")
-        void tcNotificationF01_markRead_failsWhenMissing() {
-            when(notificationRepository.findByIdAndRecipientId(NOTIFICATION_ID, RECIPIENT_ID)).thenReturn(Optional.empty());
-
-            assertThatThrownBy(() -> notificationService.markRead(RECIPIENT_ID, NOTIFICATION_ID))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                    .isEqualTo(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
-        }
-
-        @Test
-        @DisplayName("TC-NOTIFICATION-F-02 알림 읽음 처리 실패(이미 읽음)")
-        void tcNotificationF02_markRead_failsWhenAlreadyRead() {
-            Member recipient = MemberTestFactory.member(RECIPIENT_ID);
-            Notification notification = createNotification(REFERENCE_ID, recipient, LocalDateTime.now());
-            ReflectionTestUtils.setField(notification, "readAt", LocalDateTime.now());
-
-
-            when(notificationRepository.findByIdAndRecipientId(NOTIFICATION_ID, RECIPIENT_ID)).thenReturn(Optional.of(notification));
-
-            assertThatThrownBy(() -> notificationService.markRead(RECIPIENT_ID, NOTIFICATION_ID))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting(ex -> ((BusinessException) ex).getErrorCode())
-                    .isEqualTo(NotificationErrorCode.NOTIFICATION_ALREADY_READ);
-        }
-
-        @Test
-        @DisplayName("TC-NOTIFICATION-S-02 미읽음 알림 목록 조회 성공")
-        void tcNotificationS02_getLatestUnread_returnsSummaries() {
-            Member recipient = MemberTestFactory.member(RECIPIENT_ID);
-            Notification notification = createNotification(REFERENCE_ID, recipient, LocalDateTime.now());
-
-            when(notificationRepository.findLatestUnreadByRecipientId(eq(RECIPIENT_ID), eq(PageRequest.of(0, 10))))
-                    .thenReturn(List.of(notification));
-
-            List<NotificationSummary> summaries = notificationService.getLatestUnread(RECIPIENT_ID, 10);
-
-            assertThat(summaries).hasSize(1);
-            assertThat(summaries.getFirst().id()).isEqualTo(notification.getId());
-        }
-    }
-
-    @Nested
-    @DisplayName("Notification Trigger")
+    @DisplayName("Notification Command")
     class NotificationTriggerCases {
 
         @Test
         @DisplayName("TC-TRIGGER-S-01 팔로우 생성 시 알림 트리거")
-        void tcTriggerS01_createFollow_savesNotification() {
+        void tcTriggerS01_publishFollowNotification_savesNotification() {
             Member actor = MemberTestFactory.member(ACTOR_ID);
             Member recipient = MemberTestFactory.member(RECIPIENT_ID);
             ReflectionTestUtils.setField(actor, "profileImageObjectKey", "profile/2/cover.png");
             when(memberFinder.findByIdOrThrow(ACTOR_ID)).thenReturn(actor);
             when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
 
-            notificationService.createFollow(ACTOR_ID, RECIPIENT_ID);
+            notificationService.publishFollowNotification(ACTOR_ID, RECIPIENT_ID);
 
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
             verify(notificationRepository).save(captor.capture());
@@ -154,7 +85,7 @@ class NotificationServiceTest {
 
         @Test
         @DisplayName("TC-TRIGGER-S-02 투표 종료 시 알림 트리거")
-        void tcTriggerS02_createVoteClosed_savesNotification() {
+        void tcTriggerS02_publishVoteClosedNotification_savesNotification() {
             Member recipient = MemberTestFactory.member(RECIPIENT_ID);
             when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
             VoteItem voteItem = mock(VoteItem.class);
@@ -162,7 +93,7 @@ class NotificationServiceTest {
             when(voteItemRepository.findFirstByVoteIdOrderBySortOrderAsc(99L))
                     .thenReturn(Optional.of(voteItem));
 
-            notificationService.createVoteClosed(RECIPIENT_ID, 99L);
+            notificationService.publishVoteClosedNotification(RECIPIENT_ID, 99L);
 
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
             verify(notificationRepository).save(captor.capture());
@@ -177,7 +108,7 @@ class NotificationServiceTest {
 
         @Test
         @DisplayName("TC-TRIGGER-S-06 게시글 좋아요 시 첫 이미지 스냅샷 저장")
-        void tcTriggerS03_createPostLike_savesFirstImageSnapshot() {
+        void tcTriggerS03_publishPostLikeNotification_savesFirstImageSnapshot() {
             Member actor = MemberTestFactory.member(ACTOR_ID);
             Post post = createPostWithImage(IMAGE_OBJECT_KEY);
 
@@ -187,7 +118,7 @@ class NotificationServiceTest {
             Member recipient = MemberTestFactory.member(RECIPIENT_ID);
             when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
 
-            notificationService.createPostLike(ACTOR_ID, REFERENCE_ID);
+            notificationService.publishPostLikeNotification(ACTOR_ID, REFERENCE_ID);
 
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
             verify(notificationRepository).save(captor.capture());
@@ -200,7 +131,7 @@ class NotificationServiceTest {
 
         @Test
         @DisplayName("TC-TRIGGER-S-07 댓글 생성 시 첫 이미지 스냅샷 저장")
-        void tcTriggerS04_createPostComment_savesFirstImageSnapshot() {
+        void tcTriggerS04_publishPostCommentNotification_savesFirstImageSnapshot() {
             Member actor = MemberTestFactory.member(ACTOR_ID);
             Post post = createPostWithImage(IMAGE_OBJECT_KEY);
 
@@ -210,7 +141,7 @@ class NotificationServiceTest {
             Member recipient = MemberTestFactory.member(RECIPIENT_ID);
             when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
 
-            notificationService.createPostComment(ACTOR_ID, REFERENCE_ID);
+            notificationService.publishPostCommentNotification(ACTOR_ID, REFERENCE_ID);
 
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
             verify(notificationRepository).save(captor.capture());
@@ -223,52 +154,37 @@ class NotificationServiceTest {
 
         @Test
         @DisplayName("TC-TRIGGER-S-05 본인 행위는 알림 저장하지 않음")
-        void tcTriggerS05_createFollow_skipsSelfNotification() {
-            notificationService.createFollow(ACTOR_ID, ACTOR_ID);
+        void tcTriggerS05_publishFollowNotification_skipsSelfNotification() {
+            notificationService.publishFollowNotification(ACTOR_ID, ACTOR_ID);
 
             verify(notificationRepository, never()).save(any());
         }
-    }
-
-    @Nested
-    class NotificationPagingCases {
 
         @Test
-        @DisplayName("TC-PAGE-S-04 목록 nextCursor 생성")
-        void tcPageS04_list_buildsNextCursor() {
+        @DisplayName("TC-TRIGGER-S-08 실시간 알림 ON이면 SSE 발행")
+        void tcTriggerS08_realtimeEnabled_publishesSse() {
+            Member actor = MemberTestFactory.member(ACTOR_ID);
             Member recipient = MemberTestFactory.member(RECIPIENT_ID);
-            LocalDateTime latestCreatedAt = LocalDateTime.parse(Docs.SECOND_TIME);
-            LocalDateTime olderCreatedAt = LocalDateTime.parse(Docs.FIRST_TIME);
-            Notification latest = createNotification(NOTIFICATION_ID + 1L, recipient, latestCreatedAt);
-            Notification older = createNotification(NOTIFICATION_ID, recipient, olderCreatedAt);
+            ReflectionTestUtils.setField(recipient, "enableRealtimeNotification", true);
+            when(memberFinder.findByIdOrThrow(ACTOR_ID)).thenReturn(actor);
+            when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
 
-            when(notificationRepository.findLatestByRecipientId(eq(RECIPIENT_ID), any(PageRequest.class)))
-                    .thenReturn(List.of(latest, older));
+            notificationService.publishFollowNotification(ACTOR_ID, RECIPIENT_ID);
 
-            NotificationListResponse response = notificationService.getList(RECIPIENT_ID, "2", null);
-
-            assertThat(response.notifications()).hasSize(2);
-            assertThat(response.nextCursor()).isEqualTo(CursorPagingHelper.encodeCursor(olderCreatedAt, NOTIFICATION_ID));
+            verify(realtimePublisher).publish(any(Notification.class));
         }
 
         @Test
-        @DisplayName("TC-PAGE-S-05 커서 이후 페이지 조회")
-        void tcPageS05_list_usesAfterCursor() {
+        @DisplayName("TC-TRIGGER-S-09 실시간 알림 OFF이면 SSE 미발행")
+        void tcTriggerS09_realtimeDisabled_skipsSse() {
+            Member actor = MemberTestFactory.member(ACTOR_ID);
             Member recipient = MemberTestFactory.member(RECIPIENT_ID);
-            LocalDateTime cursorCreatedAt = LocalDateTime.parse(Docs.FIRST_TIME);
-            Notification notification = createNotification(NOTIFICATION_ID, recipient, cursorCreatedAt.plusSeconds(1));
+            when(memberFinder.findByIdOrThrow(ACTOR_ID)).thenReturn(actor);
+            when(memberFinder.findByIdOrThrow(RECIPIENT_ID)).thenReturn(recipient);
 
-            when(notificationRepository.findPageAfter(eq(RECIPIENT_ID), any(), any(), any(PageRequest.class)))
-                    .thenReturn(List.of(notification));
+            notificationService.publishFollowNotification(ACTOR_ID, RECIPIENT_ID);
 
-            notificationService.getList(RECIPIENT_ID, "1", CursorPagingHelper.encodeCursor(cursorCreatedAt, NOTIFICATION_ID));
-
-            verify(notificationRepository).findPageAfter(
-                    eq(RECIPIENT_ID),
-                    eq(cursorCreatedAt),
-                    eq(NOTIFICATION_ID),
-                    eq(PageRequest.of(0, 1))
-            );
+            verify(realtimePublisher, never()).publish(any(Notification.class));
         }
     }
 
