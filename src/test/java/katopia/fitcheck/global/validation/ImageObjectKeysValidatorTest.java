@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import katopia.fitcheck.global.exception.code.PostErrorCode;
+import katopia.fitcheck.global.exception.code.VoteErrorCode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,16 @@ class ImageObjectKeysValidatorTest {
     @DisplayName("TC-IMAGE-S-01 이미지 유효성 성공")
     void tcImageS01_validUrls_isValid() {
         Set<ConstraintViolation<ImageRequest>> violations = validator.validate(new ImageRequest(List.of("url1", "url2")));
+
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    @DisplayName("TC-IMAGE-S-05 투표 이미지 유효성 성공")
+    void tcImageS05_voteValidUrls_isValid() {
+        Set<ConstraintViolation<VoteImageRequest>> violations = validator.validate(
+                new VoteImageRequest(List.of("url1", "url2"))
+        );
 
         assertThat(violations).isEmpty();
     }
@@ -64,6 +75,16 @@ class ImageObjectKeysValidatorTest {
         assertSingleViolationWithMessage(violations, PostErrorCode.IMAGE_COUNT_INVALID.getCode());
     }
 
+    @Test
+    @DisplayName("TC-IMAGE-F-05 투표 이미지 최소 개수 미달")
+    void tcImageF05_voteBelowMinCount_returnsError() {
+        Set<ConstraintViolation<VoteImageRequest>> violations = validator.validate(
+                new VoteImageRequest(List.of("url1"))
+        );
+
+        assertSingleViolationWithMessage(violations, VoteErrorCode.IMAGE_COUNT_INVALID.getCode());
+    }
+
     private void assertSingleViolationWithMessage(Set<? extends ConstraintViolation<?>> violations, String message) {
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage()).isEqualTo(message);
@@ -74,6 +95,15 @@ class ImageObjectKeysValidatorTest {
         List<String> imageObjectKeys;
 
         ImageRequest(List<String> imageObjectKeys) {
+            this.imageObjectKeys = imageObjectKeys;
+        }
+    }
+
+    static class VoteImageRequest {
+        @ImageObjectKeys(category = "VOTE")
+        List<String> imageObjectKeys;
+
+        VoteImageRequest(List<String> imageObjectKeys) {
             this.imageObjectKeys = imageObjectKeys;
         }
     }

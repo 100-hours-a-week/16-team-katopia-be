@@ -17,6 +17,7 @@ import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.AuthSuccessCode;
 import katopia.fitcheck.global.exception.code.MemberSuccessCode;
 import katopia.fitcheck.global.exception.code.PostSuccessCode;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.global.security.jwt.RegistrationTokenFilter;
@@ -96,8 +97,8 @@ public class MemberController implements MemberApiSpec {
     @GetMapping("/{memberId}/posts")
     public ResponseEntity<APIResponse<PostListResponse>> listMemberPosts(
             @PathVariable Long memberId,
-            @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) String size,
+            @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         PostListResponse responseBody = postService.listByMember(memberId, size, after);
         return APIResponse.ok(PostSuccessCode.POST_LISTED, responseBody);
@@ -118,8 +119,8 @@ public class MemberController implements MemberApiSpec {
     @Override
     public ResponseEntity<APIResponse<PostListResponse>> listMyBookmarks(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) String size,
+            @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
         PostListResponse responseBody = postService.listBookmarks(memberId, size, after);
@@ -173,8 +174,8 @@ public class MemberController implements MemberApiSpec {
     public ResponseEntity<APIResponse<MemberFollowListResponse>> listFollowers(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable Long memberId,
-            @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) String size,
+            @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         securitySupport.requireMemberId(principal);
         MemberFollowListResponse responseBody = memberService.listFollowers(memberId, size, after);
@@ -185,8 +186,8 @@ public class MemberController implements MemberApiSpec {
     public ResponseEntity<APIResponse<MemberFollowListResponse>> listFollowings(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable Long memberId,
-            @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) String size,
+            @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         securitySupport.requireMemberId(principal);
         MemberFollowListResponse responseBody = memberService.listFollowings(memberId, size, after);

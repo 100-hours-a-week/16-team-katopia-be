@@ -3,6 +3,7 @@ package katopia.fitcheck.controller;
 import katopia.fitcheck.controller.spec.SearchApiSpec;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.CommonSuccessCode;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.dto.search.PostSearchResponse;
@@ -29,8 +30,8 @@ public class SearchController implements SearchApiSpec {
     public ResponseEntity<APIResponse<MemberSearchResponse>> searchUsers(
             @AuthenticationPrincipal MemberPrincipal principal,
             @RequestParam(value = "query", required = false) String query,
-            @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) String size,
+            @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         Long requesterId = securitySupport.requireMemberId(principal);
         MemberSearchResponse body = searchService.searchUsers(requesterId, query, size, after);
@@ -42,8 +43,8 @@ public class SearchController implements SearchApiSpec {
     public ResponseEntity<APIResponse<PostSearchResponse>> searchPosts(
             @AuthenticationPrincipal MemberPrincipal principal,
             @RequestParam(value = "query", required = false) String query,
-            @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) String size,
+            @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         securitySupport.requireMemberId(principal);
         PostSearchResponse body = searchService.searchPostsFulltext(query, size);

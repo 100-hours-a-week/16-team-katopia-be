@@ -12,10 +12,9 @@ import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.CommentErrorCode;
 import katopia.fitcheck.global.exception.code.CommonErrorCode;
 import katopia.fitcheck.repository.comment.CommentRepository;
-import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.service.member.MemberFinder;
 import katopia.fitcheck.service.post.PostFinder;
-import katopia.fitcheck.service.notification.NotificationService;
+import katopia.fitcheck.service.notification.NotificationCommandService;
 import katopia.fitcheck.support.MemberTestFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,9 +48,6 @@ class CommentCommandServiceTest {
     private CommentRepository commentRepository;
 
     @Mock
-    private PostRepository postRepository;
-
-    @Mock
     private MemberFinder memberFinder;
 
     @Mock
@@ -64,14 +60,14 @@ class CommentCommandServiceTest {
     private PostFinder postFinder;
 
     @Mock
-    private NotificationService notificationService;
+    private NotificationCommandService notificationService;
 
     @InjectMocks
     private CommentCommandService commentCommandService;
 
     @Test
-    @DisplayName("TC-COMMENT-CMD-S-01 댓글 생성 성공(연관 엔티티/카운트 증가)")
-    void tcCommentCmdS01_createComment_incrementsCount() {
+    @DisplayName("TC-COMMENT-CMD-S-01 댓글 생성 성공(연관 엔티티/알림 트리거)")
+    void tcCommentCmdS01_createComment_triggersNotification() {
         Member author = MemberTestFactory.member(AUTHOR_ID);
         Post post = Post.create(author, "content", List.of(PostImage.of(1, "img")));
         ReflectionTestUtils.setField(post, "id", POST_ID);
@@ -89,8 +85,7 @@ class CommentCommandServiceTest {
 
         assertThat(response.content()).isEqualTo("hi");
         verify(commentRepository).save(any());
-        verify(postRepository).incrementCommentCount(eq(POST_ID));
-        verify(notificationService).createPostComment(eq(COMMENTER_ID), eq(POST_ID));
+        verify(notificationService).publishPostCommentNotification(eq(COMMENTER_ID), eq(POST_ID));
     }
 
     @Test
@@ -111,7 +106,7 @@ class CommentCommandServiceTest {
 
         commentCommandService.create(COMMENTER_ID, POST_ID, new CommentRequest("hi"));
 
-        verify(notificationService).createPostComment(eq(COMMENTER_ID), eq(POST_ID));
+        verify(notificationService).publishPostCommentNotification(eq(COMMENTER_ID), eq(POST_ID));
     }
 
     @Test

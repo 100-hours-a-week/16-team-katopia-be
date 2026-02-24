@@ -1,5 +1,6 @@
 package katopia.fitcheck.service.search;
 
+import katopia.fitcheck.global.aop.SearchLog;
 import katopia.fitcheck.global.pagination.CursorPagingHelper;
 import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Member;
@@ -45,7 +46,7 @@ public class SearchService {
     }
 
     @Transactional(readOnly = true)
-    @katopia.fitcheck.global.aop.SearchLog("posts")
+    @SearchLog("posts")
     public PostSearchResponse searchPosts(String query,
                                           String sizeValue,
                                           String after) {
@@ -56,7 +57,7 @@ public class SearchService {
     }
 
     @Transactional(readOnly = true)
-    @katopia.fitcheck.global.aop.SearchLog("posts-fulltext")
+    @SearchLog("posts-fulltext")
     public PostSearchResponse searchPostsFulltext(String query, String sizeValue) {
         String keyword = searchValidator.requireQuery(query, Policy.SEARCH_MAX_FULLTEXT_QUERY_LENGTH);
         int size = CursorPagingHelper.resolvePageSize(sizeValue);

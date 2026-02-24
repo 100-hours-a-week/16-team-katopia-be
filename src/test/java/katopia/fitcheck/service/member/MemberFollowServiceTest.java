@@ -11,7 +11,7 @@ import katopia.fitcheck.global.pagination.CursorPagingHelper;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.repository.member.MemberFollowRepository;
 import katopia.fitcheck.repository.member.MemberRepository;
-import katopia.fitcheck.service.notification.NotificationService;
+import katopia.fitcheck.service.notification.NotificationCommandService;
 import katopia.fitcheck.support.MemberTestFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,7 @@ class MemberFollowServiceTest {
     private MemberFinder memberFinder;
 
     @Mock
-    private NotificationService notificationService;
+    private NotificationCommandService notificationService;
 
     @InjectMocks
     private MemberFollowService memberFollowService;
@@ -73,7 +73,7 @@ class MemberFollowServiceTest {
 
         MemberFollowResponse response = memberFollowService.follow(1L, 2L);
 
-        verify(notificationService).createFollow(eq(1L), eq(2L));
+        verify(notificationService).publishFollowNotification(eq(1L), eq(2L));
         assertThat(response.isFollowing()).isTrue();
         assertThat(response.targetId()).isEqualTo(2L);
         assertThat(response.targetNickname()).isEqualTo("target");

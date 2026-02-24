@@ -26,8 +26,8 @@ import java.time.LocalDateTime;
 @Table(
         name = "post_comments",
         indexes = {
-                @Index(name = "idx_post_comments_post_created", columnList = "post_id, created_at"),
-                @Index(name = "idx_post_comments_member", columnList = "member_id")
+                @Index(name = "idx_post_comments_member", columnList = "member_id"),
+                @Index(name = "idx_post_comments_post_deleted_created", columnList = "post_id, deleted_at, created_at")
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -56,6 +56,9 @@ public class Comment {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Builder
     private Comment(Post post, Member member, String content) {
         this.post = post;
@@ -73,5 +76,13 @@ public class Comment {
 
     public void updateContent(String content) {
         this.content = content;
+    }
+
+    public void markDeleted() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 }
