@@ -64,16 +64,18 @@ public interface NotificationApiSpec {
                     @Header(
                             name = "Connection",
                             description = "SSE 연결 유지(keep-alive)"
-                    ),
-                    @Header(
-                            name = "X-Accel-Buffering",
-                            description = "Nginx 버퍼링 비활성(no)"
                     )
             }
     )
     @ApiResponse(responseCode = "401", description = Docs.AT_MISSING_OR_INVALID_DES, content = @Content)
     SseEmitter connectNotificationStream(
             @AuthenticationPrincipal MemberPrincipal principal,
+            @Parameter(
+                    description = "초기 미읽음 알림 전송 개수(최대 " + Policy.SSE_UNREAD_LIMIT_MAX + ")",
+                    example = "" + Policy.SSE_UNREAD_LIMIT,
+                    schema = @Schema(minimum = "0", maximum = "" + Policy.SSE_UNREAD_LIMIT_MAX)
+            )
+            @RequestParam(value = "size", required = false) Integer size,
             HttpServletResponse response
     );
 }

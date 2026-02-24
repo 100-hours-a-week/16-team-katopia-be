@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -60,12 +59,12 @@ public class NotificationController implements NotificationApiSpec {
     @Override
     public SseEmitter connectNotificationStream(
             @AuthenticationPrincipal MemberPrincipal principal,
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) Integer size,
             HttpServletResponse response
     ) {
         response.addHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
         response.addHeader(HttpHeaders.CONNECTION, "keep-alive");
-        response.addHeader("X-Accel-Buffering", "no");
         Long memberId = securitySupport.requireMemberId(principal);
-        return notificationFacade.connectStream(memberId);
+        return notificationFacade.connectStream(memberId, size);
     }
 }

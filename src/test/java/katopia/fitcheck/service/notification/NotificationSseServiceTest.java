@@ -11,14 +11,13 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import katopia.fitcheck.redis.sse.SseConnectionRegistry;
+import katopia.fitcheck.redis.sse.SseDisconnectPublisher;
+
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationSseServiceTest {
@@ -26,42 +25,53 @@ class NotificationSseServiceTest {
     @Test
     @DisplayName("TC-NOTIFICATION-SSE-S-01 SSE 연결 시 emitter 저장")
     void tcNotificationSseS01_connect_storesEmitter() {
-        NotificationSseService service = new NotificationSseService();
+        NotificationSseService service = new NotificationSseService(
+                registryReturningEmpty(),
+                mock(SseDisconnectPublisher.class)
+        );
 
         SseEmitter emitter = service.connect(1L, Collections.emptyList());
 
-        Map<Long, SseEmitter> emitters = getEmitters(service);
-        assertThat(emitters).containsEntry(1L, emitter);
+        Map<Long, Set<String>> memberConnections = getMemberConnections(service);
+        assertThat(memberConnections.get(1L)).hasSize(1);
+        assertThat(emitter).isNotNull();
     }
 
     @Test
-    @DisplayName("TC-NOTIFICATION-SSE-S-02 동일 사용자 연결은 이전 emitter 교체")
-    void tcNotificationSseS02_connect_replacesExistingEmitter() {
-        NotificationSseService service = new NotificationSseService();
+    @DisplayName("TC-NOTIFICATION-SSE-S-02 동일 사용자 연결은 여러 개 유지")
+    void tcNotificationSseS02_connect_keepsMultipleEmitters() {
+        NotificationSseService service = new NotificationSseService(
+                registryReturningEmpty(),
+                mock(SseDisconnectPublisher.class)
+        );
 
-        SseEmitter first = service.connect(1L, Collections.emptyList());
-        SseEmitter second = service.connect(1L, Collections.emptyList());
+        service.connect(1L, Collections.emptyList());
+        service.connect(1L, Collections.emptyList());
 
-        Map<Long, SseEmitter> emitters = getEmitters(service);
-        assertThat(emitters).containsEntry(1L, second);
-        assertThat(emitters.get(1L)).isNotSameAs(first);
+        Map<Long, Set<String>> memberConnections = getMemberConnections(service);
+        assertThat(memberConnections.get(1L)).hasSize(2);
     }
 
     @Test
     @DisplayName("TC-NOTIFICATION-SSE-S-03 SSE 전송은 미연결 대상이면 무시")
     void tcNotificationSseS03_send_noEmitter_doesNothing() {
-        NotificationSseService service = new NotificationSseService();
+        NotificationSseService service = new NotificationSseService(
+                registryReturningEmpty(),
+                mock(SseDisconnectPublisher.class)
+        );
 
         service.send(999L, NotificationSummary.builder().id(1L).build());
 
-        assertThat(getEmitters(service)).isEmpty();
+        assertThat(getMemberConnections(service)).isEmpty();
     }
 
     @Test
     @DisplayName("TC-NOTIFICATION-SSE-S-05 SSE 연결 시 미읽음 전송 시도")
     void tcNotificationSseS05_connect_sendsUnread() {
-        NotificationSseService service = spy(new NotificationSseService());
-        doNothing().when(service).send(eq(1L), any());
+        TestNotificationSseService service = new TestNotificationSseService(
+                registryReturningEmpty(),
+                mock(SseDisconnectPublisher.class)
+        );
 
         List<NotificationSummary> unread = List.of(
                 NotificationSummary.builder().id(1L).build(),
@@ -70,11 +80,36 @@ class NotificationSseServiceTest {
 
         service.connect(1L, unread);
 
-        verify(service, times(2)).send(eq(1L), any());
+        assertThat(service.getSendCount()).isEqualTo(2);
     }
 
     @SuppressWarnings("unchecked")
-    private Map<Long, SseEmitter> getEmitters(NotificationSseService service) {
-        return (Map<Long, SseEmitter>) ReflectionTestUtils.getField(service, "emitters");
+    private Map<Long, Set<String>> getMemberConnections(NotificationSseService service) {
+        return (Map<Long, Set<String>>) ReflectionTestUtils.getField(service, "memberConnections");
+    }
+
+    private SseConnectionRegistry registryReturningEmpty() {
+        SseConnectionRegistry registry = mock(SseConnectionRegistry.class);
+        return registry;
+    }
+
+    private static class TestNotificationSseService extends NotificationSseService {
+        private int sendCount;
+
+        private TestNotificationSseService(
+                SseConnectionRegistry registry,
+                SseDisconnectPublisher disconnectPublisher
+        ) {
+            super(registry, disconnectPublisher);
+        }
+
+        @Override
+        protected void sendToConnection(String connectionId, NotificationSummary payload) {
+            sendCount += 1;
+        }
+
+        private int getSendCount() {
+            return sendCount;
+        }
     }
 }

@@ -27,12 +27,11 @@ public class NotificationFacade {
         return queryService.markRead(memberId, notificationId);
     }
 
-    public SseEmitter connectStream(Long memberId, int unreadLimit) {
+    public SseEmitter connectStream(Long memberId, Integer unreadLimit) {
+        if (unreadLimit == null) {
+            unreadLimit = Policy.SSE_UNREAD_LIMIT;
+        }
         List<NotificationSummary> unread = queryService.getLatestUnread(memberId, unreadLimit);
         return notificationSseService.connect(memberId, unread);
-    }
-
-    public SseEmitter connectStream(Long memberId) {
-        return connectStream(memberId, Policy.SSE_UNREAD_LIMIT);
     }
 }
