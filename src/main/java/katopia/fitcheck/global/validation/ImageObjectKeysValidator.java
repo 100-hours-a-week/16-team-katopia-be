@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import katopia.fitcheck.global.exception.code.PostErrorCode;
 import katopia.fitcheck.global.exception.code.VoteErrorCode;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.service.s3.UploadCategory;
 import org.springframework.util.StringUtils;
 
@@ -19,7 +20,8 @@ public class ImageObjectKeysValidator implements ConstraintValidator<ImageObject
 
     @Override
     public boolean isValid(List<String> value, ConstraintValidatorContext context) {
-        if (value == null || value.isEmpty() || value.size() > category.getMaxCount()) {
+        int minCount = (category == UploadCategory.VOTE) ? Policy.VOTE_IMAGE_MIN_COUNT : 1;
+        if (value == null || value.size() < minCount || value.size() > category.getMaxCount()) {
             ValidationSupport.addViolation(context, resolveErrorCode());
             return false;
         }

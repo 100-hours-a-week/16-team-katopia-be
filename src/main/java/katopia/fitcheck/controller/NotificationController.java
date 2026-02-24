@@ -8,9 +8,11 @@ import katopia.fitcheck.global.exception.code.NotificationSuccessCode;
 import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
-import katopia.fitcheck.service.notification.NotificationService;
-import katopia.fitcheck.service.notification.NotificationSseService;
+import katopia.fitcheck.service.notification.NotificationFacade;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,15 +23,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 public class NotificationController implements NotificationApiSpec {
 
-    private final NotificationService notificationService;
-    private final NotificationSseService notificationSseService;
+    private final NotificationFacade notificationFacade;
     private final SecuritySupport securitySupport;
 
     @GetMapping
@@ -40,7 +40,7 @@ public class NotificationController implements NotificationApiSpec {
             @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
-        NotificationListResponse body = notificationService.getList(memberId, size, after);
+        NotificationListResponse body = notificationFacade.getList(memberId, size, after);
         return APIResponse.ok(NotificationSuccessCode.NOTIFICATION_LISTED, body);
     }
 
@@ -51,15 +51,20 @@ public class NotificationController implements NotificationApiSpec {
             @PathVariable("id") Long notificationId
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
-        NotificationSummary body = notificationService.markRead(memberId, notificationId);
+        NotificationSummary body = notificationFacade.markRead(memberId, notificationId);
         return APIResponse.ok(NotificationSuccessCode.NOTIFICATION_READ, body);
     }
 
-    @GetMapping("/stream")
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Override
-    public SseEmitter connectNotificationStream(@AuthenticationPrincipal MemberPrincipal principal) {
+    public SseEmitter connectNotificationStream(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) Integer size,
+            HttpServletResponse response
+    ) {
+        response.addHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+        response.addHeader(HttpHeaders.CONNECTION, "keep-alive");
         Long memberId = securitySupport.requireMemberId(principal);
-        List<NotificationSummary> unread = notificationService.getLatestUnread(memberId, 10);
-        return notificationSseService.connect(memberId, unread);
+        return notificationFacade.connectStream(memberId, size);
     }
 }

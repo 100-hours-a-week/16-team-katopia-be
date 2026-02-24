@@ -15,6 +15,7 @@ import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.dto.vote.request.VoteCreateRequest;
+import katopia.fitcheck.global.policy.Policy;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,8 +37,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Vote {
 
-    private static final int DEFAULT_EXPIRES_HOURS = 24;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -46,7 +45,7 @@ public class Vote {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = Policy.VOTE_TITLE_MAX_LENGTH, nullable = false)
     private String title;
 
     @CreationTimestamp
@@ -82,7 +81,7 @@ public class Vote {
 
     public static Vote create(Member member, VoteCreateRequest request) {
         String normalizedTitle = request.title().trim();
-        LocalDateTime expiresAt = LocalDateTime.now().plusHours(DEFAULT_EXPIRES_HOURS);
+        LocalDateTime expiresAt = LocalDateTime.now().plusHours(Policy.VOTE_DEFAULT_EXPIRES_HOURS);
         Vote vote = create(member, normalizedTitle, expiresAt, List.of());
         vote.addItemsFromKeys(request.imageObjectKeys());
         return vote;

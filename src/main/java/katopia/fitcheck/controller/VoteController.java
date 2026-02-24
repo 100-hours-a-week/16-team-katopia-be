@@ -9,6 +9,7 @@ import katopia.fitcheck.dto.vote.response.VoteListResponse;
 import katopia.fitcheck.dto.vote.response.VoteResultResponse;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.VoteSuccessCode;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.service.vote.VoteService;
@@ -50,8 +51,8 @@ public class VoteController implements VoteApiSpec {
     @Override
     public ResponseEntity<APIResponse<VoteListResponse>> listVotes(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) String size,
+            @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
         VoteListResponse response = voteService.listMine(memberId, size, after);

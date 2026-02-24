@@ -5,6 +5,8 @@ import katopia.fitcheck.global.exception.code.CommonErrorCode;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.function.Function;
 
 public final class CursorPagingHelper {
 
@@ -45,6 +47,19 @@ public final class CursorPagingHelper {
 
     public static String encodeCursor(LocalDateTime createdAt, Long id) {
         return String.format("%s|%d", CURSOR_FORMATTER.format(createdAt), id);
+    }
+
+    public static <T> String resolveNextCursor(
+            List<T> items,
+            int size,
+            Function<T, LocalDateTime> createdAtResolver,
+            Function<T, Long> idResolver
+    ) {
+        if (items == null || items.isEmpty() || items.size() < size) {
+            return null;
+        }
+        T last = items.get(items.size() - 1);
+        return encodeCursor(createdAtResolver.apply(last), idResolver.apply(last));
     }
 
     public record Cursor(LocalDateTime createdAt, Long id) {

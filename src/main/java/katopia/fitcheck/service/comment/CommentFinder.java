@@ -16,7 +16,7 @@ public class CommentFinder {
     private final CommentRepository commentRepository;
 
     public Comment findByIdAndPostIdOrThrow(Long commentId, Long postId) {
-        return commentRepository.findByIdAndPostId(commentId, postId)
+        return commentRepository.findByIdAndPostIdAndDeletedAtIsNull(commentId, postId)
                 .orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 }

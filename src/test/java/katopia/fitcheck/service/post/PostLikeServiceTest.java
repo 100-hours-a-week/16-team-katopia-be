@@ -8,7 +8,7 @@ import katopia.fitcheck.global.exception.code.PostLikeErrorCode;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.service.member.MemberFinder;
-import katopia.fitcheck.service.notification.NotificationService;
+import katopia.fitcheck.service.notification.NotificationCommandService;
 import katopia.fitcheck.support.MemberTestFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +46,7 @@ class PostLikeServiceTest {
     private PostFinder postFinder;
 
     @Mock
-    private NotificationService notificationService;
+    private NotificationCommandService notificationService;
 
     private PostLikeService postLikeService;
 
@@ -76,7 +76,7 @@ class PostLikeServiceTest {
 
         postLikeService.like(MEMBER_ID, POST_ID);
 
-        verify(notificationService).createPostLike(eq(MEMBER_ID), eq(POST_ID));
+        verify(notificationService).publishPostLikeNotification(eq(MEMBER_ID), eq(POST_ID));
     }
 
     @Test
@@ -94,7 +94,7 @@ class PostLikeServiceTest {
 
         postLikeService.like(MEMBER_ID, POST_ID);
 
-        verify(notificationService).createPostLike(eq(MEMBER_ID), eq(POST_ID));
+        verify(notificationService).publishPostLikeNotification(eq(MEMBER_ID), eq(POST_ID));
     }
 
     @Test

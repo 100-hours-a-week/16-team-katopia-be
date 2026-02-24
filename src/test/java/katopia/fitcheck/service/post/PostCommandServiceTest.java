@@ -154,7 +154,7 @@ class PostCommandServiceTest {
         postCommandService.delete(1L, 10L);
 
         verify(memberRepository).decrementPostCount(1L);
-        verify(commentRepository).deleteByPostId(10L);
+        verify(commentRepository).softDeleteByPostId(eq(10L), any());
         verify(postLikeRepository).deleteByPostId(10L);
         verify(postBookmarkRepository).deleteByPostId(10L);
         verify(postTagRepository).deleteByPostId(10L);

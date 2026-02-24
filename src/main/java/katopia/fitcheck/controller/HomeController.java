@@ -6,6 +6,7 @@ import katopia.fitcheck.dto.recommendation.RecommendationResponse;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.CommonSuccessCode;
 import katopia.fitcheck.global.exception.code.PostSuccessCode;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.service.post.PostService;
@@ -31,8 +32,8 @@ public class HomeController implements HomeApiSpec {
     @Override
     public ResponseEntity<APIResponse<PostResponse>> listHomePosts(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) String size,
+            @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         Long memberId = securitySupport.requireMemberId(principal);
         PostResponse body = postService.listHomeFeed(memberId, size, after);

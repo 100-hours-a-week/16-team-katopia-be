@@ -10,7 +10,7 @@ import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.pagination.CursorPagingHelper;
 import katopia.fitcheck.repository.member.MemberFollowRepository;
 import katopia.fitcheck.repository.member.MemberRepository;
-import katopia.fitcheck.service.notification.NotificationService;
+import katopia.fitcheck.service.notification.NotificationCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class MemberFollowService {
     private final MemberFollowRepository memberFollowRepository;
     private final MemberRepository memberRepository;
     private final MemberFinder memberFinder;
-    private final NotificationService notificationService;
+    private final NotificationCommandService notificationService;
 
     @Transactional
     public MemberFollowResponse follow(Long followerId, Long followedId) {
@@ -40,13 +40,9 @@ public class MemberFollowService {
             throw new BusinessException(MemberErrorCode.ALREADY_FOLLOWING);
         }
         memberFollowRepository.save(MemberFollow.of(follower, followed));
-
-        // TODO: 집계 업데이트는 min(id)->max(id) 순으로 락 순서 고정 필요
-        // TODO: 데드락 발생 시 1~2회 재시도(backoff 포함) 적용
-        // TODO: 팔로워/팔로잉 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
         memberRepository.incrementFollowingCount(followerId);
         memberRepository.incrementFollowerCount(followedId);
-        notificationService.createFollow(followerId, followedId);
+        notificationService.publishFollowNotification(followerId, followedId);
 
         Member target = memberFinder.findByIdOrThrow(followedId);
         return MemberFollowResponse.of(target, true);
@@ -63,10 +59,6 @@ public class MemberFollowService {
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOLLOWING));
         Long targetId = follow.getFollowed().getId();
         memberFollowRepository.delete(follow);
-
-        // TODO: 집계 업데이트는 min(id)->max(id) 순으로 락 순서 고정 필요
-        // TODO: 데드락 발생 시 1~2회 재시도(backoff 포함) 적용
-        // TODO: 팔로워/팔로잉 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
         memberRepository.decrementFollowingCount(followerId);
         memberRepository.decrementFollowerCount(targetId);
         Member target = memberFinder.findByIdOrThrow(targetId);
@@ -80,11 +72,12 @@ public class MemberFollowService {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<MemberFollowSummary> members = loadFollowers(memberId, size, after);
 
-        String nextCursor = null;
-        if (!members.isEmpty() && members.size() == size) {
-            MemberFollowSummary last = members.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.createdAt(), last.followId());
-        }
+        String nextCursor = CursorPagingHelper.resolveNextCursor(
+                members,
+                size,
+                MemberFollowSummary::createdAt,
+                MemberFollowSummary::followId
+        );
         return MemberFollowListResponse.of(members, nextCursor);
     }
 
@@ -95,11 +88,12 @@ public class MemberFollowService {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<MemberFollowSummary> members = loadFollowings(memberId, size, after);
 
-        String nextCursor = null;
-        if (!members.isEmpty() && members.size() == size) {
-            MemberFollowSummary last = members.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.createdAt(), last.followId());
-        }
+        String nextCursor = CursorPagingHelper.resolveNextCursor(
+                members,
+                size,
+                MemberFollowSummary::createdAt,
+                MemberFollowSummary::followId
+        );
         return MemberFollowListResponse.of(members, nextCursor);
     }
 

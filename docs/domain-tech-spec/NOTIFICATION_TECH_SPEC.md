@@ -35,6 +35,7 @@
 - 알림 목록: `GET /api/notifications`
 - 읽음 처리: `PATCH /api/notifications/{id}`
 - SSE 연결: `GET /api/notifications/stream`
+- 실시간 알림 끔: 비즈니스 알림은 저장만 수행하고 SSE 전송은 생략
 
 ## 보안 고려사항
 

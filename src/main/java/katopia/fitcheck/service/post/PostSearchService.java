@@ -51,12 +51,7 @@ public class PostSearchService {
                 ))
                 .toList();
 
-        String nextCursor = null;
-        if (!posts.isEmpty() && posts.size() == size) {
-            Post last = posts.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.getCreatedAt(), last.getId());
-        }
-
+        String nextCursor = CursorPagingHelper.resolveNextCursor(posts, size, Post::getCreatedAt, Post::getId);
         return PostListResponse.of(summaries, nextCursor);
     }
 
@@ -73,12 +68,7 @@ public class PostSearchService {
                 ))
                 .toList();
 
-        String nextCursor = null;
-        if (!posts.isEmpty() && posts.size() == size) {
-            Post last = posts.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.getCreatedAt(), last.getId());
-        }
-
+        String nextCursor = CursorPagingHelper.resolveNextCursor(posts, size, Post::getCreatedAt, Post::getId);
         return PostListResponse.of(summaries, nextCursor);
     }
 
@@ -113,6 +103,7 @@ public class PostSearchService {
         Set<Long> bookmarkedPostIds = postBookmarkRepository.findBookmarkedPostIds(memberId, postIds);
 
         List<PostDetailResponse> posts = new ArrayList<>();
+        List<Post> orderedPosts = new ArrayList<>();
         for (Long postId : postIds) {
             Post post = postMap.get(postId);
             if (post == null) {
@@ -122,17 +113,14 @@ public class PostSearchService {
             boolean isLiked = likedPostIds.contains(postId);
             boolean isBookmarked = bookmarkedPostIds.contains(postId);
             posts.add(PostDetailResponse.of(post, post.getMember(), tags, isLiked, isBookmarked));
+            orderedPosts.add(post);
         }
-
-        String nextCursor = null;
-        if (postIds.size() == size) {
-            Long lastId = postIds.getLast();
-            Post last = postMap.get(lastId);
-            if (last != null) {
-                nextCursor = CursorPagingHelper.encodeCursor(last.getCreatedAt(), last.getId());
-            }
-        }
-
+        String nextCursor = CursorPagingHelper.resolveNextCursor(
+                orderedPosts,
+                size,
+                Post::getCreatedAt,
+                Post::getId
+        );
         return PostResponse.of(posts, nextCursor);
     }
 

@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import katopia.fitcheck.dto.member.request.MemberSignupRequest;
 import katopia.fitcheck.dto.member.response.MemberAggregate;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.global.security.oauth2.SocialProvider;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdate;
 import lombok.AccessLevel;
@@ -51,7 +52,7 @@ public class Member {
     @Column(length = 320)
     private String email;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = Policy.NICKNAME_MAX_LENGTH, nullable = false)
     private String nickname;
 
     @Enumerated(EnumType.STRING)
@@ -61,7 +62,7 @@ public class Member {
     @Column(name = "oauth2_user_id", nullable = false)
     private String oauth2UserId;
 
-    @Column(name = "profile_image_object_key", length = 1024)
+    @Column(name = "profile_image_object_key", length = Policy.IMAGE_OBJECT_KEY_MAX_LENGTH)
     private String profileImageObjectKey;
 
     @Enumerated(EnumType.STRING)
@@ -193,36 +194,6 @@ public class Member {
         }
         this.accountStatus = AccountStatus.ACTIVE;
         this.termsAgreedAt = LocalDateTime.now();
-    }
-
-    public void incrementPostCount() {
-        this.postCount += 1;
-    }
-
-    public void decrementPostCount() {
-        if (this.postCount > 0) {
-            this.postCount -= 1;
-        }
-    }
-
-    public void incrementFollowingCount() {
-        this.followingCount += 1;
-    }
-
-    public void decrementFollowingCount() {
-        if (this.followingCount > 0) {
-            this.followingCount -= 1;
-        }
-    }
-
-    public void incrementFollowerCount() {
-        this.followerCount += 1;
-    }
-
-    public void decrementFollowerCount() {
-        if (this.followerCount > 0) {
-            this.followerCount -= 1;
-        }
     }
 
     public void markAsWithdrawn(String anonymizedNickname) {

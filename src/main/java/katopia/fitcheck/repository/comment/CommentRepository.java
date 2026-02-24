@@ -17,6 +17,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             select c from Comment c
             join fetch c.member
             where c.post.id = :postId
+              and c.deletedAt is null
             order by c.createdAt desc, c.id desc
             """)
     List<Comment> findLatestByPostId(@Param("postId") Long postId, Pageable pageable);
@@ -25,6 +26,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             select c from Comment c
             join fetch c.member
             where c.post.id = :postId
+              and c.deletedAt is null
               and ((c.createdAt < :createdAt)
                or (c.createdAt = :createdAt and c.id < :id))
             order by c.createdAt desc, c.id desc
@@ -36,11 +38,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             Pageable pageable
     );
 
-    Optional<Comment> findByIdAndPostId(Long id, Long postId);
+    Optional<Comment> findByIdAndPostIdAndDeletedAtIsNull(Long id, Long postId);
 
     @Modifying
-    @Query("delete from Comment c where c.post.id = :postId")
-    void deleteByPostId(Long postId);
+    @Query("update Comment c set c.deletedAt = :deletedAt where c.post.id = :postId and c.deletedAt is null")
+    int softDeleteByPostId(@Param("postId") Long postId, @Param("deletedAt") LocalDateTime deletedAt);
 
-    void deleteByMemberId(Long memberId);
+    @Modifying
+    @Query("update Comment c set c.deletedAt = :deletedAt where c.member.id = :memberId and c.deletedAt is null")
+    int softDeleteByMemberId(@Param("memberId") Long memberId, @Param("deletedAt") LocalDateTime deletedAt);
 }

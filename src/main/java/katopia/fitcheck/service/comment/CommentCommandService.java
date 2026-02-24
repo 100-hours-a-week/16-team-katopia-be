@@ -9,25 +9,27 @@ import katopia.fitcheck.repository.comment.CommentRepository;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.service.member.MemberFinder;
 import katopia.fitcheck.domain.post.Post;
-import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.service.post.PostFinder;
-import katopia.fitcheck.service.notification.NotificationService;
+import katopia.fitcheck.service.notification.NotificationCommandService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CommentCommandService {
 
     private final CommentRepository commentRepository;
-    private final PostRepository postRepository;
     private final MemberFinder memberFinder;
     private final CommentValidator commentValidator;
     private final CommentFinder commentFinder;
     private final PostFinder postFinder;
-    private final NotificationService notificationService;
+    private final NotificationCommandService notificationService;
+    private final CommentCountDeltaService commentCountDeltaService;
 
     @Transactional
     public CommentResponse create(Long memberId, Long postId, CommentRequest request) {
@@ -37,9 +39,12 @@ public class CommentCommandService {
         Comment comment = Comment.create(post, member, request.content());
         try {
             Comment saved = commentRepository.save(comment);
-            // TODO: 댓글 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
-            postRepository.incrementCommentCount(postId);
-            notificationService.createPostComment(memberId, postId);
+            try {
+                commentCountDeltaService.increase(postId);
+            } catch (DataAccessException ex) {
+                log.debug("Failed to increment comment delta. postId={}", postId, ex);
+            }
+            notificationService.publishPostCommentNotification(memberId, postId);
             return CommentResponse.of(saved);
         } catch (DataIntegrityViolationException ex) {
             throw new BusinessException(CommonErrorCode.INVALID_RELATION);
@@ -48,7 +53,6 @@ public class CommentCommandService {
 
     @Transactional
     public CommentResponse update(Long memberId, Long postId, Long commentId, CommentRequest request) {
-        postFinder.requireExists(postId);
         Comment comment = commentFinder.findByIdAndPostIdOrThrow(commentId, postId);
         commentValidator.validateOwner(comment, memberId);
 
@@ -58,11 +62,13 @@ public class CommentCommandService {
 
     @Transactional
     public void delete(Long memberId, Long postId, Long commentId) {
-        postFinder.requireExists(postId);
         Comment comment = commentFinder.findByIdAndPostIdOrThrow(commentId, postId);
         commentValidator.validateOwner(comment, memberId);
-        commentRepository.delete(comment);
-        // TODO: 댓글 집계는 Redis 기준으로 처리 후 비동기 DB 동기화로 전환
-        postRepository.decrementCommentCount(postId);
+        comment.markDeleted();
+        try {
+            commentCountDeltaService.decrease(postId);
+        } catch (DataAccessException ex) {
+            log.debug("Failed to decrement comment delta. postId={}", postId, ex);
+        }
     }
 }
