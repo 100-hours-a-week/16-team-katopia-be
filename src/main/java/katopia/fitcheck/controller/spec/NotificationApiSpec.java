@@ -5,12 +5,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.headers.Header;
 import katopia.fitcheck.dto.notification.response.NotificationListResponse;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.docs.Docs;
 import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -47,7 +49,31 @@ public interface NotificationApiSpec {
     );
 
     @Operation(summary = "알림 SSE 연결", description = "실시간 알림 스트림을 연결합니다.")
-    @ApiResponse(responseCode = "200", description = "SSE 연결 성공")
+    @ApiResponse(
+            responseCode = "200",
+            description = "SSE 연결 성공",
+            headers = {
+                    @Header(
+                            name = "Content-Type",
+                            description = "SSE 스트림 응답 타입(text/event-stream)"
+                    ),
+                    @Header(
+                            name = "Cache-Control",
+                            description = "SSE 캐시 방지(no-cache)"
+                    ),
+                    @Header(
+                            name = "Connection",
+                            description = "SSE 연결 유지(keep-alive)"
+                    ),
+                    @Header(
+                            name = "X-Accel-Buffering",
+                            description = "Nginx 버퍼링 비활성(no)"
+                    )
+            }
+    )
     @ApiResponse(responseCode = "401", description = Docs.AT_MISSING_OR_INVALID_DES, content = @Content)
-    SseEmitter connectNotificationStream(@AuthenticationPrincipal MemberPrincipal principal);
+    SseEmitter connectNotificationStream(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            HttpServletResponse response
+    );
 }

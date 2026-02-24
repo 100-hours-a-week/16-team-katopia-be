@@ -38,7 +38,7 @@ public final class Policy {
     // Vote policy
     public static final int
             VOTE_TITLE_MIN_LENGTH = 1, VOTE_TITLE_MAX_LENGTH = 20,
-            VOTE_IMAGE_MIN_COUNT = 1, VOTE_IMAGE_MAX_COUNT = 5,
+            VOTE_IMAGE_MIN_COUNT = 2, VOTE_IMAGE_MAX_COUNT = 5,
             VOTE_DEFAULT_EXPIRES_HOURS = 24;
 
     // Search policy

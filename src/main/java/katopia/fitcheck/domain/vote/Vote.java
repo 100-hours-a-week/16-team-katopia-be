@@ -45,7 +45,7 @@ public class Vote {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(length = Policy.VOTE_IMAGE_MAX_COUNT, nullable = false)
+    @Column(length = Policy.VOTE_TITLE_MAX_LENGTH, nullable = false)
     private String title;
 
     @CreationTimestamp

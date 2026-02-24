@@ -52,6 +52,7 @@ Spring Boot 3.5 + `spring-boot-docker-compose` 의존성으로 `./gradlew bootRu
 
 ### 2.4 수동 DDL (검색 FULLTEXT)
 - 마이그레이션 도구 없이 적용 시 `docs/sql/fulltext_posts.sql` 실행
+- 댓글 집계 비동기 전환 시 `docs/sql/comment_aggregate_migration.sql` 실행
 - 운영 적용은 저부하 시간대 권장, 롤백은 `docs/search/FULLTEXT.md` 참고
 
 ### 2.3 로컬 애플리케이션 프로필 요약
