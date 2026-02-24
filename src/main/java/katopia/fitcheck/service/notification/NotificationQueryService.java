@@ -30,12 +30,12 @@ public class NotificationQueryService {
                 .map(NotificationSummary::of)
                 .toList();
 
-        String nextCursor = null;
-        if (!notifications.isEmpty() && notifications.size() == size) {
-            Notification last = notifications.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.getCreatedAt(), last.getId());
-        }
-
+        String nextCursor = CursorPagingHelper.resolveNextCursor(
+                notifications,
+                size,
+                Notification::getCreatedAt,
+                Notification::getId
+        );
         return NotificationListResponse.of(summaries, nextCursor);
     }
 

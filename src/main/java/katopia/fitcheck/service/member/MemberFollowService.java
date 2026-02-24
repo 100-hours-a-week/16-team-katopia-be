@@ -72,11 +72,12 @@ public class MemberFollowService {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<MemberFollowSummary> members = loadFollowers(memberId, size, after);
 
-        String nextCursor = null;
-        if (!members.isEmpty() && members.size() == size) {
-            MemberFollowSummary last = members.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.createdAt(), last.followId());
-        }
+        String nextCursor = CursorPagingHelper.resolveNextCursor(
+                members,
+                size,
+                MemberFollowSummary::createdAt,
+                MemberFollowSummary::followId
+        );
         return MemberFollowListResponse.of(members, nextCursor);
     }
 
@@ -87,11 +88,12 @@ public class MemberFollowService {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<MemberFollowSummary> members = loadFollowings(memberId, size, after);
 
-        String nextCursor = null;
-        if (!members.isEmpty() && members.size() == size) {
-            MemberFollowSummary last = members.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.createdAt(), last.followId());
-        }
+        String nextCursor = CursorPagingHelper.resolveNextCursor(
+                members,
+                size,
+                MemberFollowSummary::createdAt,
+                MemberFollowSummary::followId
+        );
         return MemberFollowListResponse.of(members, nextCursor);
     }
 

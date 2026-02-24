@@ -30,12 +30,7 @@ public class CommentQueryService {
                 .map(CommentSummary::of)
                 .toList();
 
-        String nextCursor = null;
-        if (!comments.isEmpty() && comments.size() == size) {
-            Comment last = comments.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.getCreatedAt(), last.getId());
-        }
-
+        String nextCursor = CursorPagingHelper.resolveNextCursor(comments, size, Comment::getCreatedAt, Comment::getId);
         return CommentListResponse.of(summaries, nextCursor);
     }
 

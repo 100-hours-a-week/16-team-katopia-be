@@ -41,7 +41,7 @@ public class SearchService {
         List<Member> members = loadUsers(keyword, size, after);
         List<Long> targetIds = members.stream().map(Member::getId).toList();
         List<MemberSearchSummary> summaries = toMemberSummaries(requesterId, members, targetIds);
-        String nextCursor = resolveNextCursor(members, size);
+        String nextCursor = CursorPagingHelper.resolveNextCursor(members, size, Member::getCreatedAt, Member::getId);
         return MemberSearchResponse.of(summaries, nextCursor);
     }
 
@@ -52,7 +52,7 @@ public class SearchService {
                                           String after) {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<PostSummary> summaries = loadPostSummaries(query, size, after);
-        String nextCursor = resolveNextCursor(summaries, size);
+        String nextCursor = CursorPagingHelper.resolveNextCursor(summaries, size, PostSummary::createdAt, PostSummary::id);
         return PostSearchResponse.of(summaries, nextCursor);
     }
 
@@ -123,20 +123,6 @@ public class SearchService {
                     : postRepository.searchPageAfterByContentSummary(keyword, AccountStatus.ACTIVE, cursor.createdAt(), cursor.id(), pageRequest);
         }
         return posts.stream().map(this::toSummary).toList();
-    }
-
-    private <T> String resolveNextCursor(List<T> items, int size) {
-        if (items.isEmpty() || items.size() < size) {
-            return null;
-        }
-        Object last = items.getLast();
-        if (last instanceof PostSummary summary) {
-            return CursorPagingHelper.encodeCursor(summary.createdAt(), summary.id());
-        }
-        if (last instanceof Member member) {
-            return CursorPagingHelper.encodeCursor(member.getCreatedAt(), member.getId());
-        }
-        return null;
     }
 
     private PostSummary toSummary(PostSummaryProjection row) {

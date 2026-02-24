@@ -53,12 +53,12 @@ public class PostBookmarkService {
                 .map(row -> PostSummary.of(row.getId(), row.getImageObjectKey(), row.getCreatedAt()))
                 .toList();
 
-        String nextCursor = null;
-        if (!summaries.isEmpty() && summaries.size() == size) {
-            PostSummary last = summaries.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.createdAt(), last.id());
-        }
-
+        String nextCursor = CursorPagingHelper.resolveNextCursor(
+                summaries,
+                size,
+                PostSummary::createdAt,
+                PostSummary::id
+        );
         return PostListResponse.of(summaries, nextCursor);
     }
 

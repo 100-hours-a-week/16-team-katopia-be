@@ -1,7 +1,5 @@
 package katopia.fitcheck.service.comment;
 
-import java.time.LocalDateTime;
-
 import katopia.fitcheck.domain.comment.Comment;
 import katopia.fitcheck.dto.comment.request.CommentRequest;
 import katopia.fitcheck.dto.comment.response.CommentResponse;

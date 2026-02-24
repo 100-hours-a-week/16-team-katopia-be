@@ -40,12 +40,7 @@ public class VoteQueryService {
                 .map(vote -> VoteSummary.of(vote, now))
                 .toList();
 
-        String nextCursor = null;
-        if (!votes.isEmpty() && votes.size() == size) {
-            Vote last = votes.getLast();
-            nextCursor = CursorPagingHelper.encodeCursor(last.getCreatedAt(), last.getId());
-        }
-
+        String nextCursor = CursorPagingHelper.resolveNextCursor(votes, size, Vote::getCreatedAt, Vote::getId);
         return VoteListResponse.of(summaries, nextCursor);
     }
 

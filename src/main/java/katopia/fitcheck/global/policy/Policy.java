@@ -70,8 +70,9 @@ public final class Policy {
     public static final Duration SSE_TIMEOUT = Duration.ofMinutes(30);
     public static final Duration SSE_CLEANUP_INTERVAL = SSE_TIMEOUT.multipliedBy(2);
     public static final Duration SSE_HEARTBEAT_INTERVAL = Duration.ofSeconds(20);
-    public static final int SSE_MAX_CONNECTIONS = 3;
+    public static final int SSE_MAX_CONNECTIONS = 999;
     public static final int SSE_UNREAD_LIMIT = 10;
+    public static final int SSE_UNREAD_LIMIT_MAX = 20;
     public static final Duration COMMENT_COUNT_BATCH_INTERVAL = Duration.ofSeconds(10);
 
     // descriptions
