@@ -98,6 +98,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     int decrementCommentCount(@Param("id") Long id);
 
     @Query("""
+            update Post p
+            set p.commentCount =
+                case
+                    when p.commentCount + :delta < 0 then 0
+                    else p.commentCount + :delta
+                end
+            where p.id = :id
+            """)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    int applyCommentCountDelta(@Param("id") Long id, @Param("delta") long delta);
+
+    @Query("""
             select p.id from Post p where p.member.id = :memberId
             """)
     List<Long> findIdsByMemberId(@Param("memberId") Long memberId);

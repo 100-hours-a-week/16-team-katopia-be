@@ -62,6 +62,9 @@ class CommentCommandServiceTest {
     @Mock
     private NotificationCommandService notificationService;
 
+    @Mock
+    private CommentCountDeltaService commentCountDeltaService;
+
     @InjectMocks
     private CommentCommandService commentCommandService;
 
@@ -86,6 +89,7 @@ class CommentCommandServiceTest {
         assertThat(response.content()).isEqualTo("hi");
         verify(commentRepository).save(any());
         verify(notificationService).publishPostCommentNotification(eq(COMMENTER_ID), eq(POST_ID));
+        verify(commentCountDeltaService).increase(eq(POST_ID));
     }
 
     @Test
@@ -107,12 +111,12 @@ class CommentCommandServiceTest {
         commentCommandService.create(COMMENTER_ID, POST_ID, new CommentRequest("hi"));
 
         verify(notificationService).publishPostCommentNotification(eq(COMMENTER_ID), eq(POST_ID));
+        verify(commentCountDeltaService).increase(eq(POST_ID));
     }
 
     @Test
     @DisplayName("TC-COMMENT-CMD-S-02 댓글 수정 성공(본문 변경)")
     void tcCommentCmdS02_updateComment_updatesContent() {
-        doNothing().when(postFinder).requireExists(POST_ID);
         Comment comment = buildComment(AUTHOR_ID, POST_ID, "before");
         when(commentFinder.findByIdAndPostIdOrThrow(COMMENT_ID, POST_ID)).thenReturn(comment);
         doNothing().when(commentValidator).validateOwner(eq(comment), eq(AUTHOR_ID));
@@ -121,6 +125,19 @@ class CommentCommandServiceTest {
 
         assertThat(response.content()).isEqualTo("after");
         assertThat(comment.getContent()).isEqualTo("after");
+    }
+
+    @Test
+    @DisplayName("TC-COMMENT-CMD-S-03 댓글 삭제 성공(소프트 삭제)")
+    void tcCommentCmdS03_deleteComment_marksDeleted() {
+        Comment comment = buildComment(AUTHOR_ID, POST_ID, "hi");
+        when(commentFinder.findByIdAndPostIdOrThrow(COMMENT_ID, POST_ID)).thenReturn(comment);
+        doNothing().when(commentValidator).validateOwner(eq(comment), eq(AUTHOR_ID));
+
+        commentCommandService.delete(AUTHOR_ID, POST_ID, COMMENT_ID);
+
+        assertThat(comment.isDeleted()).isTrue();
+        verify(commentCountDeltaService).decrease(eq(POST_ID));
     }
 
     @Test
@@ -142,7 +159,6 @@ class CommentCommandServiceTest {
     @Test
     @DisplayName("TC-COMMENT-CMD-F-02 댓글 수정 실패(댓글 없음)")
     void tcCommentCmdF02_updateFailsWhenCommentMissing() {
-        doNothing().when(postFinder).requireExists(POST_ID);
         doThrow(new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND))
                 .when(commentFinder)
                 .findByIdAndPostIdOrThrow(COMMENT_ID, POST_ID);
@@ -156,7 +172,6 @@ class CommentCommandServiceTest {
     @Test
     @DisplayName("TC-COMMENT-CMD-F-03 댓글 수정 실패(작성자 아님)")
     void tcCommentCmdF03_updateFailsWhenNotOwner() {
-        doNothing().when(postFinder).requireExists(POST_ID);
         Comment comment = buildComment(AUTHOR_ID, POST_ID, "hi");
         when(commentFinder.findByIdAndPostIdOrThrow(COMMENT_ID, POST_ID)).thenReturn(comment);
         doThrow(new AuthException(AuthErrorCode.ACCESS_DENIED))
@@ -172,7 +187,6 @@ class CommentCommandServiceTest {
     @Test
     @DisplayName("TC-COMMENT-CMD-F-04 댓글 삭제 실패(작성자 아님)")
     void tcCommentCmdF04_deleteFailsWhenNotOwner() {
-        doNothing().when(postFinder).requireExists(POST_ID);
         Comment comment = buildComment(AUTHOR_ID, POST_ID, "hi");
         when(commentFinder.findByIdAndPostIdOrThrow(COMMENT_ID, POST_ID)).thenReturn(comment);
         doThrow(new AuthException(AuthErrorCode.ACCESS_DENIED))
@@ -188,7 +202,6 @@ class CommentCommandServiceTest {
     @Test
     @DisplayName("TC-COMMENT-CMD-F-05 댓글 삭제 실패(댓글 없음)")
     void tcCommentCmdF05_deleteFailsWhenCommentMissing() {
-        doNothing().when(postFinder).requireExists(POST_ID);
         doThrow(new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND))
                 .when(commentFinder)
                 .findByIdAndPostIdOrThrow(COMMENT_ID, POST_ID);
