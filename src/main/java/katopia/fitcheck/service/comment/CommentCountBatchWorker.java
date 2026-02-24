@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public class CommentCountBatchWorker {
     private final CountBatchRepository countBatchRepository;
 
     @Scheduled(fixedDelayString = "#{T(katopia.fitcheck.global.policy.Policy).COMMENT_COUNT_BATCH_INTERVAL.toMillis()}")
+    @Transactional
     public void syncCommentCounts() {
         Set<String> keys = scanKeys(KEY_PREFIX + "*");
         if (keys.isEmpty()) {
@@ -45,6 +47,7 @@ public class CommentCountBatchWorker {
             }
             long delta = getAndResetDelta(key);
             if (delta == 0) {
+                deleteDeltaKey(key);
                 continue;
             }
             try {
@@ -53,12 +56,22 @@ public class CommentCountBatchWorker {
                     appliedPostCount += 1;
                     appliedDelta += delta;
                 }
+                deleteDeltaKey(key);
             } catch (DataAccessException ex) {
                 restoreDelta(key, delta);
                 log.debug("Failed to apply comment delta. postId={}, delta={}", postId, delta, ex);
             }
         }
-        countBatchRepository.save(CountBatch.of(LocalDateTime.now(), LocalDateTime.now(), appliedPostCount, (int) appliedDelta));
+        if (appliedPostCount == 0) {
+            return;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        CountBatch batch = countBatchRepository.findTopByOrderByIdDesc().orElse(null);
+        if (batch == null) {
+            countBatchRepository.save(CountBatch.of(now, now, appliedPostCount, (int) appliedDelta));
+            return;
+        }
+        batch.update(now, now, appliedPostCount, (int) appliedDelta);
     }
 
     private long getAndResetDelta(String key) {
@@ -75,6 +88,10 @@ public class CommentCountBatchWorker {
 
     private void restoreDelta(String key, long delta) {
         stringRedisTemplate.opsForValue().increment(key, delta);
+    }
+
+    private void deleteDeltaKey(String key) {
+        stringRedisTemplate.delete(key);
     }
 
     private Set<String> scanKeys(String pattern) {
