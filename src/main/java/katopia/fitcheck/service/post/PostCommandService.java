@@ -79,7 +79,7 @@ public class PostCommandService {
         Post post = postFinder.findByIdOrThrow(postId);
         postValidator.validateOwner(post, memberId);
         memberRepository.decrementPostCount(memberId);
-        commentRepository.softDeleteByPostId(postId, java.time.LocalDateTime.now());
+        commentRepository.deleteByPostId(postId);
         postLikeRepository.deleteByPostId(postId);
         postBookmarkRepository.deleteByPostId(postId);
         postTagRepository.deleteByPostId(postId);
