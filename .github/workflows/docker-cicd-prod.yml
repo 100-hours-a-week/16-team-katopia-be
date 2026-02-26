@@ -1,7 +1,7 @@
 name: docker-cicd-prod - Spring
 on:
   push:
-    branches: ["dev"]
+    branches: ["main"]
 
 concurrency:
   group: docker-cicd-prod-${{ github.ref }}
