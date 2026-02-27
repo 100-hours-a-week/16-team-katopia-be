@@ -60,23 +60,6 @@ public abstract class AbstractSseService<T> {
     }
 
     /**
-     * 지정한 이벤트 이름으로 해당 사용자의 모든 활성 연결에 페이로드를 전송한다.
-     *
-     * @param memberId  전송 대상 사용자 ID
-     * @param eventName 이벤트 이름(비어 있으면 기본 이벤트 이름 사용)
-     * @param payload   전송할 페이로드
-     */
-    public void sendEvent(Long memberId, String eventName, Object payload) {
-        Set<String> connectionIds = memberConnections.get(memberId);
-        if (connectionIds == null || connectionIds.isEmpty()) {
-            return;
-        }
-        for (String connectionId : connectionIds) {
-            sendEventToConnection(connectionId, eventName, payload);
-        }
-    }
-
-    /**
      * 특정 연결을 종료하고 로컬 레지스트리에서 제거한 뒤 훅을 호출한다.
      *
      * @param connectionId 종료할 연결 ID

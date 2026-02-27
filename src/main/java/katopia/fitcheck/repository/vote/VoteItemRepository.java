@@ -18,7 +18,13 @@ public interface VoteItemRepository extends JpaRepository<VoteItem, Long> {
             """)
     List<VoteItem> findByVoteIdOrderBySortOrder(@Param("voteId") Long voteId);
 
-    Optional<VoteItem> findFirstByVoteIdOrderBySortOrderAsc(Long voteId);
+    @Query("""
+            select vi.imageObjectKey
+            from VoteItem vi
+            where vi.vote.id = :voteId
+              and vi.sortOrder = 1
+            """)
+    Optional<String> findThumbnailImageObjectKeyByVoteId(@Param("voteId") Long voteId);
 
     @Query("""
             select vi from VoteItem vi

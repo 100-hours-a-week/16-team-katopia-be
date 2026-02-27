@@ -32,14 +32,15 @@ public class MemberFollowService {
         if (followerId.equals(followedId)) {
             throw new BusinessException(MemberErrorCode.SELF_FOLLOW_NOT_ALLOWED);
         }
-        Member follower = memberFinder.findActiveByIdOrThrow(followerId);
-        Member followed = memberFinder.findActiveByIdOrThrow(followedId);
-
-        // TODO: 네이티브 쿼리 적용
+        memberFinder.requireActiveExists(followerId);
+        memberFinder.requireActiveExists(followedId);
         if (memberFollowRepository.existsByFollowerIdAndFollowedId(followerId, followedId)) {
             throw new BusinessException(MemberErrorCode.ALREADY_FOLLOWING);
         }
+        Member follower = memberFinder.getReferenceById(followerId);
+        Member followed = memberFinder.getReferenceById(followedId);
         memberFollowRepository.save(MemberFollow.of(follower, followed));
+
         memberRepository.incrementFollowingCount(followerId);
         memberRepository.incrementFollowerCount(followedId);
         notificationService.publishFollowNotification(followerId, followedId);

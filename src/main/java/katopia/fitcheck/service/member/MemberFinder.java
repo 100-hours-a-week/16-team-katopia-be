@@ -32,6 +32,12 @@ public class MemberFinder {
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 
+    public void requireActiveExists(Long memberId) {
+        if (!memberRepository.existsByIdAndAccountStatus(memberId, AccountStatus.ACTIVE)) {
+            throw new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER);
+        }
+    }
+
     public Member findPublicProfileByIdOrThrow(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));

@@ -49,7 +49,7 @@ public class Notification {
     @Column(
             name = "notification_type",
             nullable = false,
-            columnDefinition = "enum('FOLLOW','POST_LIKE','POST_COMMENT','VOTE_CLOSED')"
+            columnDefinition = "enum('FOLLOW','POST_CREATED','POST_LIKE','POST_COMMENT','VOTE_CLOSED')"
     )
     private NotificationType notificationType;
 

@@ -116,4 +116,10 @@ public interface MemberFollowRepository extends JpaRepository<MemberFollow, Long
             where f.follower.id in :followerIds
             """)
     List<Long> findFollowedIdsByFollowerIds(@Param("followerIds") List<Long> followerIds);
+
+    @Query("""
+            select f.follower.id from MemberFollow f
+            where f.followed.id = :followedId
+            """)
+    List<Long> findFollowerIdsByFollowedId(@Param("followedId") Long followedId);
 }

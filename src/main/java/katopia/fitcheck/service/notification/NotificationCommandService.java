@@ -1,15 +1,14 @@
 package katopia.fitcheck.service.notification;
 
 import katopia.fitcheck.domain.member.Member;
-import katopia.fitcheck.domain.notification.Notification;
 import katopia.fitcheck.domain.notification.NotificationType;
-import katopia.fitcheck.domain.post.Post;
-import katopia.fitcheck.domain.vote.VoteItem;
-import katopia.fitcheck.global.policy.Policy;
-import katopia.fitcheck.repository.notification.NotificationRepository;
-import katopia.fitcheck.repository.vote.VoteItemRepository;
+import katopia.fitcheck.messaging.event.MessageEventFactory;
 import katopia.fitcheck.service.member.MemberFinder;
+import katopia.fitcheck.messaging.event.MessageEvent;
+import katopia.fitcheck.messaging.event.MessageEventPublisher;
+import katopia.fitcheck.service.notification.event.NotificationBatchEventPublisher;
 import katopia.fitcheck.service.post.PostFinder;
+import katopia.fitcheck.service.vote.VoteFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,89 +17,63 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NotificationCommandService {
 
-    private final NotificationRepository notificationRepository;
     private final PostFinder postFinder;
-    private final VoteItemRepository voteItemRepository;
+    private final VoteFinder voteFinder;
     private final MemberFinder memberFinder;
-    private final NotificationRealtimePublisher realtimePublisher;
+    private final MessageEventPublisher eventPublisher;
+    private final NotificationBatchEventPublisher batchEventPublisher;
 
     @Transactional
     public void publishFollowNotification(Long actorId, Long recipientId) {
-        if (actorId.equals(recipientId)) {
-            return;
-        }
         Member actor = memberFinder.findByIdOrThrow(actorId);
-        Member recipient = memberFinder.findByIdOrThrow(recipientId);
-        createNotification(actor, recipient, NotificationType.FOLLOW, Policy.FOLLOW_MESSAGE, actorId);
+        MessageEvent event = MessageEventFactory.followCreated(actor, recipientId);
+        batchEventPublisher.publish(event);
     }
 
     @Transactional
     public void publishPostLikeNotification(Long actorId, Long postId) {
         Long recipientId = postFinder.findMemberIdByPostIdOrThrow(postId);
-        if (actorId.equals(recipientId)) {
-            return;
-        }
         Member actor = memberFinder.findByIdOrThrow(actorId);
-        Member recipient = memberFinder.findByIdOrThrow(recipientId);
-        createNotification(actor, recipient, NotificationType.POST_LIKE, Policy.POST_LIKE_MESSAGE, postId);
+        String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(NotificationType.POST_LIKE, actor, postId);
+        MessageEvent event = MessageEventFactory.postLiked(actor, recipientId, postId, imageObjectKeySnapshot);
+        batchEventPublisher.publish(event);
     }
 
     @Transactional
-    public void publishPostCommentNotification(Long actorId, Long postId) {
+    public void publishPostCreatedNotification(Long actorId, Long postId) {
+        Member actor = memberFinder.findByIdOrThrow(actorId);
+        String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(NotificationType.POST_CREATED, actor, postId);
+        MessageEvent event = MessageEventFactory.postCreated(actor, postId, imageObjectKeySnapshot);
+        eventPublisher.publish(event);
+    }
+
+    @Transactional
+    public void publishPostCommentNotification(Long actorId, Long postId, Long commentId) {
         Long recipientId = postFinder.findMemberIdByPostIdOrThrow(postId);
+
+        // 댓글 작성자가 게시글 작성자와 일치할 경우 알림 미발행
         if (actorId.equals(recipientId)) {
             return;
         }
         Member actor = memberFinder.findByIdOrThrow(actorId);
-        Member recipient = memberFinder.findByIdOrThrow(recipientId);
-        createNotification(actor, recipient, NotificationType.POST_COMMENT, Policy.POST_COMMENT_MESSAGE, postId);
+        String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(NotificationType.POST_COMMENT, actor, postId);
+        MessageEvent event = MessageEventFactory.commentCreated(actor, recipientId, postId, commentId, imageObjectKeySnapshot);
+        batchEventPublisher.publish(event);
     }
 
     @Transactional
-    public void publishVoteClosedNotification(Long recipientId, Long voteId) {
-        Member recipient = memberFinder.findByIdOrThrow(recipientId);
-        createNotification(null, recipient, NotificationType.VOTE_CLOSED, Policy.VOTE_CLOSED_MESSAGE, voteId);
-    }
-
-    private void createNotification(
-            Member actor,
-            Member recipient,
-            NotificationType type,
-            String messageFormat,
-            Long refId
-    ) {
-        if (actor != null && actor.getId().equals(recipient.getId())) {
-            return;
-        }
-        String message = actor == null ? messageFormat : String.format(messageFormat, actor.getNickname());
-        String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(type, actor, refId);
-        Notification notification = Notification.of(recipient, actor, type, message, refId, imageObjectKeySnapshot);
-        notificationRepository.save(notification);
-        if (recipient.isEnableRealtimeNotification()) {
-            realtimePublisher.publish(notification);
-        }
-        // TODO: Redis/RabbitMQ 연동으로 실시간 전송/재시도 큐 처리
+    public void publishVoteClosedNotification(Long voteId) {
+        String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(NotificationType.VOTE_CLOSED, null, voteId);
+        String voteTitle = voteFinder.findByIdOrThrow(voteId).getTitle();
+        MessageEvent event = MessageEventFactory.voteClosed(voteId, voteTitle, imageObjectKeySnapshot);
+        eventPublisher.publish(event);
     }
 
     private String resolveImageObjectKeySnapshot(NotificationType type, Member actor, Long refId) {
         return switch (type) {
-            case FOLLOW -> actor != null ? actor.getProfileImageObjectKey() : null;
-            case POST_LIKE, POST_COMMENT -> resolvePostImageObjectKey(refId);
-            case VOTE_CLOSED -> resolveVoteImageObjectKey(refId);
+            case FOLLOW -> actor.getProfileImageObjectKey();
+            case POST_CREATED, POST_LIKE, POST_COMMENT -> postFinder.findThumbnailImageObjectKey(refId);
+            case VOTE_CLOSED -> voteFinder.findThumbnailImageObjectKey(refId);
         };
-    }
-
-    private String resolvePostImageObjectKey(Long postId) {
-        Post post = postFinder.findByIdOrThrow(postId);
-        if (post.getImages() == null || post.getImages().isEmpty()) {
-            return null;
-        }
-        return post.getImages().getFirst().getImageObjectKey();
-    }
-
-    private String resolveVoteImageObjectKey(Long voteId) {
-        return voteItemRepository.findFirstByVoteIdOrderBySortOrderAsc(voteId)
-                .map(VoteItem::getImageObjectKey)
-                .orElse(null);
     }
 }

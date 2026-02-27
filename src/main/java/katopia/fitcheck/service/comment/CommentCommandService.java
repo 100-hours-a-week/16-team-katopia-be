@@ -44,7 +44,7 @@ public class CommentCommandService {
             } catch (DataAccessException ex) {
                 log.debug("Failed to increment comment delta. postId={}", postId, ex);
             }
-            notificationService.publishPostCommentNotification(memberId, postId);
+            notificationService.publishPostCommentNotification(memberId, postId, saved.getId());
             return CommentResponse.of(saved);
         } catch (DataIntegrityViolationException ex) {
             throw new BusinessException(CommonErrorCode.INVALID_RELATION);
