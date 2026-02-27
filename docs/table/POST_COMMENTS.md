@@ -20,11 +20,12 @@ No | 컬럼 | 타입 | 제약 | 설명
 4 | content | VARCHAR(200) | nn | 댓글 본문
 5 | created_at | DATETIME | nn | 작성일
 6 | updated_at | DATETIME | nn | 수정일
+7 | deleted_at | DATETIME |  | 삭제일(소프트 삭제)
 
 ## 5) 인덱스/제약
-- `idx_post_comments_post_created (post_id, created_at)`
 - `idx_post_comments_member (member_id)`
+- `idx_post_comments_post_deleted_created (post_id, deleted_at, created_at)`
 
 ## 6) 운영 정책
-- 삭제 시 하드 삭제, 게시글 삭제 시 일괄 삭제
-- 삭제 시 게시글의 comment_count를 감소
+- 삭제 시 소프트 삭제, 게시글 삭제 시 일괄 소프트 삭제
+- comment_count 집계는 비동기 배치로 반영

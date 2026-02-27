@@ -6,8 +6,8 @@ import katopia.fitcheck.global.exception.code.AuthErrorCode;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.security.jwt.JwtProvider;
 import katopia.fitcheck.global.security.jwt.JwtProvider.TokenPair;
-import katopia.fitcheck.repository.member.MemberRepository;
 import katopia.fitcheck.domain.member.AccountStatus;
+import katopia.fitcheck.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class AuthTokenService {
             throw new AuthException(AuthErrorCode.INVALID_RT);
         }
 
-        String tokenHash = refreshTokenService.hash(refreshToken);
+        String tokenHash = RefreshTokenHashSupport.hash(refreshToken);
         var tokenEntity = refreshTokenService.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_RT));
 

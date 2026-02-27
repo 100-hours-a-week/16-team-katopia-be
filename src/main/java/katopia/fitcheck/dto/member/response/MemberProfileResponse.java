@@ -1,22 +1,31 @@
 package katopia.fitcheck.dto.member.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import katopia.fitcheck.domain.member.Member;
+import katopia.fitcheck.global.docs.Docs;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
 
 @Builder
 public record MemberProfileResponse(
+    @Schema(description = Docs.ID_DES, example = "1")
     Long id,
+    @Schema(description = Docs.FOLLOWING_STATUS, example = "false")
+    boolean isFollowing,
+    @Schema(description = Docs.PROFILE_DES)
     MemberProfile profile,
+    @Schema(description = Docs.AGGREGATE_DES)
     MemberAggregate aggregate,
+    @Schema(description = Docs.UPDATED_AT_DES, example = Docs.TIMESTAMP)
     LocalDateTime updatedAt
 ) {
-    public static MemberProfileResponse of(Member member) {
+    public static MemberProfileResponse of(Member member, boolean isFollowing) {
         return MemberProfileResponse.builder()
                 .id(member.getId())
+                .isFollowing(isFollowing)
                 .profile(MemberProfile.of(member))
-                .aggregate(null) // TODO(v2): 프로필 조회 페이지 집계 섹션 추가
+                .aggregate(member.getAggregate())
                 .updatedAt(member.getUpdatedAt())
                 .build();
     }

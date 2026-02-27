@@ -10,6 +10,7 @@ import katopia.fitcheck.dto.member.response.NicknameCheckResponse;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.repository.member.MemberRepository;
+import katopia.fitcheck.repository.member.MemberFollowRepository;
 import katopia.fitcheck.service.member.MemberProfileInputResolver.ResolvedProfile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,14 @@ public class MemberProfileService {
     private final MemberRepository memberRepository;
     private final MemberFinder memberFinder;
     private final MemberProfileInputResolver profileInputResolver;
+    private final MemberFollowRepository memberFollowRepository;
 
     @Transactional(readOnly = true)
-    public MemberProfileResponse getProfile(Long memberId) {
+    public MemberProfileResponse getProfile(Long memberId, Long requesterId) {
         Member member = memberFinder.findPublicProfileByIdOrThrow(memberId);
-        return MemberProfileResponse.of(member);
+        boolean isFollowing = requesterId != null
+                && memberFollowRepository.existsByFollowerIdAndFollowedId(requesterId, memberId);
+        return MemberProfileResponse.of(member, isFollowing);
     }
 
     @Transactional(readOnly = true)

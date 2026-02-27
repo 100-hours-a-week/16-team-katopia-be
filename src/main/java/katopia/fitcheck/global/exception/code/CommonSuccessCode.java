@@ -8,7 +8,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum CommonSuccessCode implements ResponseCode {
     SEARCH_COMPLETED(HttpStatus.OK, "COMMON-S-001", "검색을 완료했습니다."),
-    PRESIGN_ISSUED(HttpStatus.OK, "COMMON-S-002", "업로드 URL 발급을 완료했습니다.");
+    PRESIGN_ISSUED(HttpStatus.OK, "COMMON-S-002", "업로드 URL 발급을 완료했습니다."),
+    DUMMY_CREATED(HttpStatus.OK, "COMMON-S-003", "더미 계정 생성을 완료했습니다.");
 
     private final HttpStatus status;
     private final String code;

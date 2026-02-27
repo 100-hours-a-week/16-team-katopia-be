@@ -4,9 +4,11 @@ import katopia.fitcheck.controller.spec.PostApiSpec;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.PostLikeSuccessCode;
 import katopia.fitcheck.global.exception.code.PostSuccessCode;
+import katopia.fitcheck.global.exception.code.PostBookmarkSuccessCode;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
 import katopia.fitcheck.dto.post.request.PostCreateRequest;
+import katopia.fitcheck.dto.post.response.PostBookmarkResponse;
 import katopia.fitcheck.dto.post.response.PostCreateResponse;
 import katopia.fitcheck.dto.post.response.PostDetailResponse;
 import katopia.fitcheck.dto.post.response.PostLikeResponse;
@@ -126,5 +128,27 @@ public class PostController implements PostApiSpec {
         postService.unlike(memberId, id);
 
         return APIResponse.noContent(PostLikeSuccessCode.POST_UNLIKED);
+    }
+
+    @PostMapping("/{id}/bookmarks")
+    @Override
+    public ResponseEntity<APIResponse<PostBookmarkResponse>> bookmarkPost(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable("id") Long id
+    ) {
+        Long memberId = securitySupport.requireMemberId(principal);
+        PostBookmarkResponse body = postService.bookmark(memberId, id);
+        return APIResponse.ok(PostBookmarkSuccessCode.POST_BOOKMARKED, body);
+    }
+
+    @DeleteMapping("/{id}/bookmarks")
+    @Override
+    public ResponseEntity<Void> unbookmarkPost(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable("id") Long id
+    ) {
+        Long memberId = securitySupport.requireMemberId(principal);
+        postService.unbookmark(memberId, id);
+        return APIResponse.noContent(PostBookmarkSuccessCode.POST_UNBOOKMARKED);
     }
 }

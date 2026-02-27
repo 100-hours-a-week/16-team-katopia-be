@@ -65,6 +65,7 @@ public class SecurityConfig {
                         ).permitAll();
                     }
                     if (allowDevOnly) {
+                        auth.requestMatchers("/api/dev/**").permitAll();
                     }
                     // 공개 API { 사용자 공개 프로필, 닉네임 중복 검증 }
                     auth.requestMatchers(HttpMethod.GET, "/api/members/check").permitAll();
@@ -75,6 +76,7 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/members/me").authenticated();
                     auth.requestMatchers(HttpMethod.POST, "/api/auth/tokens").permitAll();   // RTR
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/auth/tokens").permitAll(); // 로그아웃
                     auth.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth -> oauth

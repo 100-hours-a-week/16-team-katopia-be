@@ -22,44 +22,44 @@ class PostContentValidatorTest {
     }
 
     @Test
-    @DisplayName("TC-POST-CONTENT-01 본문 누락(null) 실패")
-    void tcPostContent01_nullContent_returnsRequired() {
+    @DisplayName("TC-POST-CONTENT-S-01 본문 유효성 성공")
+    void tcPostContentS01_validContent_isValid() {
+        Set<ConstraintViolation<PostContentRequest>> violations = validator.validate(new PostContentRequest("valid"));
+
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    @DisplayName("TC-POST-CONTENT-F-01 본문 누락(null) 실패")
+    void tcPostContentF01_nullContent_returnsRequired() {
         Set<ConstraintViolation<PostContentRequest>> violations = validator.validate(new PostContentRequest(null));
 
         assertSingleViolationWithMessage(violations, PostErrorCode.CONTENT_REQUIRED.getCode());
     }
 
     @Test
-    @DisplayName("TC-POST-CONTENT-02 본문 누락(빈 문자열) 실패")
-    void tcPostContent02_emptyContent_returnsRequired() {
+    @DisplayName("TC-POST-CONTENT-F-02 본문 누락(빈 문자열) 실패")
+    void tcPostContentF02_emptyContent_returnsRequired() {
         Set<ConstraintViolation<PostContentRequest>> violations = validator.validate(new PostContentRequest(""));
 
         assertSingleViolationWithMessage(violations, PostErrorCode.CONTENT_REQUIRED.getCode());
     }
 
     @Test
-    @DisplayName("TC-POST-CONTENT-03 본문 공백만 실패")
-    void tcPostContent03_blankContent_returnsRequired() {
+    @DisplayName("TC-POST-CONTENT-F-03 본문 공백만 실패")
+    void tcPostContentF03_blankContent_returnsRequired() {
         Set<ConstraintViolation<PostContentRequest>> violations = validator.validate(new PostContentRequest("   "));
 
         assertSingleViolationWithMessage(violations, PostErrorCode.CONTENT_REQUIRED.getCode());
     }
 
     @Test
-    @DisplayName("TC-POST-CONTENT-04 본문 길이 초과 실패")
-    void tcPostContent04_tooLongContent_returnsTooLong() {
+    @DisplayName("TC-POST-CONTENT-F-04 본문 길이 초과 실패")
+    void tcPostContentF04_tooLongContent_returnsTooLong() {
         String content = "a".repeat(201);
         Set<ConstraintViolation<PostContentRequest>> violations = validator.validate(new PostContentRequest(content));
 
         assertSingleViolationWithMessage(violations, PostErrorCode.CONTENT_TOO_LONG.getCode());
-    }
-
-    @Test
-    @DisplayName("TC-POST-CONTENT-05 본문 유효성 성공")
-    void tcPostContent05_validContent_isValid() {
-        Set<ConstraintViolation<PostContentRequest>> violations = validator.validate(new PostContentRequest("valid"));
-
-        assertThat(violations).isEmpty();
     }
 
     private void assertSingleViolationWithMessage(Set<? extends ConstraintViolation<?>> violations, String message) {

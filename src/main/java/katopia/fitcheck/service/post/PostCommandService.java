@@ -11,10 +11,13 @@ import katopia.fitcheck.dto.post.response.PostCreateResponse;
 import katopia.fitcheck.dto.post.request.PostUpdateRequest;
 import katopia.fitcheck.dto.post.response.PostUpdateResponse;
 import katopia.fitcheck.repository.comment.CommentRepository;
+import katopia.fitcheck.repository.member.MemberRepository;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
+import katopia.fitcheck.repository.post.PostBookmarkRepository;
 import katopia.fitcheck.repository.post.PostTagRepository;
 import katopia.fitcheck.repository.post.TagRepository;
+import katopia.fitcheck.service.notification.NotificationCommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,10 +37,13 @@ public class PostCommandService {
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostBookmarkRepository postBookmarkRepository;
     private final CommentRepository commentRepository;
+    private final MemberRepository memberRepository;
     private final PostValidator postValidator;
     private final MemberFinder memberFinder;
     private final PostFinder postFinder;
+    private final NotificationCommandService notificationCommandService;
 
     @Transactional
     public PostCreateResponse create(Long memberId, PostCreateRequest request) {
@@ -52,6 +58,8 @@ public class PostCommandService {
         post.replaceTags(buildPostTags(post, tagEntities));
 
         Post saved = postRepository.save(post);
+        memberRepository.incrementPostCount(memberId);
+        notificationCommandService.publishPostCreatedNotification(memberId, saved.getId());
         return PostCreateResponse.of(saved, tagEntities);
     }
 
@@ -73,8 +81,10 @@ public class PostCommandService {
     public void delete(Long memberId, Long postId) {
         Post post = postFinder.findByIdOrThrow(postId);
         postValidator.validateOwner(post, memberId);
+        memberRepository.decrementPostCount(memberId);
         commentRepository.deleteByPostId(postId);
         postLikeRepository.deleteByPostId(postId);
+        postBookmarkRepository.deleteByPostId(postId);
         postTagRepository.deleteByPostId(postId);
         postRepository.delete(post);
     }
@@ -123,13 +133,9 @@ public class PostCommandService {
         }
         List<String> normalized = tags.stream().map(String::trim).toList();
         List<Tag> existing = tagRepository.findByNameIn(normalized);
-        Set<String> existingNames = existing.stream()
-                .map(Tag::getName)
-                .collect(Collectors.toSet());
-        List<Tag> toSave = normalized.stream()
-                .filter(name -> !existingNames.contains(name))
-                .distinct()
-                .map(Tag::of).toList();
+        Set<String> existingNames = existing.stream().map(Tag::getName).collect(Collectors.toSet());
+        List<Tag> toSave = normalized.stream().filter(name -> !existingNames.contains(name))
+                .distinct().map(Tag::of).toList();
         if (!toSave.isEmpty()) {
             existing = new ArrayList<>(existing);
             existing.addAll(tagRepository.saveAll(toSave));

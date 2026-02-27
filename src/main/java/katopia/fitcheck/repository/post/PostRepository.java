@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -97,9 +98,26 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     int decrementCommentCount(@Param("id") Long id);
 
     @Query("""
+            update Post p
+            set p.commentCount =
+                case
+                    when p.commentCount + :delta < 0 then 0
+                    else p.commentCount + :delta
+                end
+            where p.id = :id
+            """)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    int applyCommentCountDelta(@Param("id") Long id, @Param("delta") long delta);
+
+    @Query("""
             select p.id from Post p where p.member.id = :memberId
             """)
     List<Long> findIdsByMemberId(@Param("memberId") Long memberId);
+
+    @Query("""
+            select p.member.id from Post p where p.id = :postId
+            """)
+    java.util.Optional<Long> findMemberIdByPostId(@Param("postId") Long postId);
 
     @Query("""
             select p from Post p
@@ -254,4 +272,49 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("status") String status,
             @Param("size") int size
     );
+
+    @Query("""
+            select p.id from Post p
+            join p.member m
+            where m.accountStatus = :status
+              and m.id in :memberIds
+            order by p.createdAt desc, p.id desc
+            """)
+    List<Long> findFeedPostIdsLatest(
+            @Param("memberIds") List<Long> memberIds,
+            @Param("status") AccountStatus status,
+            Pageable pageable
+    );
+
+    @Query("""
+            select p.id from Post p
+            join p.member m
+            where m.accountStatus = :status
+              and m.id in :memberIds
+              and ((p.createdAt < :createdAt) or (p.createdAt = :createdAt and p.id < :id))
+            order by p.createdAt desc, p.id desc
+            """)
+    List<Long> findFeedPostIdsPageAfter(
+            @Param("memberIds") List<Long> memberIds,
+            @Param("status") AccountStatus status,
+            @Param("createdAt") LocalDateTime createdAt,
+            @Param("id") Long id,
+            Pageable pageable
+    );
+
+    @Query("""
+            select distinct p from Post p
+            join fetch p.member m
+            left join fetch p.images i
+            where p.id in :postIds
+            """)
+    List<Post> findFeedDetailsByPostIds(@Param("postIds") Set<Long> postIds);
+
+    @Query(value = """
+            select i.image_object_key
+            from post_images i
+            where i.post_id = :postId
+              and i.sort_order = 1
+            """, nativeQuery = true)
+    Optional<String> findThumbnailImageObjectKeyByPostId(@Param("postId") Long postId);
 }

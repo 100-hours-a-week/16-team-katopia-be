@@ -1,15 +1,18 @@
 package katopia.fitcheck.service.search;
 
+import katopia.fitcheck.global.aop.SearchLog;
 import katopia.fitcheck.global.pagination.CursorPagingHelper;
 import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Member;
 import katopia.fitcheck.repository.member.MemberRepository;
+import katopia.fitcheck.repository.member.MemberFollowRepository;
 import katopia.fitcheck.dto.post.response.PostSummary;
 import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.repository.post.PostSummaryProjection;
 import katopia.fitcheck.dto.search.PostSearchResponse;
 import katopia.fitcheck.dto.search.MemberSearchResponse;
-import katopia.fitcheck.dto.search.MemberSummary;
+import katopia.fitcheck.dto.search.MemberSearchSummary;
+import katopia.fitcheck.global.policy.Policy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,41 +26,40 @@ import java.util.List;
 public class SearchService {
 
     private final MemberRepository memberRepository;
+    private final MemberFollowRepository memberFollowRepository;
     private final PostRepository postRepository;
     private final SearchValidator searchValidator;
-    private static final int MAX_FULLTEXT_QUERY_LENGTH = 200;
-
     @Transactional(readOnly = true)
     @katopia.fitcheck.global.aop.SearchLog("users")
     public MemberSearchResponse searchUsers(
+                                          Long requesterId,
                                           String query,
                                           String sizeValue,
                                           String after) {
         String keyword = LikeEscapeHelper.escape(searchValidator.requireQuery(query));
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<Member> members = loadUsers(keyword, size, after);
-        List<MemberSummary> summaries = members.stream()
-                .map(MemberSummary::of)
-                .toList();
-        String nextCursor = resolveNextCursor(members, size);
+        List<Long> targetIds = members.stream().map(Member::getId).toList();
+        List<MemberSearchSummary> summaries = toMemberSummaries(requesterId, members, targetIds);
+        String nextCursor = CursorPagingHelper.resolveNextCursor(members, size, Member::getCreatedAt, Member::getId);
         return MemberSearchResponse.of(summaries, nextCursor);
     }
 
     @Transactional(readOnly = true)
-    @katopia.fitcheck.global.aop.SearchLog("posts")
+    @SearchLog("posts")
     public PostSearchResponse searchPosts(String query,
                                           String sizeValue,
                                           String after) {
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<PostSummary> summaries = loadPostSummaries(query, size, after);
-        String nextCursor = resolveNextCursor(summaries, size);
+        String nextCursor = CursorPagingHelper.resolveNextCursor(summaries, size, PostSummary::createdAt, PostSummary::id);
         return PostSearchResponse.of(summaries, nextCursor);
     }
 
     @Transactional(readOnly = true)
-    @katopia.fitcheck.global.aop.SearchLog("posts-fulltext")
+    @SearchLog("posts-fulltext")
     public PostSearchResponse searchPostsFulltext(String query, String sizeValue) {
-        String keyword = searchValidator.requireQuery(query, MAX_FULLTEXT_QUERY_LENGTH);
+        String keyword = searchValidator.requireQuery(query, Policy.SEARCH_MAX_FULLTEXT_QUERY_LENGTH);
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         List<PostSummaryProjection> posts = postRepository.searchLatestByContentFulltextSummary(
                 keyword,
@@ -89,6 +91,21 @@ public class SearchService {
         );
     }
 
+    private List<MemberSearchSummary> toMemberSummaries(Long requesterId, List<Member> members, List<Long> targetIds) {
+        if (members.isEmpty()) {
+            return List.of();
+        }
+        if (requesterId == null) {
+            return members.stream()
+                    .map(member -> MemberSearchSummary.of(member, false))
+                    .toList();
+        }
+        var followedIds = memberFollowRepository.findFollowedIds(requesterId, targetIds);
+        return members.stream()
+                .map(member -> MemberSearchSummary.of(member, followedIds.contains(member.getId())))
+                .toList();
+    }
+
     private List<PostSummary> loadPostSummaries(String query, int size, String after) {
         boolean tagOnly = query.startsWith("#");
         String keyword = tagOnly ? query.substring(1).trim() : query;
@@ -108,25 +125,7 @@ public class SearchService {
         return posts.stream().map(this::toSummary).toList();
     }
 
-    private <T> String resolveNextCursor(List<T> items, int size) {
-        if (items.isEmpty() || items.size() < size) {
-            return null;
-        }
-        Object last = items.getLast();
-        if (last instanceof PostSummary summary) {
-            return CursorPagingHelper.encodeCursor(summary.createdAt(), summary.id());
-        }
-        if (last instanceof Member member) {
-            return CursorPagingHelper.encodeCursor(member.getCreatedAt(), member.getId());
-        }
-        return null;
-    }
-
     private PostSummary toSummary(PostSummaryProjection row) {
-        return PostSummary.builder()
-                .id(row.getId())
-                .imageObjectKey(row.getImageObjectKey())
-                .createdAt(row.getCreatedAt())
-                .build();
+        return PostSummary.of(row.getId(), row.getImageObjectKey(), row.getCreatedAt());
     }
 }

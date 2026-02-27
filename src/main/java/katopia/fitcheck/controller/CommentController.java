@@ -3,6 +3,7 @@ package katopia.fitcheck.controller;
 import katopia.fitcheck.dto.comment.request.CommentRequest;
 import katopia.fitcheck.dto.comment.response.CommentResponse;
 import katopia.fitcheck.dto.comment.response.CommentListResponse;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.service.comment.CommentService;
 import katopia.fitcheck.controller.spec.CommentApiSpec;
 import katopia.fitcheck.global.APIResponse;
@@ -49,8 +50,8 @@ public class CommentController implements CommentApiSpec {
     @Override
     public ResponseEntity<APIResponse<CommentListResponse>> listComments(
             @PathVariable("postId") Long postId,
-            @RequestParam(value = "size", required = false) String size,
-            @RequestParam(value = "after", required = false) String after
+            @RequestParam(value = Policy.PAGE_VALUE, required = false) String size,
+            @RequestParam(value = Policy.CURSOR_VALUE, required = false) String after
     ) {
         CommentListResponse body = commentService.list(postId, size, after);
 

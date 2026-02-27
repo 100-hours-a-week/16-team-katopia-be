@@ -8,6 +8,7 @@ import katopia.fitcheck.global.exception.code.CommonErrorCode;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
 import katopia.fitcheck.global.exception.code.PostErrorCode;
 import katopia.fitcheck.global.exception.code.ResponseCode;
+import katopia.fitcheck.global.exception.code.VoteErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -17,6 +18,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.HashMap;
@@ -34,6 +36,7 @@ public class GlobalExceptionHandler {
         registerCodes(PostErrorCode.values());
         registerCodes(CommentErrorCode.values());
         registerCodes(AuthErrorCode.values());
+        registerCodes(VoteErrorCode.values());
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
@@ -82,6 +85,11 @@ public class GlobalExceptionHandler {
                 .map(ConstraintViolation::getMessage)
                 .orElse(null);
         return buildValidationResponse(message);
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleAsyncRequestNotUsable(AsyncRequestNotUsableException ex) {
+        log.debug("Async request closed by client: {}", ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

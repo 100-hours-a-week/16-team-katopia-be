@@ -5,6 +5,7 @@ import katopia.fitcheck.domain.member.AccountStatus;
 import katopia.fitcheck.domain.member.Member;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,6 +19,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByNickname(String nickname);
 
     boolean existsByIdAndAccountStatus(Long memberId, AccountStatus status);
+
+    Optional<Member> findByIdAndAccountStatus(Long memberId, AccountStatus status);
 
     @Query("""
             select m from Member m
@@ -45,4 +48,85 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             @Param("id") Long id,
             Pageable pageable
     );
+
+    @Query("""
+            select m from Member m
+            where m.accountStatus = :status
+              and m.id in :ids
+            order by m.createdAt desc, m.id desc
+            """)
+    List<Member> findActiveByIdsOrderByLatest(
+            @Param("status") AccountStatus status,
+            @Param("ids") List<Long> ids
+    );
+
+    @Query("""
+            select m from Member m
+            where m.accountStatus = :status
+              and (:excludeEmpty = true or m.id not in :excludeIds)
+            order by m.createdAt desc, m.id desc
+            """)
+    List<Member> findLatestActive(
+            @Param("status") AccountStatus status,
+            @Param("excludeEmpty") boolean excludeEmpty,
+            @Param("excludeIds") List<Long> excludeIds,
+            Pageable pageable
+    );
+
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Member m
+            set m.postCount = m.postCount + 1
+            where m.id = :memberId
+            """)
+    int incrementPostCount(@Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Member m
+            set m.postCount = case when m.postCount > 0 then m.postCount - 1 else 0 end
+            where m.id = :memberId
+            """)
+    int decrementPostCount(@Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Member m
+            set m.followingCount = m.followingCount + 1
+            where m.id = :memberId
+            """)
+    int incrementFollowingCount(@Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Member m
+            set m.followingCount = case when m.followingCount > 0 then m.followingCount - 1 else 0 end
+            where m.id = :memberId
+            """)
+    int decrementFollowingCount(@Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Member m
+            set m.followerCount = m.followerCount + 1
+            where m.id = :memberId
+            """)
+    int incrementFollowerCount(@Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Member m
+            set m.followerCount = m.followerCount + :delta
+            where m.id = :memberId
+            """)
+    int incrementFollowerCountBy(@Param("memberId") Long memberId, @Param("delta") long delta);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Member m
+            set m.followerCount = case when m.followerCount > 0 then m.followerCount - 1 else 0 end
+            where m.id = :memberId
+            """)
+    int decrementFollowerCount(@Param("memberId") Long memberId);
 }

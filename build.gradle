@@ -105,6 +105,7 @@ tasks.named('test') {
 
 spotbugs {
     ignoreFailures = true
+    excludeFilter = file("config/spotbugs/excludeFilter.xml")
 }
 
 jacoco {

@@ -3,6 +3,8 @@ package katopia.fitcheck.global.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import katopia.fitcheck.global.exception.code.PostErrorCode;
+import katopia.fitcheck.global.exception.code.VoteErrorCode;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.service.s3.UploadCategory;
 import org.springframework.util.StringUtils;
 
@@ -18,16 +20,24 @@ public class ImageObjectKeysValidator implements ConstraintValidator<ImageObject
 
     @Override
     public boolean isValid(List<String> value, ConstraintValidatorContext context) {
-        if (value == null || value.isEmpty() || value.size() > category.getMaxCount()) {
-            ValidationSupport.addViolation(context, PostErrorCode.IMAGE_COUNT_INVALID.getCode());
+        int minCount = (category == UploadCategory.VOTE) ? Policy.VOTE_IMAGE_MIN_COUNT : 1;
+        if (value == null || value.size() < minCount || value.size() > category.getMaxCount()) {
+            ValidationSupport.addViolation(context, resolveErrorCode());
             return false;
         }
         for (String url : value) {
             if (!StringUtils.hasText(url)) {
-                ValidationSupport.addViolation(context, PostErrorCode.IMAGE_COUNT_INVALID.getCode());
+                ValidationSupport.addViolation(context, resolveErrorCode());
                 return false;
             }
         }
         return true;
+    }
+
+    private String resolveErrorCode() {
+        if (category == UploadCategory.VOTE) {
+            return VoteErrorCode.IMAGE_COUNT_INVALID.getCode();
+        }
+        return PostErrorCode.IMAGE_COUNT_INVALID.getCode();
     }
 }

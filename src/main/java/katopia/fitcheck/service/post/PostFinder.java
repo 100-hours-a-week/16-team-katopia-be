@@ -34,4 +34,13 @@ public class PostFinder {
     public Post getReferenceById(Long postId) {
         return postRepository.getReferenceById(postId);
     }
+
+    public Long findMemberIdByPostIdOrThrow(Long postId) {
+        return postRepository.findMemberIdByPostId(postId)
+                .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
+    }
+
+    public String findThumbnailImageObjectKey(Long postId) {
+        return postRepository.findThumbnailImageObjectKeyByPostId(postId).orElse(null);
+    }
 }

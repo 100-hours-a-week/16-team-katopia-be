@@ -9,6 +9,7 @@ import katopia.fitcheck.domain.post.PostLike;
 import katopia.fitcheck.dto.post.response.PostLikeResponse;
 import katopia.fitcheck.repository.post.PostLikeRepository;
 import katopia.fitcheck.repository.post.PostRepository;
+import katopia.fitcheck.service.notification.NotificationCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class PostLikeService {
     private final PostRepository postRepository;
     private final MemberFinder memberFinder;
     private final PostFinder postFinder;
+    private final NotificationCommandService notificationService;
 
     @Transactional
     public PostLikeResponse like(Long memberId, Long postId) {
@@ -33,8 +35,9 @@ public class PostLikeService {
         PostLike like = PostLike.of(member, post);
         postLikeRepository.save(like);
         postRepository.incrementLikeCount(postId);
+        notificationService.publishPostLikeNotification(memberId, postId);
         long likeCount = resolveLikeCount(postId);
-        return new PostLikeResponse(post.getId(), likeCount);
+        return PostLikeResponse.of(post.getId(), likeCount);
     }
 
     @Transactional

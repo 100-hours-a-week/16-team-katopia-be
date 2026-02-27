@@ -14,6 +14,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import katopia.fitcheck.dto.member.request.MemberSignupRequest;
+import katopia.fitcheck.dto.member.response.MemberAggregate;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.global.security.oauth2.SocialProvider;
 import katopia.fitcheck.dto.member.request.MemberProfileUpdate;
 import lombok.AccessLevel;
@@ -50,7 +52,7 @@ public class Member {
     @Column(length = 320)
     private String email;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = Policy.NICKNAME_MAX_LENGTH, nullable = false)
     private String nickname;
 
     @Enumerated(EnumType.STRING)
@@ -60,7 +62,7 @@ public class Member {
     @Column(name = "oauth2_user_id", nullable = false)
     private String oauth2UserId;
 
-    @Column(name = "profile_image_object_key", length = 1024)
+    @Column(name = "profile_image_object_key", length = Policy.IMAGE_OBJECT_KEY_MAX_LENGTH)
     private String profileImageObjectKey;
 
     @Enumerated(EnumType.STRING)
@@ -75,6 +77,15 @@ public class Member {
 
     @Column(name = "enable_realtime_notification", nullable = false)
     private boolean enableRealtimeNotification;
+
+    @Column(name = "post_count", nullable = false)
+    private long postCount;
+
+    @Column(name = "following_count", nullable = false)
+    private long followingCount;
+
+    @Column(name = "follower_count", nullable = false)
+    private long followerCount;
 
     @ElementCollection(fetch = FetchType.LAZY, targetClass = StyleType.class)
     @CollectionTable(name = "member_styles", joinColumns = @JoinColumn(name = "member_id"))
@@ -111,6 +122,9 @@ public class Member {
                    Short height,
                    Short weight,
                    boolean enableRealtimeNotification,
+                   long postCount,
+                   long followingCount,
+                   long followerCount,
                    Set<StyleType> styles,
                    LocalDateTime deletedAt,
                    LocalDateTime termsAgreedAt,
@@ -125,6 +139,9 @@ public class Member {
         this.height = height;
         this.weight = weight;
         this.enableRealtimeNotification = enableRealtimeNotification;
+        this.postCount = Math.max(0, postCount);
+        this.followingCount = Math.max(0, followingCount);
+        this.followerCount = Math.max(0, followerCount);
         if (styles != null) {
             this.styles.addAll(styles);
         }
@@ -144,6 +161,9 @@ public class Member {
                 .nickname(nickname)
                 .email(email)
                 .enableRealtimeNotification(false)
+                .postCount(0)
+                .followingCount(0)
+                .followerCount(0)
                 .styles(Set.of())
                 .accountStatus(AccountStatus.PENDING)
                 .build();
@@ -223,5 +243,9 @@ public class Member {
             this.styles.clear();
             this.styles.addAll(update.styles());
         }
+    }
+
+    public MemberAggregate getAggregate() {
+        return new MemberAggregate(postCount, followingCount, followerCount);
     }
 }
