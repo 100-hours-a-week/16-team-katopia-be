@@ -5,13 +5,14 @@ FROM amazoncorretto:21-alpine
 WORKDIR /app
 
 # 1. 보안: root 사용자 대신 전용 유저 생성
-RUN addgroup --system spring && adduser --system --group spring
+RUN addgroup -S spring && adduser -S -G spring spring
 USER spring:spring
 
 # JAR 레이어 복사
 COPY jar-layers/dependencies/ .
 COPY jar-layers/spring-boot-loader/ ./
-COPY jar-layers/snapshot-dependencies/ ./
+# snapshot-dependencies는 SNAPSHOT 의존성이 없으면 폴더가 생성되지 않으므로 조건부 복사
+COPY jar-layers/snapshot-dependencies* ./
 COPY jar-layers/application/ ./
 
 # 3. 포트 노출

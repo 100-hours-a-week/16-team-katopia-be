@@ -63,6 +63,15 @@ jobs:
           mkdir -p jar-layers
           cd jar-layers
           java -Djarmode=layertools -jar $(ls ../build/libs/*.jar | grep -v plain) extract
+          # snapshot-dependencies가 없으면 artifact 업로드에서 누락되므로 빈 폴더 대신 더미 파일로 보장
+          [ -d snapshot-dependencies ] || (mkdir -p snapshot-dependencies && touch snapshot-dependencies/.keep)
+
+      - name: Upload JAR layers
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-layers
+          path: jar-layers/
+          retention-days: 1
 
   build-and-push:
     name: Docker Build + Push(ECR)
@@ -76,6 +85,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: '1'
+
+      - name: Download JAR layers
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-layers
+          path: jar-layers/
 
       - name: Configure AWS Credential
         id: configure_aws_credential
@@ -100,7 +115,7 @@ jobs:
           docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$TAG" -t "$ECR_REGISTRY/$ECR_REPOSITORY:prod-backend" .
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$TAG"
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:prod-backend"
-      
+
   refresh-asg:
     name: CD - ASG Instance Refresh
     runs-on: ubuntu-latest
