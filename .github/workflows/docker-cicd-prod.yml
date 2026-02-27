@@ -1,5 +1,4 @@
 name: docker-cicd-prod - Spring
-
 on:
   push:
     branches: ["main"]
@@ -15,7 +14,6 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY: ${{ secrets.PROD_ECR_REPOSITORY }}
   ASG_NAME: ${{ secrets.PROD_ASG_NAME }}
-  LAUNCH_TEMPLATE_ID: ${{ secrets.PROD_LAUNCH_TEMPLATE_ID }}
   MIN_HEALTHY_PERCENTAGE: "100"
   INSTANCE_WARMUP: "180"
 
@@ -65,7 +63,6 @@ jobs:
           mkdir -p jar-layers
           cd jar-layers
           java -Djarmode=layertools -jar $(ls ../build/libs/*.jar | grep -v plain) extract
-          mkdir -p snapshot-dependencies
 
       - name: Upload JAR layers
         uses: actions/upload-artifact@v4
@@ -93,9 +90,6 @@ jobs:
           name: jar-layers
           path: jar-layers/
 
-      - name: Ensure snapshot-dependencies exists
-        run: mkdir -p jar-layers/snapshot-dependencies
-
       - name: Configure AWS Credential
         id: configure_aws_credential
         uses: aws-actions/configure-aws-credentials@v4
@@ -119,7 +113,7 @@ jobs:
           docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$TAG" -t "$ECR_REGISTRY/$ECR_REPOSITORY:prod-backend" .
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$TAG"
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:prod-backend"
-      
+
   refresh-asg:
     name: CD - ASG Instance Refresh
     runs-on: ubuntu-latest
@@ -142,5 +136,4 @@ jobs:
           aws autoscaling start-instance-refresh \
             --auto-scaling-group-name "$ASG_NAME" \
             --strategy Rolling \
-            --desired-configuration "LaunchTemplate={LaunchTemplateId=$LAUNCH_TEMPLATE_ID,Version=\$Latest}" \
             --preferences MinHealthyPercentage=$MIN_HEALTHY_PERCENTAGE,InstanceWarmup=$INSTANCE_WARMUP
