@@ -1,5 +1,7 @@
 package katopia.fitcheck.repository.vote;
 
+import java.util.List;
+
 import katopia.fitcheck.domain.vote.VoteParticipation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,4 +15,7 @@ public interface VoteParticipationRepository extends JpaRepository<VoteParticipa
     @Modifying
     @Query("delete from VoteParticipation vp where vp.vote.id = :voteId")
     void deleteByVoteId(@Param("voteId") Long voteId);
+
+    @Query("select vp.member.id from VoteParticipation vp where vp.vote.id = :voteId")
+    List<Long> findParticipantMemberIdsByVoteId(@Param("voteId") Long voteId);
 }

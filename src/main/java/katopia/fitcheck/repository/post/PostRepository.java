@@ -309,4 +309,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             where p.id in :postIds
             """)
     List<Post> findFeedDetailsByPostIds(@Param("postIds") Set<Long> postIds);
+
+    @Query(value = """
+            select i.image_object_key
+            from post_images i
+            where i.post_id = :postId
+              and i.sort_order = 1
+            """, nativeQuery = true)
+    Optional<String> findThumbnailImageObjectKeyByPostId(@Param("postId") Long postId);
 }

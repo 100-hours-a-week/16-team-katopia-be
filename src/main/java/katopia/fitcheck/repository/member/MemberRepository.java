@@ -117,6 +117,14 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             update Member m
+            set m.followerCount = m.followerCount + :delta
+            where m.id = :memberId
+            """)
+    int incrementFollowerCountBy(@Param("memberId") Long memberId, @Param("delta") long delta);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Member m
             set m.followerCount = case when m.followerCount > 0 then m.followerCount - 1 else 0 end
             where m.id = :memberId
             """)

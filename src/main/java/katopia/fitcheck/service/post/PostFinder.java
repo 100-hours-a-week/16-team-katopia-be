@@ -39,4 +39,8 @@ public class PostFinder {
         return postRepository.findMemberIdByPostId(postId)
                 .orElseThrow(() -> new BusinessException(PostErrorCode.POST_NOT_FOUND));
     }
+
+    public String findThumbnailImageObjectKey(Long postId) {
+        return postRepository.findThumbnailImageObjectKeyByPostId(postId).orElse(null);
+    }
 }

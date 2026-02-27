@@ -88,7 +88,7 @@ class CommentCommandServiceTest {
 
         assertThat(response.content()).isEqualTo("hi");
         verify(commentRepository).save(any());
-        verify(notificationService).publishPostCommentNotification(eq(COMMENTER_ID), eq(POST_ID));
+        verify(notificationService).publishPostCommentNotification(eq(COMMENTER_ID), eq(POST_ID), eq(COMMENT_ID));
         verify(commentCountDeltaService).increase(eq(POST_ID));
     }
 
@@ -110,7 +110,7 @@ class CommentCommandServiceTest {
 
         commentCommandService.create(COMMENTER_ID, POST_ID, new CommentRequest("hi"));
 
-        verify(notificationService).publishPostCommentNotification(eq(COMMENTER_ID), eq(POST_ID));
+        verify(notificationService).publishPostCommentNotification(eq(COMMENTER_ID), eq(POST_ID), eq(COMMENT_ID));
         verify(commentCountDeltaService).increase(eq(POST_ID));
     }
 

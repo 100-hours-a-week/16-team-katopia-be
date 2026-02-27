@@ -58,8 +58,8 @@ class MemberFollowServiceTest {
                 .followerCount(2L)
                 .followingCount(3L)
                 .build();
-        when(memberFinder.findActiveByIdOrThrow(1L)).thenReturn(follower);
-        when(memberFinder.findActiveByIdOrThrow(2L)).thenReturn(followed);
+        when(memberFinder.getReferenceById(1L)).thenReturn(follower);
+        when(memberFinder.getReferenceById(2L)).thenReturn(followed);
         Member updatedTarget = MemberTestFactory.builder(2L, "target")
                 .accountStatus(AccountStatus.ACTIVE)
                 .followerCount(3L)
@@ -162,8 +162,8 @@ class MemberFollowServiceTest {
     void tcMemberFollowF02_alreadyFollowing_throws() {
         Member follower = activeMember(1L, "follower");
         Member followed = activeMember(2L, "followed");
-        when(memberFinder.findActiveByIdOrThrow(1L)).thenReturn(follower);
-        when(memberFinder.findActiveByIdOrThrow(2L)).thenReturn(followed);
+        when(memberFinder.getReferenceById(1L)).thenReturn(follower);
+        when(memberFinder.getReferenceById(2L)).thenReturn(followed);
         when(memberFollowRepository.existsByFollowerIdAndFollowedId(1L, 2L)).thenReturn(true);
 
         assertThatThrownBy(() -> memberFollowService.follow(1L, 2L))

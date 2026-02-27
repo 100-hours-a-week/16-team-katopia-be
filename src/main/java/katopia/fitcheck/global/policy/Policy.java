@@ -67,7 +67,7 @@ public final class Policy {
     public static final String REFRESH_TOKEN_HASH_ALGORITHM = "SHA-256";
 
     // SSE policy
-    public static final Duration SSE_TIMEOUT = Duration.ofMinutes(30);
+    public static final Duration SSE_TIMEOUT = Duration.ofMinutes(10);
     public static final Duration SSE_CLEANUP_INTERVAL = SSE_TIMEOUT.multipliedBy(2);
     public static final Duration SSE_HEARTBEAT_INTERVAL = Duration.ofSeconds(20);
     public static final int SSE_MAX_CONNECTIONS = 999;
@@ -92,12 +92,14 @@ public final class Policy {
     public static final String
             SYSTEM = "system",
             FOLLOW_MESSAGE = "%s님이 팔로우하기 시작했습니다.",
+            POST_CREATED_MESSAGE = "%s님이 게시물을 작성했습니다.",
             POST_LIKE_MESSAGE = "%s님이 게시물에 좋아요를 눌렀습니다. ",
             POST_COMMENT_MESSAGE = "%s님이 게시물에 댓글을 남겼습니다.",
             VOTE_CLOSED_MESSAGE = "투표 %s이 종료되었습니다.";
 
     public static final String
             NOTIFICATION_TYPE_FOLLOW = "FOLLOW",
+            NOTIFICATION_TYPE_POST_CREATED = "POST_CREATED",
             NOTIFICATION_TYPE_POST_LIKE = "POST_LIKE",
             NOTIFICATION_TYPE_POST_COMMENT = "POST_COMMENT",
             NOTIFICATION_TYPE_VOTE_CLOSED = "VOTE_CLOSED";
