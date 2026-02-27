@@ -196,6 +196,7 @@ jobs:
         env:
           EC2_PUBLIC_IP: ${{ secrets.DEV_EC2_PUBLIC_IP }}
           SERVICE_NAME: spring-app
+          SERVICE_NAME_2: spring-app2
           APP_DIR: /home/ec2-user/spring
         run: |
           set -euo pipefail
@@ -207,11 +208,15 @@ jobs:
           ssh -o StrictHostKeyChecking=no \
             -i ~/.ssh/katopia.pem \
             "ec2-user@${EC2_PUBLIC_IP}" \
-            "SERVICE_NAME='${SERVICE_NAME}' APP_DIR='${APP_DIR}' bash -s" <<'EOF'
+            "SERVICE_NAME='${SERVICE_NAME}' SERVICE_NAME_2='${SERVICE_NAME_2}' APP_DIR='${APP_DIR}' bash -s" <<'EOF'
           set -euo pipefail
 
           if [ -z "${SERVICE_NAME:-}" ]; then
             echo "❌ SERVICE_NAME is empty"
+            exit 1
+          fi
+          if [ -z "${SERVICE_NAME_2:-}" ]; then
+            echo "❌ SERVICE_NAME_2 is empty"
             exit 1
           fi
 
@@ -237,16 +242,22 @@ jobs:
           fi
 
           sudo systemctl restart "${SERVICE_NAME}"
+          sudo systemctl restart "${SERVICE_NAME_2}"
 
           if ! sudo systemctl is-active --quiet "${SERVICE_NAME}"; then
             echo "❌ systemd service not active: ${SERVICE_NAME}"
             sudo systemctl status "${SERVICE_NAME}" --no-pager || true
             exit 1
           fi
+          if ! sudo systemctl is-active --quiet "${SERVICE_NAME_2}"; then
+            echo "❌ systemd service not active: ${SERVICE_NAME_2}"
+            sudo systemctl status "${SERVICE_NAME_2}" --no-pager || true
+            exit 1
+          fi
 
           echo "Cleaning up old jar files (keeping 2 most recent)..."
           ls -1t "${APP_DIR}"/*.jar | grep -v app.jar | tail -n +3 | xargs -r rm -f
-          echo "✅ Deployed ${LATEST_JAR} via ${SERVICE_NAME}"
+          echo "✅ Deployed ${LATEST_JAR} via ${SERVICE_NAME} and ${SERVICE_NAME_2}"
 
           EOF
 
