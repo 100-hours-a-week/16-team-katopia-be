@@ -24,10 +24,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationCommandServiceTest {
@@ -122,6 +119,16 @@ class NotificationCommandServiceTest {
             assertThat(event.getRefId()).isEqualTo(REFERENCE_ID);
             NotificationPayload payload = (NotificationPayload) event.getPayload();
             assertThat(payload.getImageObjectKeySnapshot()).isEqualTo(IMAGE_OBJECT_KEY);
+        }
+
+        @Test
+        @DisplayName("TC-TRIGGER-F-03 게시글 좋아요가 본인 게시글이면 알림 미발행")
+        void tcTriggerF03_publishPostLikeNotification_skipsSelfLike() {
+            when(postFinder.findMemberIdByPostIdOrThrow(REFERENCE_ID)).thenReturn(ACTOR_ID);
+
+            notificationService.publishPostLikeNotification(ACTOR_ID, REFERENCE_ID);
+
+            verifyNoInteractions(batchEventPublisher);
         }
 
         @Test
