@@ -33,6 +33,11 @@ public class NotificationCommandService {
     @Transactional
     public void publishPostLikeNotification(Long actorId, Long postId) {
         Long recipientId = postFinder.findMemberIdByPostIdOrThrow(postId);
+
+        // 좋아요 누른 사용자가 게시글 작성자와 같으면 알림 미발행
+        if (actorId.equals(recipientId)) {
+            return;
+        }
         Member actor = memberFinder.findByIdOrThrow(actorId);
         String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(NotificationType.POST_LIKE, actor, postId);
         MessageEvent event = MessageEventFactory.postLiked(actor, recipientId, postId, imageObjectKeySnapshot);
