@@ -7,6 +7,7 @@ import katopia.fitcheck.dto.post.response.PostResponse;
 import katopia.fitcheck.dto.post.response.PostLikeResponse;
 import katopia.fitcheck.dto.post.response.PostBookmarkResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
+import katopia.fitcheck.dto.post.response.PostViewerStateResponse;
 import katopia.fitcheck.dto.post.request.PostUpdateRequest;
 import katopia.fitcheck.dto.post.response.PostUpdateResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,10 @@ public class PostService {
 
     public PostDetailResponse getDetail(Long memberId, Long postId) {
         return postSearchService.getDetail(memberId, postId);
+    }
+
+    public PostViewerStateResponse getViewerState(Long memberId, Long postId) {
+        return postSearchService.getViewerState(memberId, postId);
     }
 
     public PostResponse listHomeFeed(Long memberId, String sizeValue, String after) {

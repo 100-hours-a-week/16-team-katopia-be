@@ -15,6 +15,7 @@ import katopia.fitcheck.dto.post.response.PostLikeResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
 import katopia.fitcheck.dto.post.request.PostUpdateRequest;
 import katopia.fitcheck.dto.post.response.PostUpdateResponse;
+import katopia.fitcheck.dto.post.response.PostViewerStateResponse;
 import katopia.fitcheck.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +75,17 @@ public class PostController implements PostApiSpec {
         PostDetailResponse body = postService.getDetail(memberId, id);
 
         return APIResponse.ok(PostSuccessCode.POST_FETCHED, body);
+    }
+
+    @GetMapping("/{id}/viewer-state")
+    @Override
+    public ResponseEntity<APIResponse<PostViewerStateResponse>> getViewerState(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable("id") Long id
+    ) {
+        Long memberId = securitySupport.findMemberIdOrNull(principal);
+        PostViewerStateResponse body = postService.getViewerState(memberId, id);
+        return APIResponse.ok(PostSuccessCode.POST_VIEWER_STATE_FETCHED, body);
     }
 
 
