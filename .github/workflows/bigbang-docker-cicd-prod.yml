@@ -122,7 +122,6 @@ jobs:
 
     steps:
       - name: Configure AWS credentials
-        id: configure_aws_credential
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
@@ -136,10 +135,13 @@ jobs:
         id: start_instance_deploy
         run: |
           set -euo pipefail
+          echo "AWS_REGION=$AWS_REGION"
+          echo "SSM_DEPLOY_TARGET=$SSM_DEPLOY_TARGET"
+
           CMD_ID="$(aws ssm send-command \
             --region "$AWS_REGION" \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:DeployTarget,Values=$SSM_DEPLOY_TARGET" \
+            --targets '[{"Key":"tag:DeployTarget","Values":["'"$SSM_DEPLOY_TARGET"'"]}]' \
             --comment "Deploy fitcheck Docker backend ${GITHUB_SHA::7}" \
             --parameters commands=["sudo","bash","-lc","$DEPLOY_SCRIPT"] \
             --query "Command.CommandId" \
@@ -156,13 +158,16 @@ jobs:
             --filters "Name=tag:DeployTarget,Values=$SSM_DEPLOY_TARGET" "Name=instance-state-name,Values=running" \
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)"
+          echo "InstanceId=$IID"
+
           aws ssm wait command-executed \
             --region "$AWS_REGION" \
-            --command-id "${{ steps.start_instance_deploy.outputs.command_id }}"
+            --command-id "${{ steps.start_instance_deploy.outputs.command_id }}" \
             --instance-id "$IID"
+
           aws ssm get-command-invocation \
             --region "$AWS_REGION" \
-            --command-id "${{ steps.start_instance_deploy.outputs.command_id }}"
+            --command-id "${{ steps.start_instance_deploy.outputs.command_id }}" \
             --instance-id "$IID" \
             --query '{Status:Status,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' \
             --output json
