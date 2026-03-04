@@ -73,6 +73,7 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/api/members/*").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/members/*/posts").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/posts/*/viewer-state").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/members/me").authenticated();
                     auth.requestMatchers(HttpMethod.POST, "/api/auth/tokens").permitAll();   // RTR
