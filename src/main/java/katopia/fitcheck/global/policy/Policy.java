@@ -60,19 +60,22 @@ public final class Policy {
     public static final java.util.List<String> PRESIGN_ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "heic", "webp");
 
     // Auth policy
-    public static final Duration JWT_ACCESS_TOKEN_TTL = Duration.ofMinutes(15);
-    public static final Duration JWT_REFRESH_TOKEN_TTL = Duration.ofDays(14);
-    public static final Duration JWT_REGISTRATION_TOKEN_TTL = Duration.ofMinutes(10);
+    public static final Duration
+            JWT_ACCESS_TOKEN_TTL = Duration.ofMinutes(15),
+            JWT_REFRESH_TOKEN_TTL = Duration.ofDays(14),
+            JWT_REGISTRATION_TOKEN_TTL = Duration.ofMinutes(10);
     public static final String REFRESH_TOKEN_CLEANUP_CRON = "0 0 4 * * *";
     public static final String REFRESH_TOKEN_HASH_ALGORITHM = "SHA-256";
 
     // SSE policy
-    public static final Duration SSE_TIMEOUT = Duration.ofMinutes(10);
-    public static final Duration SSE_CLEANUP_INTERVAL = SSE_TIMEOUT.multipliedBy(2);
-    public static final Duration SSE_HEARTBEAT_INTERVAL = Duration.ofSeconds(20);
-    public static final int SSE_MAX_CONNECTIONS = 999;
-    public static final int SSE_UNREAD_LIMIT = 10;
-    public static final int SSE_UNREAD_LIMIT_MAX = 20;
+    public static final Duration
+            SSE_TIMEOUT = Duration.ofMinutes(5),
+            SSE_CLEANUP_INTERVAL = SSE_TIMEOUT.multipliedBy(2),
+            SSE_HEARTBEAT_INTERVAL = Duration.ofSeconds(20);
+    public static final int
+            SSE_MAX_CONNECTIONS = 10_000,
+            SSE_UNREAD_LIMIT = 10,
+            SSE_UNREAD_LIMIT_MAX = 20;
     public static final Duration COMMENT_COUNT_BATCH_INTERVAL = Duration.ofSeconds(3);
 
     // descriptions

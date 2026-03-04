@@ -27,6 +27,14 @@
 | COMMENT-S-004 | 204 | 댓글이 삭제되었습니다. |
 | POST-LIKE-S-001 | 201 | 해당 게시글에 좋아요를 남겼습니다. |
 | POST-LIKE-S-002 | 204 | 게시글 좋아요가 취소되었습니다. |
+| POST-BOOKMARK-S-001 | 201 | 게시글이 북마크되었습니다. |
+| POST-BOOKMARK-S-002 | 204 | 게시글 북마크가 해제되었습니다. |
+| VOTE-S-001 | 201 | 투표가 생성되었습니다. |
+| VOTE-S-002 | 200 | 투표 목록 조회에 성공했습니다. |
+| VOTE-S-003 | 200 | 참여 가능한 투표를 조회했습니다. |
+| VOTE-S-004 | 200 | 투표 조회에 성공했습니다. |
+| VOTE-S-005 | 201 | 투표 참여가 완료되었습니다. |
+| VOTE-S-006 | 204 | 투표가 삭제되었습니다. |
 
 ## 오류 코드 목록
 
@@ -98,7 +106,22 @@
 | Code | HTTP | Message |
 | --- | --- | --- |
 | POST-LIKE-E-001 | 409 | 이미 좋아요를 누른 게시글입니다. |
+| POST-BOOKMARK-E-001 | 409 | 이미 북마크한 게시글입니다. |
+| POST-BOOKMARK-E-002 | 404 | 북마크한 게시글이 아닙니다. |
 | POST-LIKE-E-002 | 404 | 취소할 좋아요 기록이 없습니다. |
+
+### Vote
+| Code | HTTP | Message |
+| --- | --- | --- |
+| VOTE-E-000 | 400 | 제목은 필수 입력 항목입니다. |
+| VOTE-E-001 | 400 | 제목은 최대 20자 입니다. |
+| VOTE-E-002 | 404 | 투표를 찾을 수 없습니다. |
+| VOTE-E-003 | 409 | 종료된 투표입니다. |
+| VOTE-E-004 | 409 | 이미 참여한 투표입니다. |
+| VOTE-E-010 | 400 | 이미지는 최소 1장 이상, 최대 5장까지 등록 가능합니다. |
+| VOTE-E-020 | 400 | 투표 항목은 최소 1개 이상 선택해야 합니다. |
+| VOTE-E-021 | 400 | 중복된 투표 항목이 포함되어 있습니다. |
+| VOTE-E-022 | 400 | 유효하지 않은 투표 항목입니다. |
 
 ## 회원
 
@@ -228,6 +251,7 @@ GET /api/members/1
   "message": "프로필 조회가 성공적으로 완료되었습니다.",
   "data": {
     "id": 1,
+    "isFollowing": false,
     "profile": {
       "nickname": "dev_user",
       "profileImageObjectKey": "profile/1/1-uuid.png",
@@ -344,6 +368,48 @@ Authorization: Bearer {AT}
       AUTH-E-010 <br/>
       AUTH-E-011 <br/>
       AUTH-E-014 <br/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+
+내 북마크 목록 조회 API
+
+</td>
+<td>
+
+```json
+GET /api/members/me/bookmarks?size=20&after=2026-01-01T00:00:00|1
+Authorization: Bearer {AT}
+```
+
+</td>
+<td>
+
+```json
+{
+  "success": true,
+  "code": "POST-S-002",
+  "message": "게시글 목록 조회를 완료되었습니다.",
+  "data": {
+    "posts": [
+      {
+        "id": 1,
+        "imageObjectKey": "post/1/1-uuid.png",
+        "createdAt": "2026-01-01T00:00:00"
+      }
+    ],
+    "nextCursor": "2026-01-01T00:00:00|1"
+  },
+  "timestamp": "2026-01-01T00:00:00Z"
+}
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      COMMON-E-003 <br/>
     </td>
   </tr>
   <tr>
@@ -640,6 +706,73 @@ Authorization: Bearer {AT}
   <tr>
     <td>
 
+홈 피드 게시글 목록 조회 API
+
+</td>
+<td>
+
+```json
+GET /api/home/posts?size=20&after=2026-01-01T00:00:00|1
+Authorization: Bearer {AT}
+```
+
+</td>
+<td>
+
+```json
+{
+  "success": true,
+  "code": "POST-S-002",
+  "message": "게시글 목록 조회를 완료되었습니다.",
+  "data": {
+    "posts": [
+      {
+        "id": 1,
+        "imageObjectKeys": [
+          {
+            "sortOrder": 1,
+            "imageObjectKey": "post/1/1-uuid.png"
+          }
+        ],
+        "content": "오늘의 코디",
+        "tags": [
+          "미니멀",
+          "데일리"
+        ],
+        "isLiked": false,
+        "isBookmarked": false,
+        "author": {
+          "id": 1,
+          "nickname": "dev_user",
+          "profileImageObjectKey": "profile/1/1-uuid.png",
+          "gender": "M",
+          "height": 175,
+          "weight": 70
+        },
+        "aggregate": {
+          "likeCount": 10,
+          "commentCount": 2
+        },
+        "createdAt": "2026-01-01T00:00:00"
+      }
+    ],
+    "nextCursor": "2026-01-01T00:00:00|1"
+  },
+  "timestamp": "2026-01-01T00:00:00Z"
+}
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      COMMON-E-003 <br/>
+      COMMON-E-002 <br/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+
 게시글 상세 조회 API
 
 </td>
@@ -658,6 +791,7 @@ GET /api/posts/1
   "code": "POST-S-003",
   "message": "게시글 상세 조회를 완료되었습니다.",
   "data": {
+    "id": 1,
     "imageObjectKeys": [
       {
         "sortOrder": 1,
@@ -670,6 +804,7 @@ GET /api/posts/1
       "데일리"
     ],
     "isLiked": false,
+    "isBookmarked": false,
     "author": {
       "id": 1,
       "nickname": "dev_user",
@@ -837,6 +972,405 @@ Authorization: Bearer {AT}
       POST-LIKE-E-002 <br/>
     </td>
   </tr>
+  <tr>
+    <td>
+
+게시글 북마크 API
+
+</td>
+<td>
+
+```json
+POST /api/posts/1/bookmarks
+Authorization: Bearer {AT}
+```
+
+</td>
+<td>
+
+```json
+{
+  "success": true,
+  "code": "POST-BOOKMARK-S-001",
+  "message": "게시글이 북마크되었습니다.",
+  "data": {
+    "postId": 1,
+    "isBookmarked": true
+  },
+  "timestamp": "2026-01-01T00:00:00Z"
+}
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      COMMON-E-002 <br/>
+      POST-E-002 <br/>
+      POST-BOOKMARK-E-001 <br/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+
+게시글 북마크 해제 API
+
+</td>
+<td>
+
+```json
+DELETE /api/posts/1/bookmarks
+Authorization: Bearer {AT}
+```
+
+</td>
+<td>
+
+```json
+204 No Content
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      COMMON-E-002 <br/>
+      POST-E-002 <br/>
+      POST-BOOKMARK-E-002 <br/>
+    </td>
+  </tr>
+</table>
+
+## 홈 추천
+
+<table>
+  <tr>
+    <td align="center">설명</td>
+    <td align="center">요청</td>
+    <td align="center">응답</td>
+    <td align="center">오류</td>
+  </tr>
+  <tr>
+    <td>
+
+홈 추천 친구 목록 조회 API
+
+</td>
+<td>
+
+```json
+GET /api/home/members
+Authorization: Bearer {AT}
+```
+
+</td>
+<td>
+
+```json
+{
+  "success": true,
+  "code": "COMMON-S-001",
+  "message": "검색이 완료되었습니다.",
+  "data": {
+    "members": [
+      {
+        "id": 1,
+        "nickname": "dev_user",
+        "profileImageObjectKey": "profile/1/1-uuid.png",
+        "height": 175,
+        "weight": 70,
+        "styles": [
+          "MINIMAL",
+          "CASUAL"
+        ]
+      }
+    ]
+  },
+  "timestamp": "2026-01-01T00:00:00Z"
+}
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+    </td>
+  </tr>
+</table>
+
+## 투표
+
+<table>
+  <tr>
+    <td align="center">설명</td>
+    <td align="center">요청</td>
+    <td align="center">응답</td>
+    <td align="center">오류</td>
+  </tr>
+  <tr>
+    <td>
+
+투표 생성 API
+
+</td>
+<td>
+
+```json
+POST /api/votes
+Authorization: Bearer {AT}
+
+{
+  "title": "오늘의 코디 투표",
+  "imageObjectKeys": [
+    "votes/1/1700000000000-uuid.png",
+    "votes/1/1700000000001-uuid.png"
+  ]
+}
+```
+
+</td>
+<td>
+
+```json
+{
+  "success": true,
+  "code": "VOTE-S-001",
+  "message": "투표가 생성되었습니다.",
+  "data": {
+    "id": 1,
+    "title": "오늘의 코디 투표",
+    "imageObjectKeys": [
+      "votes/1/1700000000000-uuid.png",
+      "votes/1/1700000000001-uuid.png"
+    ]
+  },
+  "timestamp": "2026-01-01T00:00:00Z"
+}
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      VOTE-E-000 <br/>
+      VOTE-E-001 <br/>
+      VOTE-E-010 <br/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+
+내 투표 목록 조회 API
+
+</td>
+<td>
+
+```json
+GET /api/votes?size=20&after=2026-01-01T00:00:00|1
+Authorization: Bearer {AT}
+```
+
+</td>
+<td>
+
+```json
+{
+  "success": true,
+  "code": "VOTE-S-002",
+  "message": "투표 목록 조회에 성공했습니다.",
+  "data": {
+    "votes": [
+      {
+        "id": 1,
+        "title": "오늘의 코디 투표",
+        "isClosed": false
+      }
+    ],
+    "nextCursor": "2026-01-01T00:00:00|1"
+  },
+  "timestamp": "2026-01-01T00:00:00Z"
+}
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      COMMON-E-003 <br/>
+      COMMON-E-002 <br/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+
+참여 가능한 투표 조회 API
+
+</td>
+<td>
+
+```json
+GET /api/votes/candidates
+Authorization: Bearer {AT}
+```
+
+</td>
+<td>
+
+```json
+{
+  "success": true,
+  "code": "VOTE-S-003",
+  "message": "참여 가능한 투표를 조회했습니다.",
+  "data": {
+    "id": 1,
+    "title": "오늘의 코디 투표",
+    "items": [
+      {
+        "id": 10,
+        "imageObjectKey": "votes/1/1700000000000-uuid.png",
+        "sortOrder": 1
+      }
+    ]
+  },
+  "timestamp": "2026-01-01T00:00:00Z"
+}
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      VOTE-E-002 <br/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+
+투표 결과 조회 API
+
+</td>
+<td>
+
+```json
+GET /api/votes/1
+Authorization: Bearer {AT}
+```
+
+</td>
+<td>
+
+```json
+{
+  "success": true,
+  "code": "VOTE-S-004",
+  "message": "투표 조회에 성공했습니다.",
+  "data": {
+    "id": 1,
+    "title": "오늘의 코디 투표",
+    "items": [
+      {
+        "id": 10,
+        "imageObjectKey": "votes/1/1700000000000-uuid.png",
+        "sortOrder": 1,
+        "fitCount": 12,
+        "fitRate": 33.33
+      }
+    ]
+  },
+  "timestamp": "2026-01-01T00:00:00Z"
+}
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      AUTH-E-014 <br/>
+      VOTE-E-002 <br/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+
+투표 참여 API
+
+</td>
+<td>
+
+```json
+POST /api/votes/1/participations
+Authorization: Bearer {AT}
+
+{
+  "voteItemIds": [10, 11]
+}
+```
+
+</td>
+<td>
+
+```json
+{
+  "success": true,
+  "code": "VOTE-S-005",
+  "message": "투표 참여가 완료되었습니다.",
+  "data": {
+    "id": 1,
+    "title": "오늘의 코디 투표",
+    "items": [
+      {
+        "id": 10,
+        "imageObjectKey": "votes/1/1700000000000-uuid.png",
+        "sortOrder": 1,
+        "fitCount": 12,
+        "fitRate": 33.33
+      }
+    ]
+  },
+  "timestamp": "2026-01-01T00:00:00Z"
+}
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      VOTE-E-002 <br/>
+      VOTE-E-003 <br/>
+      VOTE-E-004 <br/>
+      VOTE-E-020 <br/>
+      VOTE-E-021 <br/>
+      VOTE-E-022 <br/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+
+투표 삭제 API
+
+</td>
+<td>
+
+```json
+DELETE /api/votes/1
+Authorization: Bearer {AT}
+```
+
+</td>
+<td>
+
+```json
+204 No Content
+```
+
+</td>
+<td>
+      AUTH-E-010 <br/>
+      AUTH-E-011 <br/>
+      AUTH-E-014 <br/>
+      VOTE-E-002 <br/>
+    </td>
+  </tr>
 </table>
 
 ## 댓글
@@ -938,9 +1472,6 @@ GET /api/posts/1/comments?size=20&after=2026-01-01T00:00:00|1
       POST-E-002 <br/>
     </td>
   </tr>
-  <tr>
-    <td>
-
 댓글 수정 API
 
 </td>
@@ -1113,6 +1644,7 @@ Authorization: Bearer {AT}
     </td>
   </tr>
 </table>
+
 
 ## 업로드
 

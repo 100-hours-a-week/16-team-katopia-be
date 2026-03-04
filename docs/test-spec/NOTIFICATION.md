@@ -25,6 +25,7 @@
 | TC-TRIGGER-S-03 | 게시글 좋아요 시 알림 트리거 | 타인 게시글 | like 호출 | 알림 생성 요청 |
 | TC-TRIGGER-S-04 | 댓글 생성 시 알림 트리거 | 타인 게시글 | create 호출 | 알림 생성 요청 |
 | TC-TRIGGER-S-05 | 본인 행위는 알림 미생성 | actor=recipient | publishFollowNotification 호출 | 저장 없음 |
+| TC-TRIGGER-F-03 | 본인 게시글 좋아요는 알림 미생성 | actor=recipient | publishPostLikeNotification 호출 | 저장 없음 |
 | TC-TRIGGER-S-06 | 게시글 좋아요 첫 이미지 스냅샷 저장 | 게시글 이미지 존재 | publishPostLikeNotification 호출 | imageObjectKeySnapshot 저장 |
 | TC-TRIGGER-S-07 | 댓글 생성 첫 이미지 스냅샷 저장 | 게시글 이미지 존재 | publishPostCommentNotification 호출 | imageObjectKeySnapshot 저장 |
 | TC-TRIGGER-S-08 | 실시간 알림 ON이면 SSE 발행 | 알림 수신자 ON | publishFollowNotification 호출 | publish 호출 |
