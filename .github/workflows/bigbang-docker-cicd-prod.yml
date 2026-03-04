@@ -129,6 +129,9 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      - name: Who am I?
+        run: aws sts get-caller-identity
+
       - name: Run deploy.sh via SSM
         id: start_instance_deploy
         run: |
