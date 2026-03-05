@@ -1,8 +1,8 @@
 package katopia.fitcheck.service.notification;
 
 import katopia.fitcheck.global.policy.Policy;
-import katopia.fitcheck.redis.sse.SseConnectionRegistry;
-import katopia.fitcheck.redis.sse.SseDisconnectPublisher;
+import katopia.fitcheck.redis.sse.RedisSseConnectionRegistry;
+import katopia.fitcheck.redis.sse.RedisSseDisconnectPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -19,13 +19,13 @@ import java.util.Map;
 @Slf4j
 public class NotificationSseConnectionCleanupScheduler {
 
-    private final SseConnectionRegistry connectionRegistry;
-    private final SseDisconnectPublisher disconnectPublisher;
+    private final RedisSseConnectionRegistry connectionRegistry;
+    private final RedisSseDisconnectPublisher disconnectPublisher;
 
     @Scheduled(fixedDelayString = "#{T(katopia.fitcheck.global.policy.Policy).SSE_CLEANUP_INTERVAL.toMillis()}")
     public void cleanupExpiredConnections() {
         long cutoff = System.currentTimeMillis() - Policy.SSE_TIMEOUT.toMillis();
-        List<SseConnectionRegistry.SseExpiredConnection> expired;
+        List<RedisSseConnectionRegistry.SseExpiredConnection> expired;
         try {
             expired = connectionRegistry.findExpired(cutoff);
         } catch (DataAccessException ex) {
@@ -47,10 +47,10 @@ public class NotificationSseConnectionCleanupScheduler {
     }
 
     private Map<Long, List<String>> groupByMember(
-            List<SseConnectionRegistry.SseExpiredConnection> expired
+            List<RedisSseConnectionRegistry.SseExpiredConnection> expired
     ) {
         Map<Long, List<String>> result = new HashMap<>();
-        for (SseConnectionRegistry.SseExpiredConnection item : expired) {
+        for (RedisSseConnectionRegistry.SseExpiredConnection item : expired) {
             result.computeIfAbsent(item.memberId(), ignored -> new ArrayList<>())
                     .add(item.connectionId());
         }

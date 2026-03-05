@@ -1,7 +1,7 @@
 package katopia.fitcheck.redis.config;
 
-import katopia.fitcheck.redis.sse.SseDisconnectPublisher;
-import katopia.fitcheck.redis.sse.SseDisconnectSubscriber;
+import katopia.fitcheck.redis.sse.RedisSseDisconnectPublisher;
+import katopia.fitcheck.redis.sse.RedisSseDisconnectSubscriber;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +16,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class NotificationSseRedisConfig {
 
     @Bean
-    public MessageListenerAdapter notificationSseDisconnectListener(SseDisconnectSubscriber subscriber) {
+    public MessageListenerAdapter notificationSseDisconnectListener(RedisSseDisconnectSubscriber subscriber) {
         MessageListenerAdapter adapter = new MessageListenerAdapter(subscriber, "handleMessage");
         adapter.setSerializer(new StringRedisSerializer());
         return adapter;
@@ -31,7 +31,7 @@ public class NotificationSseRedisConfig {
         container.setConnectionFactory(connectionFactory);
         container.addMessageListener(
                 notificationSseDisconnectListener,
-                new ChannelTopic(SseDisconnectPublisher.CHANNEL)
+                new ChannelTopic(RedisSseDisconnectPublisher.CHANNEL)
         );
         return container;
     }
