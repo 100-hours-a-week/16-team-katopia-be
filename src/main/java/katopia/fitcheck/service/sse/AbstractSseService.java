@@ -164,7 +164,6 @@ public abstract class AbstractSseService<T> {
                     .data("connected"));
         } catch (IOException ex) {
             disconnect(connectionId);
-            log.debug("SSE ping failed for memberId={}", connection.memberId, ex);
         }
     }
 

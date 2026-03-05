@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SseDisconnectPublisher {
+public class RedisSseDisconnectPublisher {
 
     public static final String CHANNEL = "sse:notification:disconnect";
 

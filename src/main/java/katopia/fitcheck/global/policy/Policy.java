@@ -69,9 +69,10 @@ public final class Policy {
 
     // SSE policy
     public static final Duration
+            ALB_CONNECTION_IDLE_TIMEOUT = Duration.ofMinutes(10),
             SSE_TIMEOUT = Duration.ofMinutes(5),
             SSE_CLEANUP_INTERVAL = SSE_TIMEOUT.multipliedBy(2),
-            SSE_HEARTBEAT_INTERVAL = Duration.ofSeconds(20);
+            SSE_HEARTBEAT_INTERVAL = ALB_CONNECTION_IDLE_TIMEOUT.minusSeconds(20);
     public static final int
             SSE_MAX_CONNECTIONS = 10_000,
             SSE_UNREAD_LIMIT = 10,

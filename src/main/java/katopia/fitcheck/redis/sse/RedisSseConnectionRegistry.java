@@ -18,7 +18,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class SseConnectionRegistry {
+public class RedisSseConnectionRegistry {
 
     private static final String KEY_PREFIX = "sse:notification:";
 

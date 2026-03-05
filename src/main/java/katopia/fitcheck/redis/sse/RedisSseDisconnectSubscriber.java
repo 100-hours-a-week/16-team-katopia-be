@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class SseDisconnectSubscriber {
+public class RedisSseDisconnectSubscriber {
 
     private final NotificationSseService notificationSseService;
 
