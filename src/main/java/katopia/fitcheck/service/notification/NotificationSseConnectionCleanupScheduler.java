@@ -22,7 +22,7 @@ public class NotificationSseConnectionCleanupScheduler {
     private final RedisSseConnectionRegistry connectionRegistry;
     private final RedisSseDisconnectPublisher disconnectPublisher;
 
-    @Scheduled(fixedDelayString = "#{T(katopia.fitcheck.global.policy.Policy).SSE_CLEANUP_INTERVAL.toMillis()}")
+    // @Scheduled(fixedDelayString = "#{T(katopia.fitcheck.global.policy.Policy).SSE_CLEANUP_INTERVAL.toMillis()}")
     public void cleanupExpiredConnections() {
         long cutoff = System.currentTimeMillis() - Policy.SSE_TIMEOUT.toMillis();
         List<RedisSseConnectionRegistry.SseExpiredConnection> expired;
