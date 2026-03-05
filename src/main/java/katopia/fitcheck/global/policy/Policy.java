@@ -69,7 +69,7 @@ public final class Policy {
 
     // SSE policy
     public static final Duration
-            ALB_CONNECTION_IDLE_TIMEOUT = Duration.ofMinutes(10),
+            ALB_CONNECTION_IDLE_TIMEOUT = Duration.ofMinutes(2),
             SSE_TIMEOUT = Duration.ofMinutes(5),
             SSE_CLEANUP_INTERVAL = SSE_TIMEOUT.multipliedBy(2),
             SSE_HEARTBEAT_INTERVAL = ALB_CONNECTION_IDLE_TIMEOUT.minusSeconds(20);
