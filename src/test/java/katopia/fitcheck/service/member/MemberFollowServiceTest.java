@@ -160,10 +160,6 @@ class MemberFollowServiceTest {
     @Test
     @DisplayName("TC-MEMBER-FOLLOW-F-02 팔로우 실패(중복 팔로우)")
     void tcMemberFollowF02_alreadyFollowing_throws() {
-        Member follower = activeMember(1L, "follower");
-        Member followed = activeMember(2L, "followed");
-        when(memberFinder.getReferenceById(1L)).thenReturn(follower);
-        when(memberFinder.getReferenceById(2L)).thenReturn(followed);
         when(memberFollowRepository.existsByFollowerIdAndFollowedId(1L, 2L)).thenReturn(true);
 
         assertThatThrownBy(() -> memberFollowService.follow(1L, 2L))
