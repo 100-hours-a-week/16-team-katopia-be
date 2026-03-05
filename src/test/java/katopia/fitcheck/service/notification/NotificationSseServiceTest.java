@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import katopia.fitcheck.redis.sse.SseConnectionRegistry;
-import katopia.fitcheck.redis.sse.SseDisconnectPublisher;
+import katopia.fitcheck.redis.sse.RedisSseConnectionRegistry;
+import katopia.fitcheck.redis.sse.RedisSseDisconnectPublisher;
 
 import static org.mockito.Mockito.mock;
 
@@ -27,7 +27,7 @@ class NotificationSseServiceTest {
     void tcNotificationSseS01_connect_storesEmitter() {
         NotificationSseService service = new NotificationSseService(
                 registryReturningEmpty(),
-                mock(SseDisconnectPublisher.class)
+                mock(RedisSseDisconnectPublisher.class)
         );
 
         SseEmitter emitter = service.connect(1L, Collections.emptyList());
@@ -42,7 +42,7 @@ class NotificationSseServiceTest {
     void tcNotificationSseS02_connect_keepsMultipleEmitters() {
         NotificationSseService service = new NotificationSseService(
                 registryReturningEmpty(),
-                mock(SseDisconnectPublisher.class)
+                mock(RedisSseDisconnectPublisher.class)
         );
 
         service.connect(1L, Collections.emptyList());
@@ -57,7 +57,7 @@ class NotificationSseServiceTest {
     void tcNotificationSseS03_send_noEmitter_doesNothing() {
         NotificationSseService service = new NotificationSseService(
                 registryReturningEmpty(),
-                mock(SseDisconnectPublisher.class)
+                mock(RedisSseDisconnectPublisher.class)
         );
 
         service.send(999L, NotificationSummary.builder().id(1L).build());
@@ -70,7 +70,7 @@ class NotificationSseServiceTest {
     void tcNotificationSseS05_connect_sendsUnread() {
         TestNotificationSseService service = new TestNotificationSseService(
                 registryReturningEmpty(),
-                mock(SseDisconnectPublisher.class)
+                mock(RedisSseDisconnectPublisher.class)
         );
 
         List<NotificationSummary> unread = List.of(
@@ -88,8 +88,8 @@ class NotificationSseServiceTest {
         return (Map<Long, Set<String>>) ReflectionTestUtils.getField(service, "memberConnections");
     }
 
-    private SseConnectionRegistry registryReturningEmpty() {
-        SseConnectionRegistry registry = mock(SseConnectionRegistry.class);
+    private RedisSseConnectionRegistry registryReturningEmpty() {
+        RedisSseConnectionRegistry registry = mock(RedisSseConnectionRegistry.class);
         return registry;
     }
 
@@ -97,8 +97,8 @@ class NotificationSseServiceTest {
         private int sendCount;
 
         private TestNotificationSseService(
-                SseConnectionRegistry registry,
-                SseDisconnectPublisher disconnectPublisher
+                RedisSseConnectionRegistry registry,
+                RedisSseDisconnectPublisher disconnectPublisher
         ) {
             super(registry, disconnectPublisher);
         }

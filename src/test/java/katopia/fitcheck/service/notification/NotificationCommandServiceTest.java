@@ -170,9 +170,10 @@ class NotificationCommandServiceTest {
 
             MessageEvent event = captor.getValue();
             assertThat(event.getEventType()).isEqualTo(NotificationType.POST_COMMENT.getCode());
-            assertThat(event.getRefId()).isEqualTo(COMMENT_ID);
+            assertThat(event.getRefId()).isEqualTo(REFERENCE_ID);
             NotificationPayload payload = (NotificationPayload) event.getPayload();
             assertThat(payload.getImageObjectKeySnapshot()).isEqualTo(IMAGE_OBJECT_KEY);
+            assertThat(payload.getMessageArgs()).containsExactly(String.valueOf(COMMENT_ID));
         }
 
         @Test
