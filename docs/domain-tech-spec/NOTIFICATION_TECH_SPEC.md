@@ -44,4 +44,5 @@
 ## 비동기 연동
 
 - SSE/브로커/재전송 정책은 [`docs/domain-tech-spec/ASYNC_TECH_SPEC.md`](/docs/domain-tech-spec/ASYNC_TECH_SPEC.md) 참고
+- SSE 연결 관리(타임아웃/하트비트/연결 제한/종료 전파)는 비동기 테크 스펙에서 관리한다.
 - 비동기 관련 세부 정책은 비동기 테크 스펙에서 관리하고, 본 문서는 도메인 정책 중심으로 유지한다.
