@@ -4,15 +4,23 @@ import lombok.Getter;
 import lombok.Setter;
 import katopia.fitcheck.global.policy.Policy;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.Arrays;
+import jakarta.annotation.PostConstruct;
 
 @Getter
 @Setter
 @Component
 @ConfigurationProperties(prefix = "app.jwt")
 public class JwtProperties {
+    private final Environment environment;
+
+    public JwtProperties(Environment environment) {
+        this.environment = environment;
+    }
     /**
      * 토큰 발급자
      */
@@ -46,4 +54,16 @@ public class JwtProperties {
      * 14일
      */
     private Duration refreshTokenTtl = Policy.JWT_REFRESH_TOKEN_TTL;
+
+    @PostConstruct
+    void applyProfileOverrides() {
+        if (environment == null) {
+            return;
+        }
+        boolean isDevOrStg = Arrays.stream(environment.getActiveProfiles())
+                .anyMatch(profile -> "dev".equals(profile) || "stg".equals(profile));
+        if (isDevOrStg) {
+            accessTokenTtl = Policy.DEV_JWT_ACCESS_TOKEN_TTL;
+        }
+    }
 }

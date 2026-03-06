@@ -230,20 +230,35 @@ data: {"roomId":10,"senderId":2,"message":"..."}
 - 클라이언트는 자동 재연결(EventSource 기본 동작).
 - 서버는 재접속 시 최근 10건의 미수신 알림을 재전송한다: 재접속 직후 UX를 보장하면서도 과도한 재전송 부하를 방지하기 위함.
 - 미수신 기준은 `read_at is null`이며, 최근 10건을 `created_at desc`로 조회한다.
-- 서버 SSE 타임아웃은 30분으로 운용한다(연결 유지를 보장하면서도 유휴 연결을 정리하기 위함).
+- 서버 SSE 타임아웃은 5분으로 운용한다(연결 유지를 보장하면서도 유휴 연결을 정리하기 위함).
 - 재연결 시점(클라이언트가 새 SSE 연결을 수립하는 순간)에 새 connectionId가 Redis에 등록된다.
-- `ping` 이벤트 전송 주기는 20초 정책이며, 현재 코드에서는 heartbeat 스케줄이 비활성 상태다.
+- `ping` 이벤트 전송 주기는 50초로 운용한다(ALB idle timeout 60초 기준). 하트비트 스케줄은 활성 상태다.
 
 #### 동시 접속 제한
 - 사용자당 SSE 연결은 최대 3개까지 허용한다.
 - 3개를 초과하는 신규 연결이 들어오면 가장 오래된 연결을 종료한다.
 - 연결 상태는 Redis에 저장해 인스턴스 간 동시 접속 제한을 강제한다.
-- SSE 생존시간 * 2 주기로 유효하지 않은 연결을 정리한다(유령 연결 누적 방지 목적).
-- 유효하지 않은 연결은 `연결시간 + SSE 생존시간 < 현재시간` 기준으로 판별한다.
 - 연결 단위로 관리하며, 활성 기기가 재연결될 때 비활성 기기 연결이 밀리는 것을 허용한다(활성 기기 우선 정책).
 - 가장 오래된 연결 종료는 Redis Pub/Sub으로 종료 이벤트를 전파한다.
 - 종료 이벤트 채널명은 `sse:notification:disconnect`를 사용한다.
 - 종료 이벤트 메시지는 최소 `{memberId, connectionId}` 형식을 사용한다.
+
+#### 하트비트(그룹 분산 전송)
+- 하트비트는 로컬 인스턴스가 보유한 SSE 연결에만 전송한다.
+- 연결 수가 많을 때 동시 전송 부하를 줄이기 위해 10개 그룹으로 분산한다.
+- 각 하트비트 주기마다 전체 연결 중 1개 그룹만 ping을 전송한다.
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Scheduler as Heartbeat Scheduler
+  participant API as API Server
+  participant Conn as Local SSE Connections
+
+  Scheduler->>API: sendHeartbeat()
+  API->>API: 그룹 인덱스 선택(0~9)
+  API->>Conn: 해당 그룹 connectionId에만 ping 전송
+```
 
 #### 운영/스케일링 고려
 - SSE 연결은 장시간 유지되므로, 서버 스레드 점유가 최소화되도록 비동기(서블릿 async) 처리로 운용한다.

@@ -62,6 +62,7 @@ public final class Policy {
     // Auth policy
     public static final Duration
             JWT_ACCESS_TOKEN_TTL = Duration.ofMinutes(15),
+            DEV_JWT_ACCESS_TOKEN_TTL = Duration.ofDays(999),
             JWT_REFRESH_TOKEN_TTL = Duration.ofDays(14),
             JWT_REGISTRATION_TOKEN_TTL = Duration.ofMinutes(10);
     public static final String REFRESH_TOKEN_CLEANUP_CRON = "0 0 4 * * *";
@@ -69,12 +70,12 @@ public final class Policy {
 
     // SSE policy
     public static final Duration
-            ALB_CONNECTION_IDLE_TIMEOUT = Duration.ofMinutes(600),
-            SSE_TIMEOUT = Duration.ofMinutes(2),
-            SSE_CLEANUP_INTERVAL = SSE_TIMEOUT.multipliedBy(2),
-            SSE_HEARTBEAT_INTERVAL = ALB_CONNECTION_IDLE_TIMEOUT.minusSeconds(20);
+            ALB_CONNECTION_IDLE_TIMEOUT = Duration.ofSeconds(60),
+            SSE_TIMEOUT = Duration.ofMinutes(5),
+            SSE_HEARTBEAT_INTERVAL = ALB_CONNECTION_IDLE_TIMEOUT.minusSeconds(10);
     public static final int
-            SSE_MAX_CONNECTIONS = 10_000,
+            SSE_MAX_CONNECTIONS = 3,
+            SSE_HEARTBEAT_GROUPS = 10,
             SSE_UNREAD_LIMIT = 10,
             SSE_UNREAD_LIMIT_MAX = 20;
     public static final Duration COMMENT_COUNT_BATCH_INTERVAL = Duration.ofSeconds(3);
