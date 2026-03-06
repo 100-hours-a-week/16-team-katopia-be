@@ -11,7 +11,8 @@ public enum PostSuccessCode implements ResponseCode {
     POST_LISTED(HttpStatus.OK, "POST-S-002", "게시글 목록 조회를 완료되었습니다."),
     POST_FETCHED(HttpStatus.OK, "POST-S-003", "게시글 상세 조회를 완료되었습니다."),
     POST_UPDATED(HttpStatus.OK, "POST-S-004", "게시글이 수정되었습니다."),
-    POST_DELETED(HttpStatus.NO_CONTENT, "POST-S-005", "게시글이 삭제되었습니다.");
+    POST_DELETED(HttpStatus.NO_CONTENT, "POST-S-005", "게시글이 삭제되었습니다."),
+    POST_VIEWER_STATE_FETCHED(HttpStatus.OK, "POST-S-006", "게시글 좋아요/북마크 상태 조회를 완료되었습니다.");
 
     private final HttpStatus status;
     private final String code;

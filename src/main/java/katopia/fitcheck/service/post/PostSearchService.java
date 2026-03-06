@@ -9,6 +9,7 @@ import katopia.fitcheck.dto.post.response.PostDetailResponse;
 import katopia.fitcheck.dto.post.response.PostResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
 import katopia.fitcheck.dto.post.response.PostSummary;
+import katopia.fitcheck.dto.post.response.PostViewerStateResponse;
 import katopia.fitcheck.repository.member.MemberFollowRepository;
 import katopia.fitcheck.repository.post.PostBookmarkRepository;
 import katopia.fitcheck.repository.post.PostRepository;
@@ -81,6 +82,14 @@ public class PostSearchService {
         boolean isLiked = memberId != null && postLikeRepository.existsByMemberIdAndPostId(memberId, postId);
         boolean isBookmarked = memberId != null && postBookmarkRepository.existsByMemberIdAndPostId(memberId, postId);
         return PostDetailResponse.of(post, author, tags, isLiked, isBookmarked);
+    }
+
+    @Transactional(readOnly = true)
+    public PostViewerStateResponse getViewerState(Long memberId, Long postId) {
+        postFinder.requireExists(postId);
+        boolean isLiked = memberId != null && postLikeRepository.existsByMemberIdAndPostId(memberId, postId);
+        boolean isBookmarked = memberId != null && postBookmarkRepository.existsByMemberIdAndPostId(memberId, postId);
+        return PostViewerStateResponse.of(postId, isLiked, isBookmarked);
     }
 
     @Transactional(readOnly = true)

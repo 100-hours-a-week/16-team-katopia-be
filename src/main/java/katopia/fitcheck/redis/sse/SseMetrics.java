@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 public class SseMetrics {
 
     private final MeterRegistry meterRegistry;
-    private final SseConnectionRegistry connectionRegistry;
+    private final RedisSseConnectionRegistry connectionRegistry;
 
     @PostConstruct
     void registerMetrics() {
-        Gauge.builder("sse_connection_registry_total", connectionRegistry, SseConnectionRegistry::countAllConnections)
+        Gauge.builder("sse_connection_registry_total", connectionRegistry, RedisSseConnectionRegistry::countAllConnections)
                 .register(meterRegistry);
     }
 }

@@ -19,6 +19,7 @@ import katopia.fitcheck.repository.post.PostRepository;
 import katopia.fitcheck.repository.post.PostTagRepository;
 import katopia.fitcheck.repository.post.TagRepository;
 import katopia.fitcheck.service.member.MemberFinder;
+import katopia.fitcheck.service.notification.NotificationCommandService;
 import katopia.fitcheck.support.MemberTestFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,6 +71,9 @@ class PostCommandServiceTest {
 
     @Mock
     private PostFinder postFinder;
+
+    @Mock
+    private NotificationCommandService notificationCommandService;
 
     @InjectMocks
     private PostCommandService postCommandService;

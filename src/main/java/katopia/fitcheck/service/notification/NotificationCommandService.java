@@ -21,30 +21,29 @@ public class NotificationCommandService {
     private final VoteFinder voteFinder;
     private final MemberFinder memberFinder;
     private final MessageEventPublisher eventPublisher;
-    private final NotificationBatchEventPublisher batchEventPublisher;
+    private final NotificationBatchEventPublisher notificationBatchEventPublisher;
 
     @Transactional
     public void publishFollowNotification(Long actorId, Long recipientId) {
+        if (actorId.equals(recipientId)) {
+            return;
+        }
         Member actor = memberFinder.findByIdOrThrow(actorId);
         MessageEvent event = MessageEventFactory.followCreated(actor, recipientId);
-        batchEventPublisher.publish(event);
+        notificationBatchEventPublisher.publish(event);
     }
 
     @Transactional
     public void publishPostLikeNotification(Long actorId, Long postId) {
         Long recipientId = postFinder.findMemberIdByPostIdOrThrow(postId);
+
+        if (actorId.equals(recipientId)) {
+            return;
+        }
         Member actor = memberFinder.findByIdOrThrow(actorId);
         String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(NotificationType.POST_LIKE, actor, postId);
         MessageEvent event = MessageEventFactory.postLiked(actor, recipientId, postId, imageObjectKeySnapshot);
-        batchEventPublisher.publish(event);
-    }
-
-    @Transactional
-    public void publishPostCreatedNotification(Long actorId, Long postId) {
-        Member actor = memberFinder.findByIdOrThrow(actorId);
-        String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(NotificationType.POST_CREATED, actor, postId);
-        MessageEvent event = MessageEventFactory.postCreated(actor, postId, imageObjectKeySnapshot);
-        eventPublisher.publish(event);
+        notificationBatchEventPublisher.publish(event);
     }
 
     @Transactional
@@ -58,7 +57,15 @@ public class NotificationCommandService {
         Member actor = memberFinder.findByIdOrThrow(actorId);
         String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(NotificationType.POST_COMMENT, actor, postId);
         MessageEvent event = MessageEventFactory.commentCreated(actor, recipientId, postId, commentId, imageObjectKeySnapshot);
-        batchEventPublisher.publish(event);
+        notificationBatchEventPublisher.publish(event);
+    }
+
+    @Transactional
+    public void publishPostCreatedNotification(Long actorId, Long postId) {
+        Member actor = memberFinder.findByIdOrThrow(actorId);
+        String imageObjectKeySnapshot = resolveImageObjectKeySnapshot(NotificationType.POST_CREATED, actor, postId);
+        MessageEvent event = MessageEventFactory.postCreated(actor, postId, imageObjectKeySnapshot);
+        eventPublisher.publish(event);
     }
 
     @Transactional

@@ -18,6 +18,7 @@ import katopia.fitcheck.dto.post.response.PostLikeResponse;
 import katopia.fitcheck.dto.post.response.PostListResponse;
 import katopia.fitcheck.dto.post.request.PostUpdateRequest;
 import katopia.fitcheck.dto.post.response.PostUpdateResponse;
+import katopia.fitcheck.dto.post.response.PostViewerStateResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,6 +50,14 @@ public interface PostApiSpec {
     @ApiResponse(responseCode = "200", description = "게시글 상세 조회 성공", content = @Content(schema = @Schema(implementation = PostDetailResponse.class)))
     @ApiResponse(responseCode = "404", description = Docs.NOT_FOUND_DES, content = @Content)
     ResponseEntity<APIResponse<PostDetailResponse>> getPost(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable("id") Long id
+    );
+
+    @Operation(summary = "게시글 좋아요/북마크 상태 조회", description = "비로그인 사용자는 false로 응답합니다.")
+    @ApiResponse(responseCode = "200", description = "게시글 좋아요/북마크 상태 조회 성공", content = @Content(schema = @Schema(implementation = PostViewerStateResponse.class)))
+    @ApiResponse(responseCode = "404", description = Docs.NOT_FOUND_DES, content = @Content)
+    ResponseEntity<APIResponse<PostViewerStateResponse>> getViewerState(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable("id") Long id
     );

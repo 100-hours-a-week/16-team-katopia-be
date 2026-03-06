@@ -3,8 +3,8 @@ package katopia.fitcheck.service.notification;
 import katopia.fitcheck.dto.notification.response.NotificationSummary;
 import katopia.fitcheck.global.exception.BusinessException;
 import katopia.fitcheck.global.exception.code.CommonErrorCode;
-import katopia.fitcheck.redis.sse.SseConnectionRegistry;
-import katopia.fitcheck.redis.sse.SseDisconnectPublisher;
+import katopia.fitcheck.redis.sse.RedisSseConnectionRegistry;
+import katopia.fitcheck.redis.sse.RedisSseDisconnectPublisher;
 import katopia.fitcheck.service.sse.AbstractSseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +21,8 @@ public class NotificationSseService extends AbstractSseService<NotificationSumma
 
     private static final String EVENT_NAME = "notification";
 
-    private final SseConnectionRegistry connectionRegistry;
-    private final SseDisconnectPublisher disconnectPublisher;
+    private final RedisSseConnectionRegistry connectionRegistry;
+    private final RedisSseDisconnectPublisher disconnectPublisher;
 
     @Override
     protected String eventName() {

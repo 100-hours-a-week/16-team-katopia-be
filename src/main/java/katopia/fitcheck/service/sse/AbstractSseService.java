@@ -10,12 +10,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public abstract class AbstractSseService<T> {
 
     private final Map<String, SseConnection> connections = new ConcurrentHashMap<>();
     private final Map<Long, Set<String>> memberConnections = new ConcurrentHashMap<>();
+    private final AtomicInteger heartbeatCursor = new AtomicInteger(0);
 
     /**
      * SSE 연결을 생성하고 로컬 레지스트리에 등록한 뒤 초기 데이터를 전송한다.
@@ -164,7 +166,6 @@ public abstract class AbstractSseService<T> {
                     .data("connected"));
         } catch (IOException ex) {
             disconnect(connectionId);
-            log.debug("SSE ping failed for memberId={}", connection.memberId, ex);
         }
     }
 
@@ -172,8 +173,28 @@ public abstract class AbstractSseService<T> {
      * 모든 활성 연결에 ping 이벤트를 전송한다.
      */
     protected void sendHeartbeat() {
+        int total = connections.size();
+        if (total == 0) {
+            return;
+        }
+        int groups = Math.max(1, Policy.SSE_HEARTBEAT_GROUPS);
+        int effectiveGroups = Math.min(groups, total);
+        int groupSize = (int) Math.ceil((double) total / effectiveGroups);
+        int groupIndex = Math.floorMod(heartbeatCursor.getAndIncrement(), effectiveGroups);
+        int from = groupIndex * groupSize;
+        int to = Math.min(from + groupSize, total);
+        if (from >= to) {
+            return;
+        }
+        int index = 0;
         for (String connectionId : connections.keySet()) {
-            sendPing(connectionId);
+            if (index >= from && index < to) {
+                sendPing(connectionId);
+            }
+            index++;
+            if (index >= to) {
+                break;
+            }
         }
     }
 

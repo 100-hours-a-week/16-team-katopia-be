@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseCookie;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.env.MockEnvironment;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -27,7 +28,7 @@ class JwtProviderTest {
 
     @BeforeEach
     void setUp() {
-        JwtProperties jwtProperties = new JwtProperties();
+        JwtProperties jwtProperties = new JwtProperties(new MockEnvironment());
         jwtProperties.setAccessTokenSecret(ACCESS_SECRET);
         jwtProperties.setRefreshTokenSecret(REFRESH_SECRET);
         jwtProperties.setAccessTokenTtl(Duration.ofMinutes(5));

@@ -83,6 +83,7 @@ CREATE TABLE post_likes (
 - 게시글 작성: `POST /api/posts`
 - 게시글 목록: `GET /api/posts`
 - 게시글 상세: `GET /api/posts/{id}`
+- 게시글 좋아요/북마크 상태: `GET /api/posts/{id}/viewer-state`
 - 홈 피드(팔로우+내 게시글): `GET /api/home/posts`
 - 게시글 수정: `PATCH /api/posts/{id}`
 - 게시글 삭제: `DELETE /api/posts/{id}`
