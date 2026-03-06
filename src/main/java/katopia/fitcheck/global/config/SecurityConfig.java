@@ -39,8 +39,8 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        boolean allowSwagger = environment.acceptsProfiles(Profiles.of("dev", "local"));
-        boolean allowDevOnly = environment.acceptsProfiles(Profiles.of("dev", "local"));
+        boolean allowSwagger = environment.acceptsProfiles(Profiles.of("dev", "local", "stg"));
+        boolean allowDevOnly = environment.acceptsProfiles(Profiles.of("dev", "local", "stg"));
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
