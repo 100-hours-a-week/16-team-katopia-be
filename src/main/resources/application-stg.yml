@@ -1,8 +1,8 @@
 spring:
   config:
-    import: optional:aws-secretsmanager:prod/spring/secret
+    import: optional:aws-secretsmanager:docker/spring/secret
     activate:
-      on-profile: prod
+      on-profile: stg
 
   datasource:
     url: ${DB_URL}
