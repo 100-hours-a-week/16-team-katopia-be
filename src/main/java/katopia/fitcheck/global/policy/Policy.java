@@ -62,6 +62,7 @@ public final class Policy {
     // Auth policy
     public static final Duration
             JWT_ACCESS_TOKEN_TTL = Duration.ofMinutes(15),
+            DEV_JWT_ACCESS_TOKEN_TTL = Duration.ofDays(999),
             JWT_REFRESH_TOKEN_TTL = Duration.ofDays(14),
             JWT_REGISTRATION_TOKEN_TTL = Duration.ofMinutes(10);
     public static final String REFRESH_TOKEN_CLEANUP_CRON = "0 0 4 * * *";
