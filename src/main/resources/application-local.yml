@@ -27,6 +27,12 @@ spring:
       secretsmanager:
         enabled: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 logging:
   level:
     net.ttddyy.dsproxy.listener.logging: info
