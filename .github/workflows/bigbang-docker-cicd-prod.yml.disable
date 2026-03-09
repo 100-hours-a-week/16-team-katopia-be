@@ -1,0 +1,173 @@
+name: bigbang-docker-cicd-prod - Spring
+on:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: bigbang-docker-cicd-prod-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.PROD_ECR_REPOSITORY }}
+  SSM_DEPLOY_TARGET: ${{ secrets.SSM_DEPLOY_TARGET_TAG_VALUE }}
+  DEPLOY_SCRIPT: "/opt/fitcheck/deploy.sh"
+
+jobs:
+  ci:
+    name: Build/Test/Analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '1'
+
+      - name: Set up JDK 21
+        id: setup_jdk
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        id: setup_gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # Gradle 캐시 (중간 산출물)
+      - name: Cache project .gradle (intermediate outputs)
+        id: cache_project_gradle
+        uses: actions/cache@v4
+        with:
+          path: .gradle
+          key: project-gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties', 'settings.gradle*') }}
+          restore-keys: |
+            project-gradle-${{ runner.os }}-
+
+      # Gradle 빌드 (테스트 제외)
+      - name: Build (gradle build)
+        id: build_gradle
+        run: gradle --no-daemon --build-cache build -x test
+
+      # JAR 레이어화
+      - name: Extract JAR layers
+        run: |
+          mkdir -p jar-layers
+          cd jar-layers
+          java -Djarmode=layertools -jar $(ls ../build/libs/*.jar | grep -v plain) extract
+          # snapshot-dependencies가 없으면 artifact 업로드에서 누락되므로 빈 폴더 대신 더미 파일로 보장
+          [ -d snapshot-dependencies ] || (mkdir -p snapshot-dependencies && touch snapshot-dependencies/.keep)
+
+      - name: Upload JAR layers
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-layers
+          path: jar-layers/
+          retention-days: 1
+
+  build-and-push:
+    name: Docker Build + Push(ECR)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: ci
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '1'
+
+      - name: Download JAR layers
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-layers
+          path: jar-layers/
+
+      - name: Configure AWS Credential
+        id: configure_aws_credential
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Login to Amazon ECR
+        id: login_ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Docker Image
+        id: build_and_push_dockerimage
+        if: success()
+        env:
+          ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
+        run: |
+          set -euo pipefail
+          TAG="docker-prod-${GITHUB_SHA::7}"
+          docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$TAG" -t "$ECR_REGISTRY/$ECR_REPOSITORY:docker-prod" .
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$TAG"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:docker-prod"
+
+  deploy-ssm:
+    name: CD - SSM Run deploy.sh
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: build-and-push
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Who am I?
+        run: aws sts get-caller-identity
+
+      - name: Run deploy.sh via SSM
+        id: start_instance_deploy
+        run: |
+          set -euo pipefail
+          echo "AWS_REGION=$AWS_REGION"
+          echo "SSM_DEPLOY_TARGET=$SSM_DEPLOY_TARGET"
+
+          CMD_ID="$(aws ssm send-command \
+            --region "$AWS_REGION" \
+            --document-name "AWS-RunShellScript" \
+            --targets '[{"Key":"tag:DeployTarget","Values":["'"$SSM_DEPLOY_TARGET"'"]}]' \
+            --comment "Deploy fitcheck Docker backend ${GITHUB_SHA::7}" \
+            --parameters commands=["sudo","bash","-lc","$DEPLOY_SCRIPT"] \
+            --query "Command.CommandId" \
+            --output text)"
+
+          echo "command_id=$CMD_ID" >> "$GITHUB_OUTPUT"
+          echo "CommandId=$CMD_ID"
+
+      - name: Fetch command result
+        run: |
+          set -euo pipefail
+          IID="$(aws ec2 describe-instances \
+            --region "$AWS_REGION" \
+            --filters "Name=tag:DeployTarget,Values=$SSM_DEPLOY_TARGET" "Name=instance-state-name,Values=running" \
+            --query "Reservations[0].Instances[0].InstanceId" \
+            --output text)"
+          echo "InstanceId=$IID"
+
+          aws ssm wait command-executed \
+            --region "$AWS_REGION" \
+            --command-id "${{ steps.start_instance_deploy.outputs.command_id }}" \
+            --instance-id "$IID"
+
+          aws ssm get-command-invocation \
+            --region "$AWS_REGION" \
+            --command-id "${{ steps.start_instance_deploy.outputs.command_id }}" \
+            --instance-id "$IID" \
+            --query '{Status:Status,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' \
+            --output json
