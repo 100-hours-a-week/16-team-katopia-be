@@ -53,6 +53,12 @@ spring:
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 app:
   jwt:
     access-token-secret: ${JWT_ACCESS_TOKEN_SECRET}

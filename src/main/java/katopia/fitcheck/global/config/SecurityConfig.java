@@ -41,13 +41,18 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         boolean allowSwagger = environment.acceptsProfiles(Profiles.of("dev", "local"));
         boolean allowDevOnly = environment.acceptsProfiles(Profiles.of("dev", "local"));
+        boolean allowActuatorAll = environment.acceptsProfiles(Profiles.of("dev", "local", "stg"));
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(EndpointRequest.to("health")).permitAll();
+                    if (allowActuatorAll) {
+                        auth.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll();
+                    } else {
+                        auth.requestMatchers(EndpointRequest.to("health")).permitAll();
+                    }
                     if (allowDevOnly) {
                         auth.requestMatchers(EndpointRequest.to("prometheus", "metrics")).permitAll();
                     }
