@@ -113,4 +113,10 @@ public class Notification {
             this.readAt = readAt;
         }
     }
+
+    public void assignCreatedAt(LocalDateTime createdAt) {
+        if (this.createdAt == null) {
+            this.createdAt = createdAt;
+        }
+    }
 }
