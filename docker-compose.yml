@@ -26,5 +26,14 @@ services:
       - "5672:5672"
       - "15672:15672"
 
+  mongodb:
+    image: mongo:7
+    container_name: fitcheck-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - fitcheck_mongodb_data:/data/db
+
 volumes:
   fitcheck_mysql_data:
+  fitcheck_mongodb_data:
