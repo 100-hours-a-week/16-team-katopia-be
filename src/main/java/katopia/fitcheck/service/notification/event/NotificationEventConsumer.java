@@ -18,7 +18,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -42,9 +46,22 @@ public class NotificationEventConsumer {
                 channel.basicAck(deliveryTag, false);
                 return;
             }
-            List<Notification> notifications = new java.util.ArrayList<>(event.getTargetIds().size());
+            Map<Long, Member> membersById = loadMembers(event);
+            Member actor = resolveActor(event, membersById);
+            NotificationType notificationType = NotificationType.fromCode(event.getEventType());
+            NotificationPayloadResult payloadResult = resolvePayload(notificationType, payload);
+
+            List<Notification> notifications = new ArrayList<>(event.getTargetIds().size());
             for (Long targetId : event.getTargetIds()) {
-                Notification notification = createNotification(event, payload, targetId);
+                Member recipient = resolveRecipient(targetId, membersById);
+                Notification notification = Notification.of(
+                        recipient,
+                        actor,
+                        notificationType,
+                        payloadResult.message(),
+                        event.getRefId(),
+                        payloadResult.imageObjectKeySnapshot()
+                );
                 notifications.add(notification);
             }
             List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
@@ -62,17 +79,27 @@ public class NotificationEventConsumer {
         // TODO: fan-out(투표 종료/게시글 작성) 규모 커지면 전송을 @Async로 분리 검토
     }
 
-    private Notification createNotification(MessageEvent event, NotificationPayload payload, Long targetId) {
-        NotificationType notificationType = NotificationType.fromCode(event.getEventType());
+    private Map<Long, Member> loadMembers(MessageEvent event) {
+        Set<Long> ids = new LinkedHashSet<>(event.getTargetIds());
+        if (event.getActorId() != null) {
+            ids.add(event.getActorId());
+        }
+        return memberFinder.findAllByIdsOrThrow(new ArrayList<>(ids));
+    }
 
-        Member recipient = memberFinder.findByIdOrThrow(targetId);
-        Member actor = event.getActorId() == null ? null : memberFinder.findByIdOrThrow(event.getActorId());
-        NotificationPayloadResult payloadResult = resolvePayload(notificationType, payload);
+    private Member resolveActor(MessageEvent event, Map<Long, Member> membersById) {
+        if (event.getActorId() == null) {
+            return null;
+        }
+        return resolveRecipient(event.getActorId(), membersById);
+    }
 
-
-        String message = payloadResult.message();
-        String imageObjectKeySnapshot = payloadResult.imageObjectKeySnapshot();
-        return Notification.of(recipient, actor, notificationType, message, event.getRefId(), imageObjectKeySnapshot);
+    private Member resolveRecipient(Long memberId, Map<Long, Member> membersById) {
+        Member member = membersById.get(memberId);
+        if (member == null) {
+            throw new IllegalStateException("Missing member. memberId=" + memberId);
+        }
+        return member;
     }
 
     private NotificationPayloadResult resolvePayload(

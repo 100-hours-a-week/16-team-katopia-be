@@ -10,6 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 @Component
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -25,6 +30,22 @@ public class MemberFinder {
     public Member findByIdOrThrow(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    public Map<Long, Member> findAllByIdsOrThrow(List<Long> memberIds) {
+        if (memberIds == null || memberIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> uniqueIds = new ArrayList<>(memberIds.stream().distinct().toList());
+        List<Member> members = memberRepository.findAllById(uniqueIds);
+        if (members.size() != uniqueIds.size()) {
+            throw new BusinessException(MemberErrorCode.NOT_FOUND_MEMBER);
+        }
+        Map<Long, Member> result = new LinkedHashMap<>(members.size());
+        for (Member member : members) {
+            result.put(member.getId(), member);
+        }
+        return result;
     }
 
     public Member findActiveByIdOrThrow(Long memberId) {
