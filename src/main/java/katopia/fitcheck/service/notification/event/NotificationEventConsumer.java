@@ -8,6 +8,7 @@ import katopia.fitcheck.domain.notification.Notification;
 import katopia.fitcheck.domain.notification.NotificationType;
 import katopia.fitcheck.rabbitmq.RabbitMqConstants;
 import katopia.fitcheck.global.policy.Policy;
+import katopia.fitcheck.repository.notification.NotificationBulkRepository;
 import katopia.fitcheck.repository.notification.NotificationRepository;
 import katopia.fitcheck.service.member.MemberFinder;
 import katopia.fitcheck.service.notification.NotificationRealtimePublisher;
@@ -23,6 +24,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ import java.util.Set;
 public class NotificationEventConsumer {
 
     private final NotificationRepository notificationRepository;
+    private final NotificationBulkRepository notificationBulkRepository;
     private final MemberFinder memberFinder;
     private final NotificationRealtimePublisher realtimePublisher;
     private final ObjectMapper objectMapper;
@@ -64,9 +67,12 @@ public class NotificationEventConsumer {
                 );
                 notifications.add(notification);
             }
-            List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
-            notificationRepository.flush();
-            for (Notification notification : savedNotifications) {
+            LocalDateTime now = LocalDateTime.now();
+            for (Notification notification : notifications) {
+                notification.assignCreatedAt(now);
+            }
+            notificationBulkRepository.batchInsert(notifications);
+            for (Notification notification : notifications) {
                 if (notification.getRecipient().isEnableRealtimeNotification()) {
                     realtimePublisher.publish(notification);
                 }
