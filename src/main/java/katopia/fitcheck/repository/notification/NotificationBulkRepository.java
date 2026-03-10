@@ -1,13 +1,13 @@
 package katopia.fitcheck.repository.notification;
 
 import katopia.fitcheck.domain.notification.Notification;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import katopia.fitcheck.global.policy.Policy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -36,33 +36,30 @@ public class NotificationBulkRepository {
                     ref_id
                 ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
-        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
+        int batchSize = Policy.NOTIFICATION_BULK_BATCH_SIZE;
+        int total = notifications.size();
+        for (int start = 0; start < total; start += batchSize) {
+            int end = Math.min(start + batchSize, total);
+            List<Object[]> batchArgs = new ArrayList<>(end - start);
+            LocalDateTime createdAt = notifications.get(start).getCreatedAt();
+            Timestamp createdAtTs = createdAt != null ? Timestamp.valueOf(createdAt) : null;
+            for (int i = start; i < end; i++) {
                 Notification notification = notifications.get(i);
-                if (notification.getActor() != null) {
-                    ps.setLong(1, notification.getActor().getId());
-                } else {
-                    ps.setObject(1, null);
-                }
-                ps.setString(2, notification.getActorNicknameSnapshot());
-                ps.setTimestamp(3, Timestamp.valueOf(notification.getCreatedAt()));
-                ps.setString(4, notification.getImageObjectKeySnapshot());
-                ps.setString(5, notification.getMessage());
-                ps.setString(6, notification.getNotificationType().name());
-                if (notification.getReadAt() != null) {
-                    ps.setTimestamp(7, Timestamp.valueOf(notification.getReadAt()));
-                } else {
-                    ps.setObject(7, null);
-                }
-                ps.setLong(8, notification.getRecipient().getId());
-                ps.setLong(9, notification.getRefId());
+                Long actorId = notification.getActor() != null ? notification.getActor().getId() : null;
+                Timestamp readAtTs = notification.getReadAt() != null ? Timestamp.valueOf(notification.getReadAt()) : null;
+                batchArgs.add(new Object[]{
+                        actorId,
+                        notification.getActorNicknameSnapshot(),
+                        createdAtTs,
+                        notification.getImageObjectKeySnapshot(),
+                        notification.getMessage(),
+                        notification.getNotificationType().name(),
+                        readAtTs,
+                        notification.getRecipient().getId(),
+                        notification.getRefId()
+                });
             }
-
-            @Override
-            public int getBatchSize() {
-                return notifications.size();
-            }
-        });
+            jdbcTemplate.batchUpdate(sql, batchArgs);
+        }
     }
 }
