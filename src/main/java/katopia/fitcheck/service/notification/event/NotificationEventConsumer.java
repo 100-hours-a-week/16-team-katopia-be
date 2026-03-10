@@ -18,6 +18,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -41,9 +42,14 @@ public class NotificationEventConsumer {
                 channel.basicAck(deliveryTag, false);
                 return;
             }
+            List<Notification> notifications = new java.util.ArrayList<>(event.getTargetIds().size());
             for (Long targetId : event.getTargetIds()) {
                 Notification notification = createNotification(event, payload, targetId);
-                notificationRepository.save(notification);
+                notifications.add(notification);
+            }
+            List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
+            notificationRepository.flush();
+            for (Notification notification : savedNotifications) {
                 if (notification.getRecipient().isEnableRealtimeNotification()) {
                     realtimePublisher.publish(notification);
                 }
