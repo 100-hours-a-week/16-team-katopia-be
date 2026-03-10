@@ -79,8 +79,8 @@ public final class Policy {
             SSE_UNREAD_LIMIT = 10,
             SSE_UNREAD_LIMIT_MAX = 20;
     public static final Duration COMMENT_COUNT_BATCH_INTERVAL = Duration.ofSeconds(3);
-    public static final int NOTIFICATION_BULK_BATCH_SIZE = 200;
-    public static final int NOTIFICATION_TARGET_BATCH_SIZE = 200;
+    public static final int NOTIFICATION_BULK_BATCH_SIZE = 50;
+    public static final int NOTIFICATION_TARGET_BATCH_SIZE = 50;
 
     // descriptions
     public static final String NICKNAME_DES =
