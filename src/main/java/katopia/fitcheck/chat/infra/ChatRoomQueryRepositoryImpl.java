@@ -1,7 +1,7 @@
 package katopia.fitcheck.chat.infra;
 
-import katopia.fitcheck.chat.application.ChatRoomQueryService.ChatRoomAllCursor;
 import katopia.fitcheck.chat.domain.ChatRoomDocument;
+import katopia.fitcheck.chat.service.room.ChatRoomQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,7 +19,7 @@ public class ChatRoomQueryRepositoryImpl implements ChatRoomQueryRepository {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public List<ChatRoomDocument> findAllRooms(int size, ChatRoomAllCursor cursor) {
+    public List<ChatRoomDocument> findAllRooms(int size, ChatRoomQueryService.ChatRoomAllCursor cursor) {
         Query query = new Query()
                 .with(Sort.by(
                         Sort.Order.desc("updatedAt"),

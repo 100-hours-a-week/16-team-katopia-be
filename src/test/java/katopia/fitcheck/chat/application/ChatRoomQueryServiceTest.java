@@ -1,6 +1,6 @@
 package katopia.fitcheck.chat.application;
 
-import katopia.fitcheck.chat.api.response.ChatRoomListResponse;
+import katopia.fitcheck.chat.api.response.ChatRoomJoinedListResponse;
 import katopia.fitcheck.chat.domain.ChatMemberDocument;
 import katopia.fitcheck.chat.domain.ChatRoomDocument;
 import katopia.fitcheck.chat.infra.ChatMemberQueryRepository;
@@ -72,7 +72,7 @@ class ChatRoomQueryServiceTest {
         when(chatMemberQueryRepository.findMyRooms(eq(1L), eq(1), any())).thenReturn(List.of(roomMember));
         when(chatRoomRepository.findAllById(List.of("room-1"))).thenReturn(List.of(room));
 
-        ChatRoomListResponse response = chatRoomQueryService.listRooms(1L, "1", null);
+        ChatRoomJoinedListResponse response = chatRoomQueryService.listRooms(1L, "1", null);
 
         assertThat(response.rooms()).hasSize(1);
         assertThat(response.rooms().getFirst().roomId()).isEqualTo("room-1");

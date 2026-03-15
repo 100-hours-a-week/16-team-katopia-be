@@ -1,4 +1,4 @@
-package katopia.fitcheck.chat.application;
+package katopia.fitcheck.chat.service.room;
 
 import katopia.fitcheck.chat.api.response.ChatRoomJoinedListResponse;
 import katopia.fitcheck.chat.api.response.ChatRoomAllListResponse;
@@ -128,7 +128,7 @@ public class ChatRoomQueryService {
             if (members == null || members.isEmpty() || members.size() < size) {
                 return null;
             }
-            return encode(members.get(members.size() - 1));
+            return encode(members.getLast());
         }
     }
 
@@ -156,7 +156,7 @@ public class ChatRoomQueryService {
             if (rooms == null || rooms.isEmpty() || rooms.size() < size) {
                 return null;
             }
-            return encode(rooms.get(rooms.size() - 1));
+            return encode(rooms.getLast());
         }
     }
 }
