@@ -2,10 +2,10 @@ package katopia.fitcheck.chat.ws;
 
 import katopia.fitcheck.chat.service.message.ChatReadStateService;
 import katopia.fitcheck.global.security.SecuritySupport;
+import katopia.fitcheck.redis.chat.RedisChatRealtimePublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -16,7 +16,7 @@ public class ChatReadStateController {
 
     private final ChatReadStateService chatReadStateService;
     private final SecuritySupport securitySupport;
-    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final RedisChatRealtimePublisher redisChatRealtimePublisher;
 
     @MessageMapping(ChatPolicy.READ_STATE_MAPPING)
     public void readState(@Payload ChatReadStateRequest request, Principal principal) {
@@ -26,9 +26,6 @@ public class ChatReadStateController {
                 request.roomId(),
                 request.lastReadMessageId()
         );
-        simpMessagingTemplate.convertAndSend(
-                ChatPolicy.roomReadStateTopic(response.roomId()),
-                response
-        );
+        redisChatRealtimePublisher.publishReadState(response);
     }
 }

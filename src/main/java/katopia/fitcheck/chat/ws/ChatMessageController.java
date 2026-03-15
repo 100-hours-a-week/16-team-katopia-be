@@ -4,10 +4,10 @@ import katopia.fitcheck.chat.api.request.ChatMessageCreateRequest;
 import katopia.fitcheck.chat.api.response.ChatMessageResponse;
 import katopia.fitcheck.chat.service.message.ChatMessageCommandService;
 import katopia.fitcheck.global.security.SecuritySupport;
+import katopia.fitcheck.redis.chat.RedisChatRealtimePublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -18,7 +18,7 @@ public class ChatMessageController {
 
     private final ChatMessageCommandService chatMessageCommandService;
     private final SecuritySupport securitySupport;
-    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final RedisChatRealtimePublisher redisChatRealtimePublisher;
 
     @MessageMapping(ChatPolicy.MESSAGE_MAPPING)
     public void sendMessage(@Payload ChatMessageSocketRequest request, Principal principal) {
@@ -28,9 +28,6 @@ public class ChatMessageController {
                 request.roomId(),
                 new ChatMessageCreateRequest(request.message(), request.imageObjectKey())
         );
-        simpMessagingTemplate.convertAndSend(
-                ChatPolicy.roomMessagesTopic(response.roomId()),
-                response
-        );
+        redisChatRealtimePublisher.publishMessage(response);
     }
 }

@@ -6,13 +6,13 @@ import katopia.fitcheck.chat.service.message.ChatMessageCommandService;
 import katopia.fitcheck.chat.domain.ChatMessageType;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
+import katopia.fitcheck.redis.chat.RedisChatRealtimePublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.Instant;
 import java.security.Principal;
@@ -32,7 +32,7 @@ class ChatMessageControllerTest {
     private SecuritySupport securitySupport;
 
     @Mock
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private RedisChatRealtimePublisher redisChatRealtimePublisher;
 
     @InjectMocks
     private ChatMessageController chatMessageController;
@@ -61,6 +61,6 @@ class ChatMessageControllerTest {
 
         chatMessageController.sendMessage(request, principal);
 
-        verify(simpMessagingTemplate).convertAndSend("/topic/chat/rooms/room-1/messages", response);
+        verify(redisChatRealtimePublisher).publishMessage(response);
     }
 }

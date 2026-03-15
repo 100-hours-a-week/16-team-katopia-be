@@ -3,13 +3,13 @@ package katopia.fitcheck.chat.ws;
 import katopia.fitcheck.chat.service.message.ChatReadStateService;
 import katopia.fitcheck.global.security.SecuritySupport;
 import katopia.fitcheck.global.security.jwt.MemberPrincipal;
+import katopia.fitcheck.redis.chat.RedisChatRealtimePublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.security.Principal;
 
@@ -26,7 +26,7 @@ class ChatReadStateControllerTest {
     private SecuritySupport securitySupport;
 
     @Mock
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private RedisChatRealtimePublisher redisChatRealtimePublisher;
 
     @InjectMocks
     private ChatReadStateController chatReadStateController;
@@ -43,6 +43,6 @@ class ChatReadStateControllerTest {
 
         chatReadStateController.readState(request, principal);
 
-        verify(simpMessagingTemplate).convertAndSend("/topic/chat/rooms/room-1/read-state", response);
+        verify(redisChatRealtimePublisher).publishReadState(response);
     }
 }
