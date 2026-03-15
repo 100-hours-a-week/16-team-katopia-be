@@ -58,8 +58,10 @@ public class SecurityConfig {
                     }
                     auth.requestMatchers(
                             "/bookmarks.*",
+                            "/chat-stomp.*",
                             "/oauth2/**",
                             "/login/**",
+                            "/ws/chat/**",
                             "/error",
                             "/.well-known/**"
                     ).permitAll();

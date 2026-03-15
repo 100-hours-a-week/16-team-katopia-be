@@ -3,6 +3,10 @@ spring:
     activate:
       on-profile: local
 
+  data:
+    mongodb:
+      uri: ${MONGO_URL:mongodb://localhost:27017/fitcheck_chat}
+
 
 #  data:
 #    redis:
