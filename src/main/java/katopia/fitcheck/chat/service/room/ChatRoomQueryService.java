@@ -8,6 +8,7 @@ import katopia.fitcheck.chat.domain.ChatMemberDocument;
 import katopia.fitcheck.chat.domain.ChatRoomDocument;
 import katopia.fitcheck.chat.infra.ChatMemberQueryRepository;
 import katopia.fitcheck.chat.infra.ChatMemberRepository;
+import katopia.fitcheck.chat.infra.ChatMessageRepository;
 import katopia.fitcheck.chat.infra.ChatRoomQueryRepository;
 import katopia.fitcheck.chat.infra.ChatRoomRepository;
 import katopia.fitcheck.global.exception.BusinessException;
@@ -30,6 +31,7 @@ public class ChatRoomQueryService {
 
     private final ChatMemberQueryRepository chatMemberQueryRepository;
     private final ChatMemberRepository chatMemberRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomQueryRepository chatRoomQueryRepository;
     private final MemberFinder memberFinder;
@@ -39,13 +41,15 @@ public class ChatRoomQueryService {
 
         int size = CursorPagingHelper.resolvePageSize(sizeValue);
         ChatRoomCursor cursor = ChatRoomCursor.decode(after);
-        List<ChatMemberDocument> memberships = chatMemberQueryRepository.findMyRooms(memberId, size, cursor);
+        List<ChatMemberDocument> memberships = chatMemberQueryRepository.findJoinedRooms(memberId, size, cursor);
 
         Map<String, ChatRoomDocument> roomMap = loadRoomMap(memberships);
+        Map<String, Long> unreadCounts = resolveUnreadCounts(memberships);
         List<ChatRoomJoinedSummaryResponse> rooms = memberships.stream()
                 .map(member -> ChatRoomJoinedSummaryResponse.of(
                         requireRoom(roomMap, member.getRoomId()),
-                        member
+                        member,
+                        unreadCounts.getOrDefault(member.getRoomId(), 0L)
                 ))
                 .toList();
 
@@ -81,6 +85,13 @@ public class ChatRoomQueryService {
             joinedRoomIds.add(membership.getRoomId());
         }
         return joinedRoomIds;
+    }
+
+    private Map<String, Long> resolveUnreadCounts(List<ChatMemberDocument> memberships) {
+        if (memberships == null || memberships.isEmpty()) {
+            return Map.of();
+        }
+        return chatMessageRepository.countUnreadMessagesByRoom(memberships);
     }
 
     private Map<String, ChatRoomDocument> loadRoomMap(List<ChatMemberDocument> memberships) {

@@ -4,6 +4,7 @@ import katopia.fitcheck.chat.api.response.ChatRoomJoinedListResponse;
 import katopia.fitcheck.chat.domain.ChatMemberDocument;
 import katopia.fitcheck.chat.domain.ChatRoomDocument;
 import katopia.fitcheck.chat.infra.ChatMemberQueryRepository;
+import katopia.fitcheck.chat.infra.ChatMessageRepository;
 import katopia.fitcheck.chat.infra.ChatRoomRepository;
 import katopia.fitcheck.chat.service.room.ChatRoomQueryService;
 import katopia.fitcheck.domain.member.AccountStatus;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -36,6 +38,9 @@ class ChatRoomQueryServiceTest {
 
     @Mock
     private ChatRoomRepository chatRoomRepository;
+
+    @Mock
+    private ChatMessageRepository chatMessageRepository;
 
     @Mock
     private MemberFinder memberFinder;
@@ -69,15 +74,16 @@ class ChatRoomQueryServiceTest {
                 .updatedAt(Instant.parse("2026-03-11T13:00:00Z"))
                 .build();
 
-        when(chatMemberQueryRepository.findMyRooms(eq(1L), eq(1), any())).thenReturn(List.of(roomMember));
+        when(chatMemberQueryRepository.findJoinedRooms(eq(1L), eq(1), any())).thenReturn(List.of(roomMember));
         when(chatRoomRepository.findAllById(List.of("room-1"))).thenReturn(List.of(room));
+        when(chatMessageRepository.countUnreadMessagesByRoom(List.of(roomMember))).thenReturn(Map.of("room-1", 3L));
 
         ChatRoomJoinedListResponse response = chatRoomQueryService.listRooms(1L, "1", null);
 
         assertThat(response.rooms()).hasSize(1);
         assertThat(response.rooms().getFirst().roomId()).isEqualTo("room-1");
         assertThat(response.rooms().getFirst().participantCount()).isEqualTo(3);
-        assertThat(response.rooms().getFirst().unreadMessageCount()).isEqualTo(0L);
+        assertThat(response.rooms().getFirst().unreadMessageCount()).isEqualTo(3L);
         assertThat(response.nextCursor()).isEqualTo("2026-03-11T12:34:56Z|member-doc-1");
     }
 
