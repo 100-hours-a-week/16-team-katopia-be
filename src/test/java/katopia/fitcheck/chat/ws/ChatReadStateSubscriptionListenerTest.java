@@ -45,7 +45,7 @@ class ChatReadStateSubscriptionListenerTest {
 
     @Test
     @DisplayName("TC-CHAT-WS-S-04 read-state topic 구독 시 스냅샷을 해당 세션에 1회 전송")
-    void tcChatWsS04_subscribeReadStateTopic_sendsSnapshot() {
+    void tcChatWsS04_subscribeReadStateTopic_sendsSnapshot() throws Exception {
         MemberPrincipal principal = new MemberPrincipal(7L);
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
         accessor.setDestination("/topic/chat/rooms/room-1/read-state");
