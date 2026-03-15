@@ -3,6 +3,7 @@ package katopia.fitcheck.global.exception;
 import jakarta.validation.ConstraintViolation;
 import katopia.fitcheck.global.APIResponse;
 import katopia.fitcheck.global.exception.code.AuthErrorCode;
+import katopia.fitcheck.global.exception.code.ChatErrorCode;
 import katopia.fitcheck.global.exception.code.CommentErrorCode;
 import katopia.fitcheck.global.exception.code.CommonErrorCode;
 import katopia.fitcheck.global.exception.code.MemberErrorCode;
@@ -35,6 +36,7 @@ public class GlobalExceptionHandler {
         registerCodes(MemberErrorCode.values());
         registerCodes(PostErrorCode.values());
         registerCodes(CommentErrorCode.values());
+        registerCodes(ChatErrorCode.values());
         registerCodes(AuthErrorCode.values());
         registerCodes(VoteErrorCode.values());
     }

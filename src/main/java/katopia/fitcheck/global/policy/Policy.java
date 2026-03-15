@@ -41,6 +41,11 @@ public final class Policy {
             VOTE_IMAGE_MIN_COUNT = 2, VOTE_IMAGE_MAX_COUNT = 5,
             VOTE_DEFAULT_EXPIRES_HOURS = 24;
 
+    // Chat policy
+    public static final int
+            CHAT_ROOM_TITLE_MAX_LENGTH = 100,
+            CHAT_MESSAGE_MAX_LENGTH = 1000;
+
     // Search policy
     public static final int
             SEARCH_MIN_QUERY_LENGTH = 2, SEARCH_MAX_QUERY_LENGTH = 100,
@@ -79,8 +84,8 @@ public final class Policy {
             SSE_UNREAD_LIMIT = 10,
             SSE_UNREAD_LIMIT_MAX = 20;
     public static final Duration COMMENT_COUNT_BATCH_INTERVAL = Duration.ofSeconds(3);
-    public static final int NOTIFICATION_BULK_BATCH_SIZE = 100;
-    public static final int NOTIFICATION_TARGET_BATCH_SIZE = 100;
+    public static final int NOTIFICATION_BULK_BATCH_SIZE = 200;
+    public static final int NOTIFICATION_TARGET_BATCH_SIZE = 200;
 
     // descriptions
     public static final String NICKNAME_DES =
