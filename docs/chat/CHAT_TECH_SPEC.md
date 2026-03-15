@@ -108,6 +108,41 @@ destination:/topic/chat/rooms/{roomId}/read-state
 - 최초 구독 시 서버가 **해당 구독 세션에만** 참여자 전체의 `lastReadMessageId` 스냅샷을 1회 전송한다.
 - 이후에는 같은 채널로 `READ_STATE` delta 이벤트를 계속 전송한다.
 
+### UNSUBSCRIBE
+> 메시지 채널 구독 해제
+
+```text
+UNSUBSCRIBE
+id:sub-messages
+
+\0
+```
+
+> 읽음 상태 채널 구독 해제
+
+```text
+UNSUBSCRIBE
+id:sub-read-state
+
+\0
+```
+
+- 채팅방 화면에서만 이탈하고 소켓 연결은 유지할 경우 `sub-messages`, `sub-read-state`를 해제한다.
+- 이후 다른 채팅방으로 이동하면 새 roomId 기준으로 다시 SUBSCRIBE 한다.
+
+### DISCONNECT
+> 소켓 연결 종료
+
+```text
+DISCONNECT
+receipt:disconnect-1
+
+\0
+```
+
+- 앱 백그라운드 전환, 로그아웃, 채팅 기능 완전 종료 시 사용한다.
+- 일반적으로는 `UNSUBSCRIBE`로 채널 정리 후 `DISCONNECT`를 보낸다.
+
 ### SEND
 > 메시지 전송
 
@@ -128,6 +163,48 @@ content-type:application/json
 {"roomId":"69b5bbc08e52663be78a0d10","message":null,"imageObjectKey":"chat/rooms/69b5bbc08e52663be78a0d10/sample.webp"}\0
 ```
 
+> 읽음 ACK 전송
+
+```text
+SEND
+destination:/app/chat.read-state
+content-type:application/json
+
+{"roomId":"69b693a7d009ab868d55284b","lastReadMessageId":12}\0
+```
+
+
+### 채팅방 나가기 + 소켓/채널 정리 예시
+
+1. 채팅방 자체에서 나갈 때는 REST `DELETE /api/chat/rooms/{roomId}/leave`를 먼저 호출한다.
+2. 현재 화면의 소켓 구독만 정리할 때는 `UNSUBSCRIBE sub-messages`, `UNSUBSCRIBE sub-read-state`를 보낸다.
+3. 채팅 기능 전체를 종료할 때는 마지막에 `DISCONNECT`를 보낸다.
+
+```text
+DELETE /api/chat/rooms/{roomId}/leave
+Authorization: Bearer {AT}
+```
+
+```text
+UNSUBSCRIBE
+id:sub-messages
+
+\0
+```
+
+```text
+UNSUBSCRIBE
+id:sub-read-state
+
+\0
+```
+
+```text
+DISCONNECT
+receipt:disconnect-1
+
+\0
+```
 
 
 ### 개발 순서 (Implementation Plan)
@@ -204,7 +281,6 @@ content-type:application/json
 - 채팅방 생성/조회: `POST /api/chat/rooms`, `GET /api/chat/rooms`
 - 채팅방 수정/삭제: `PATCH /api/chat/rooms/{id}`, `DELETE /api/chat/rooms/{id}`
 - 채팅방 참여/퇴장: `POST /api/chat/rooms/{id}/join`, `DELETE /api/chat/rooms/{id}/leave`
-- 채팅방 입장: `GET /api/chat/rooms/{id}` (참여자만)
 - 메시지 생성/목록: `POST /api/chat/rooms/{id}/messages`, `GET /api/chat/rooms/{id}/messages`
 - 실시간 전송: `WS /ws/chat`
 - 알림 스트림: `GET /api/notifications/stream` (알림/채팅 알림 공용)

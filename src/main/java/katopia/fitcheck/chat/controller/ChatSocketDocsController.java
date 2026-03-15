@@ -36,6 +36,24 @@ public class ChatSocketDocsController implements ChatSocketDocsApiSpec {
     }
 
     @Override
+    @PostMapping("/unsubscribe/messages")
+    public void unsubscribeMessagesDocs(HttpServletResponse response) throws IOException {
+        response.sendError(501, DOCS_ONLY_MESSAGE);
+    }
+
+    @Override
+    @PostMapping("/unsubscribe/read-state")
+    public void unsubscribeReadStateDocs(HttpServletResponse response) throws IOException {
+        response.sendError(501, DOCS_ONLY_MESSAGE);
+    }
+
+    @Override
+    @PostMapping("/disconnect")
+    public void disconnectDocs(HttpServletResponse response) throws IOException {
+        response.sendError(501, DOCS_ONLY_MESSAGE);
+    }
+
+    @Override
     @PostMapping("/send/message")
     public void sendMessageDocs(@RequestBody ChatMessageSocketRequest request,
                                 HttpServletResponse response) throws IOException {
