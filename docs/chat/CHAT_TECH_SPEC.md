@@ -32,6 +32,7 @@
 - 채팅방 목록
   - 방별 `참여 인원 수`, `안읽음 메시지 수`, `실시간 알림 on/off(사용자별)`
   - 익명 없음, 프로필 정보는 서비스 설정값을 사용
+  - `안읽음 메시지 수`는 저장 필드가 아니라 **목록 조회 시점에 사용자별 `lastReadMessageId` 기준으로 계산한 값**만 응답 DTO에 담는다.
 
 ## 목표가 아닌 것 (Non-goals)
 
@@ -42,10 +43,33 @@
 ### 채널/전송
 
 - WebSocket 기반 실시간 전송
-- Redis로 세션/채널 매핑
-- 멀티 인스턴스 fan-out: Redis PubSub 또는 Stream
+- 멀티 인스턴스 fan-out은 Redis Pub/Sub로 전파한다.
+- 각 인스턴스는 Redis 채널을 구독하고, 수신한 채팅 이벤트를 로컬 STOMP `/topic/chat/...` 구독자에게 다시 fan-out 한다.
 - 채팅 메시지는 `/ws/chat`으로 양방향 유지.
 - 채팅 알림은 알림 SSE(`/api/notifications/stream`)로 전달하고 `event: chat`으로 구분한다.
+
+### 멀티 인스턴스 전파 흐름(현재 구현)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant C as Client
+  participant WS1 as Chat WS (Instance A)
+  participant Mongo as MongoDB
+  participant Redis as Redis Pub/Sub
+  participant WS2 as Chat WS (Instance B)
+
+  C->>WS1: SEND /app/chat.message
+  WS1->>Mongo: 메시지 저장
+  WS1->>Redis: PUBLISH chat:realtime
+  Redis-->>WS1: MESSAGE 이벤트 수신
+  Redis-->>WS2: MESSAGE 이벤트 수신
+  WS1-->>C: /topic/chat/rooms/{roomId}/messages
+  WS2-->>C: /topic/chat/rooms/{roomId}/messages
+```
+
+- 읽음 상태(`READ_STATE`)도 같은 방식으로 Redis Pub/Sub을 통해 전 인스턴스에 전파한다.
+- 현재는 저장 성공 후 Redis로 전파하는 구조이며, 저장 자체는 동기(write-through)다.
 
 ### 채팅 소켓 연결 시작 흐름
 
@@ -318,6 +342,10 @@ sequenceDiagram
 ```
 
 ## 안읽음 수 계산 기준
+
+- 채팅방 목록의 `unreadMessageCount`는 **현재 사용자 기준** 값이다.
+- 서버는 `chat_members.lastReadMessageId`와 방 메시지 컬렉션을 비교해 `messageId > lastReadMessageId`인 메시지 개수를 계산해 응답한다.
+- 따라서 `unreadMessageCount`는 방 공통 필드로 저장하지 않고 DTO에만 포함한다.
 
 - 기준: **참여자별 lastReadMessageId 전파 + 클라이언트 계산**
   - 서버는 방 참여자 수와 각 참여자의 lastReadMessageId를 전달한다.
