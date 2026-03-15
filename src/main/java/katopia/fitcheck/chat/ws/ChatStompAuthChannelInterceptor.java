@@ -17,9 +17,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ChatStompAuthChannelInterceptor implements ChannelInterceptor {
 
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
-
     private final JwtProvider jwtProvider;
 
     @Override
@@ -51,10 +48,10 @@ public class ChatStompAuthChannelInterceptor implements ChannelInterceptor {
     }
 
     private String extractBearerToken(StompHeaderAccessor accessor) {
-        String header = accessor.getFirstNativeHeader(AUTHORIZATION_HEADER);
-        if (header == null || !header.startsWith(BEARER_PREFIX)) {
+        String header = accessor.getFirstNativeHeader(JwtProvider.AUTHORIZATION_HEADER);
+        if (header == null || !header.startsWith(JwtProvider.BEARER_PREFIX)) {
             throw new AuthException(AuthErrorCode.NOT_FOUND_AT);
         }
-        return header.substring(BEARER_PREFIX.length());
+        return header.substring(JwtProvider.BEARER_PREFIX.length());
     }
 }

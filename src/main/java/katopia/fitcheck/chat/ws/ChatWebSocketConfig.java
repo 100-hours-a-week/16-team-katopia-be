@@ -17,14 +17,14 @@ public class ChatWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws/chat")
+        registry.addEndpoint(ChatPolicy.ENDPOINT)
                 .setAllowedOriginPatterns("*");
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic", "/queue");
-        registry.setApplicationDestinationPrefixes("/app");
+        registry.enableSimpleBroker(ChatPolicy.TOPIC_PREFIX);
+        registry.setApplicationDestinationPrefixes(ChatPolicy.APPLICATION_PREFIX);
     }
 
     @Override
