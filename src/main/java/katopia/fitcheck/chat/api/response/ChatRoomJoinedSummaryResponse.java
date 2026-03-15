@@ -31,13 +31,17 @@ public record ChatRoomJoinedSummaryResponse(
         @Schema(description = "채팅방 수정 시각(UTC)", example = "2026-03-11T12:34:56Z")
         Instant updatedAt
 ) {
-    public static ChatRoomJoinedSummaryResponse of(ChatRoomDocument room, ChatMemberDocument member) {
+    public static ChatRoomJoinedSummaryResponse of(
+            ChatRoomDocument room,
+            ChatMemberDocument member,
+            long unreadMessageCount
+    ) {
         return new ChatRoomJoinedSummaryResponse(
                 room.getId(),
                 room.getTitle(),
                 room.getThumbnailImageObjectKey(),
                 room.getParticipantCount(),
-                0L,
+                unreadMessageCount,
                 member.isRealtimeNotificationEnabled(),
                 member.getJoinedAt(),
                 room.getUpdatedAt()
