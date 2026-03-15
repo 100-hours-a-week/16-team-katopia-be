@@ -37,9 +37,9 @@
 
 ### 채팅
 - 지원 범위: 그룹 채팅(N:M)
-- 전송: best-effort 방식의 SSE 전송을 지원한다.
+- 전송: WebSocket/STOMP + Redis Pub/Sub 기반 best-effort 실시간 전송을 지원한다.
 - 순서: 채팅 방 단위로 전송 순서를 보장한다.
-- 보관: 전송과 저장을 분리해 비동기 처리를 한다.
+- 보관: 현재는 MongoDB에 동기 저장(write-through)하고, 처리량/장애 격리 요구가 커지면 MQ로 저장/후처리를 분리한다.
 
 ## Redis
 
@@ -296,9 +296,70 @@ sequenceDiagram
 - 채팅은 기본적으로 **동기 저장(write-through)** 후 전파한다.
 - 순서 보장: 채팅방 단위로만 보장한다.
 - 실시간 전송: best-effort
+- 멀티 인스턴스 전파: Redis Pub/Sub
+
+### 현재 구현 책임 분리
+
+```text
++----------------------+----------------------------------------------+
+| 구성요소             | 현재 책임                                     |
++----------------------+----------------------------------------------+
+| WebSocket/STOMP      | 클라이언트 연결, 인증, room 단위 송수신       |
+| MongoDB              | 채팅방/참여/메시지 영속 저장                  |
+| Redis Pub/Sub        | 인스턴스 간 실시간 메시지/읽음 상태 fan-out   |
+| RabbitMQ             | 채팅에는 아직 미적용, 후속 비동기 분리 후보    |
++----------------------+----------------------------------------------+
+```
+
+### 현재 구현 플로우
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Client as Client
+  participant WS as Chat WS API
+  participant DB as MongoDB
+  participant Redis as Redis Pub/Sub
+  participant Other as Other WS Instances
+
+  Client->>WS: SEND(MESSAGE / READ_STATE)
+  WS->>DB: save / update
+  WS->>Redis: publish(chat:realtime)
+  Redis-->>WS: event fan-out
+  Redis-->>Other: event fan-out
+  WS-->>Client: /topic/chat/rooms/{roomId}/*
+  Other-->>Client: /topic/chat/rooms/{roomId}/*
+```
+
+### 최종 책임 분리 방향
+- Redis Pub/Sub: "지금 붙어 있는 세션"에 대한 실시간 fan-out
+- MongoDB: 채팅방/참여자/메시지의 최종 저장소
+- RabbitMQ: 저장/후처리/재시도/DLQ가 필요한 비동기 경로
+
+### 최종 책임 분리 다이어그램
+```mermaid
+flowchart LR
+  Client[Client]
+  WS[WebSocket API]
+  Redis[(Redis Pub/Sub)]
+  Mongo[(MongoDB)]
+  MQ[(RabbitMQ)]
+  Persist[Chat Persist Worker]
+  Fanout[Chat Realtime Fan-out]
+
+  Client -->|SEND MESSAGE/READ_STATE| WS
+  WS -->|현재: 동기 저장| Mongo
+  WS -->|실시간 전파 이벤트| Redis
+  Redis --> Fanout
+  Fanout -->|local /topic/chat/...| Client
+
+  WS -. 확장 시 .-> MQ
+  MQ --> Persist
+  Persist --> Mongo
+  Persist -->|저장 완료 후 실시간 전파| Redis
+```
 
 ### 비동기 전환 후보
-- WS 수신 → MQ 적재 → 워커 저장 → 실시간 전파
+- WS 수신 → MQ 적재 → 워커 저장 → Redis Pub/Sub 실시간 전파
 - 목적: 저장 장애 격리 및 수평 확장
 
 ### 비동기 전환 플로우(mermaid)
@@ -310,12 +371,14 @@ sequenceDiagram
   participant MQ as RabbitMQ
   participant W as ChatPersistWorker
   participant DB as MongoDB
+  participant Redis as Redis Pub/Sub
 
   Client->>WS: SEND(MESSAGE)
   WS->>MQ: enqueue(message)
   MQ->>W: consume(message)
   W->>DB: save(message)
-  W-->>WS: saved(messageId)
+  W->>Redis: publish(chat:realtime)
+  Redis-->>WS: fan-out event
   WS-->>Client: BROADCAST(MESSAGE)
 ```
 
