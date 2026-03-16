@@ -24,13 +24,16 @@ public record ChatRoomAllSummaryResponse(
         @Schema(description = "현재 로그인 사용자의 채팅방 참여 여부", example = "true")
         boolean joined,
 
+        @Schema(description = "현재 로그인 사용자의 채팅방 생성자 여부", example = "false")
+        boolean owner,
+
         @Schema(description = "생성 시각(UTC)", example = "2026-03-11T12:34:56Z")
         Instant createdAt,
 
         @Schema(description = "수정 시각(UTC)", example = "2026-03-11T12:34:56Z")
         Instant updatedAt
 ) {
-    public static ChatRoomAllSummaryResponse from(ChatRoomDocument room, boolean joined) {
+    public static ChatRoomAllSummaryResponse from(ChatRoomDocument room, boolean joined, boolean owner) {
         return new ChatRoomAllSummaryResponse(
                 room.getId(),
                 room.getOwnerId(),
@@ -38,6 +41,7 @@ public record ChatRoomAllSummaryResponse(
                 room.getThumbnailImageObjectKey(),
                 room.getParticipantCount(),
                 joined,
+                owner,
                 room.getCreatedAt(),
                 room.getUpdatedAt()
         );

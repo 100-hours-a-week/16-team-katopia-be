@@ -83,6 +83,7 @@ class ChatRoomQueryServiceTest {
         assertThat(response.rooms()).hasSize(1);
         assertThat(response.rooms().getFirst().roomId()).isEqualTo("room-1");
         assertThat(response.rooms().getFirst().participantCount()).isEqualTo(3);
+        assertThat(response.rooms().getFirst().owner()).isTrue();
         assertThat(response.rooms().getFirst().unreadMessageCount()).isEqualTo(3L);
         assertThat(response.nextCursor()).isEqualTo("2026-03-11T12:34:56Z|member-doc-1");
     }

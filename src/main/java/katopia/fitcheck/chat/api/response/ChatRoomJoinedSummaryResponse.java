@@ -19,6 +19,9 @@ public record ChatRoomJoinedSummaryResponse(
         @Schema(description = "참여 인원 수", example = "4")
         int participantCount,
 
+        @Schema(description = "현재 로그인 사용자의 채팅방 생성자 여부", example = "true")
+        boolean owner,
+
         @Schema(description = "안읽음 메시지 수", example = "0")
         long unreadMessageCount,
 
@@ -34,13 +37,15 @@ public record ChatRoomJoinedSummaryResponse(
     public static ChatRoomJoinedSummaryResponse of(
             ChatRoomDocument room,
             ChatMemberDocument member,
-            long unreadMessageCount
+            long unreadMessageCount,
+            boolean owner
     ) {
         return new ChatRoomJoinedSummaryResponse(
                 room.getId(),
                 room.getTitle(),
                 room.getThumbnailImageObjectKey(),
                 room.getParticipantCount(),
+                owner,
                 unreadMessageCount,
                 member.isRealtimeNotificationEnabled(),
                 member.getJoinedAt(),
