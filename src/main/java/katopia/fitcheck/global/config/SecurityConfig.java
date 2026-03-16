@@ -61,7 +61,7 @@ public class SecurityConfig {
                             "/chat-stomp.*",
                             "/oauth2/**",
                             "/login/**",
-                            "/ws/chat/**",
+                            "/api/ws/chat/**",
                             "/error",
                             "/.well-known/**"
                     ).permitAll();

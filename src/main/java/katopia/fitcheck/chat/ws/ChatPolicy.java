@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public final class ChatPolicy {
 
-    public static final String ENDPOINT = "/ws/chat";
+    public static final String ENDPOINT = "/api/ws/chat";
     public static final String TOPIC_PREFIX = "/topic";
     public static final String APPLICATION_PREFIX = "/app";
 
