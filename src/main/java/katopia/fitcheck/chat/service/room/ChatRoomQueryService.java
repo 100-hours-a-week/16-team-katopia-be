@@ -46,11 +46,15 @@ public class ChatRoomQueryService {
         Map<String, ChatRoomDocument> roomMap = loadRoomMap(memberships);
         Map<String, Long> unreadCounts = resolveUnreadCounts(memberships);
         List<ChatRoomJoinedSummaryResponse> rooms = memberships.stream()
-                .map(member -> ChatRoomJoinedSummaryResponse.of(
-                        requireRoom(roomMap, member.getRoomId()),
-                        member,
-                        unreadCounts.getOrDefault(member.getRoomId(), 0L)
-                ))
+                .map(member -> {
+                    ChatRoomDocument room = requireRoom(roomMap, member.getRoomId());
+                    return ChatRoomJoinedSummaryResponse.of(
+                            room,
+                            member,
+                            unreadCounts.getOrDefault(member.getRoomId(), 0L),
+                            room.getOwnerId().equals(memberId)
+                    );
+                })
                 .toList();
 
         String nextCursor = ChatRoomCursor.resolveNextCursor(memberships, size);
@@ -65,7 +69,11 @@ public class ChatRoomQueryService {
         List<ChatRoomDocument> rooms = chatRoomQueryRepository.findAllRooms(size, cursor);
         Set<String> joinedRoomIds = resolveJoinedRoomIds(memberId, rooms);
         List<ChatRoomAllSummaryResponse> responses = rooms.stream()
-                .map(room -> ChatRoomAllSummaryResponse.from(room, joinedRoomIds.contains(room.getId())))
+                .map(room -> ChatRoomAllSummaryResponse.from(
+                        room,
+                        joinedRoomIds.contains(room.getId()),
+                        room.getOwnerId().equals(memberId)
+                ))
                 .toList();
 
         String nextCursor = ChatRoomAllCursor.resolveNextCursor(rooms, size);
