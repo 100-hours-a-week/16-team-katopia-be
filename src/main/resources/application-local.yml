@@ -3,6 +3,10 @@ spring:
     activate:
       on-profile: local
 
+  data:
+    mongodb:
+      uri: ${MONGO_URL:mongodb://localhost:27017/fitcheck_chat}
+
 
 #  data:
 #    redis:
@@ -26,6 +30,12 @@ spring:
     aws:
       secretsmanager:
         enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
 logging:
   level:

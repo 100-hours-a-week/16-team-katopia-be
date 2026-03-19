@@ -4,7 +4,7 @@
 사용자 간 팔로우 관계를 저장하는 테이블.  
 members와 자기참조 N:M 관계를 표현하며, 중복 팔로우를 방지한다.
 
-### 연관관계
+### 연관 관계
 - members(1) : member_follows(N) (follower 기준)
 - members(1) : member_follows(N) (followed 기준)
 
@@ -22,12 +22,11 @@ No | 컬럼 | 타입 | 제약 | 설명
 4 | created_at | DATETIME | nn | 팔로우 시각
 
 ## 4. 인덱스/제약
-- `uidx_member_follows_follower_followed (follower_id, followed_id)`  
-  - 중복 팔로우 방지(정합성) + 팔로잉 여부 확인(검색 결과에서 isFollowing 계산) 최적화.
-- `idx_member_follows_follower_created (follower_id, created_at)`  
-  - 팔로잉 목록 최신순 조회 및 커서 페이징 최적화.
-- `idx_member_follows_followed_created (followed_id, created_at)`  
-  - 팔로워 목록 최신순 조회 및 커서 페이징 최적화.
+| 인덱스/제약 | 근거 |
+| --- | --- |
+| `uidx_member_follows_follower_followed (follower_id, followed_id)` | 중복 팔로우를 막고, 팔로잉 여부 확인(`isFollowing`)을 단건 조회로 처리하기 위한 유니크 제약 |
+| `idx_member_follows_follower_created (follower_id, created_at)` | 팔로잉 목록 최신순 조회와 커서 페이징을 효율적으로 처리하기 위한 인덱스 |
+| `idx_member_follows_followed_created (followed_id, created_at)` | 팔로워 목록 최신순 조회와 커서 페이징을 효율적으로 처리하기 위한 인덱스 |
 
 ## 5. 운영 정책
 - 팔로우/언팔로우는 분리 API로 제공

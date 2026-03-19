@@ -23,7 +23,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtProvider {
     // Header
-    private static final String BEARER_PREFIX = "Bearer ";
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String BEARER_PREFIX = "Bearer ";
 
     // Cookie
     public static final String REFRESH_COOKIE = "refresh_token";

@@ -8,6 +8,7 @@ import katopia.fitcheck.domain.notification.Notification;
 import katopia.fitcheck.domain.notification.NotificationType;
 import katopia.fitcheck.rabbitmq.RabbitMqConstants;
 import katopia.fitcheck.global.policy.Policy;
+import katopia.fitcheck.repository.notification.NotificationBulkRepository;
 import katopia.fitcheck.repository.notification.NotificationRepository;
 import katopia.fitcheck.service.member.MemberFinder;
 import katopia.fitcheck.service.notification.NotificationRealtimePublisher;
@@ -18,6 +19,12 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +32,7 @@ import java.io.IOException;
 public class NotificationEventConsumer {
 
     private final NotificationRepository notificationRepository;
+    private final NotificationBulkRepository notificationBulkRepository;
     private final MemberFinder memberFinder;
     private final NotificationRealtimePublisher realtimePublisher;
     private final ObjectMapper objectMapper;
@@ -41,9 +49,30 @@ public class NotificationEventConsumer {
                 channel.basicAck(deliveryTag, false);
                 return;
             }
+            Map<Long, Member> membersById = loadMembers(event);
+            Member actor = resolveActor(event, membersById);
+            NotificationType notificationType = NotificationType.fromCode(event.getEventType());
+            NotificationPayloadResult payloadResult = resolvePayload(notificationType, payload);
+
+            List<Notification> notifications = new ArrayList<>(event.getTargetIds().size());
             for (Long targetId : event.getTargetIds()) {
-                Notification notification = createNotification(event, payload, targetId);
-                notificationRepository.save(notification);
+                Member recipient = resolveRecipient(targetId, membersById);
+                Notification notification = Notification.of(
+                        recipient,
+                        actor,
+                        notificationType,
+                        payloadResult.message(),
+                        event.getRefId(),
+                        payloadResult.imageObjectKeySnapshot()
+                );
+                notifications.add(notification);
+            }
+            LocalDateTime now = LocalDateTime.now();
+            for (Notification notification : notifications) {
+                notification.assignCreatedAt(now);
+            }
+            notificationBulkRepository.batchInsert(notifications);
+            for (Notification notification : notifications) {
                 if (notification.getRecipient().isEnableRealtimeNotification()) {
                     realtimePublisher.publish(notification);
                 }
@@ -56,17 +85,27 @@ public class NotificationEventConsumer {
         // TODO: fan-out(투표 종료/게시글 작성) 규모 커지면 전송을 @Async로 분리 검토
     }
 
-    private Notification createNotification(MessageEvent event, NotificationPayload payload, Long targetId) {
-        NotificationType notificationType = NotificationType.fromCode(event.getEventType());
+    private Map<Long, Member> loadMembers(MessageEvent event) {
+        Set<Long> ids = new LinkedHashSet<>(event.getTargetIds());
+        if (event.getActorId() != null) {
+            ids.add(event.getActorId());
+        }
+        return memberFinder.findAllByIdsOrThrow(new ArrayList<>(ids));
+    }
 
-        Member recipient = memberFinder.findByIdOrThrow(targetId);
-        Member actor = event.getActorId() == null ? null : memberFinder.findByIdOrThrow(event.getActorId());
-        NotificationPayloadResult payloadResult = resolvePayload(notificationType, payload);
+    private Member resolveActor(MessageEvent event, Map<Long, Member> membersById) {
+        if (event.getActorId() == null) {
+            return null;
+        }
+        return resolveRecipient(event.getActorId(), membersById);
+    }
 
-
-        String message = payloadResult.message();
-        String imageObjectKeySnapshot = payloadResult.imageObjectKeySnapshot();
-        return Notification.of(recipient, actor, notificationType, message, event.getRefId(), imageObjectKeySnapshot);
+    private Member resolveRecipient(Long memberId, Map<Long, Member> membersById) {
+        Member member = membersById.get(memberId);
+        if (member == null) {
+            throw new IllegalStateException("Missing member. memberId=" + memberId);
+        }
+        return member;
     }
 
     private NotificationPayloadResult resolvePayload(

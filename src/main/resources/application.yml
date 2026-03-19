@@ -18,6 +18,17 @@ spring:
     resources:
       add-mappings: false # 기본 경로 비활성화로 지원하지 않는 경로 또는 메서드를 전역 예외 처리로 넘김
 
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
+        order_inserts: true
+
+  threads:
+    virtual:
+      enabled: false
+
 server:
   port: 8080
   shutdown: graceful # 종료 전 기존 요청 처리 대기 활성화

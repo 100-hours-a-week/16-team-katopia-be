@@ -5,6 +5,7 @@ import com.rabbitmq.client.Channel;
 import katopia.fitcheck.messaging.event.MessageEvent;
 import katopia.fitcheck.rabbitmq.RabbitMqConstants;
 import katopia.fitcheck.domain.notification.NotificationType;
+import katopia.fitcheck.global.policy.Policy;
 import katopia.fitcheck.repository.member.MemberFollowRepository;
 import katopia.fitcheck.repository.vote.VoteParticipationRepository;
 import katopia.fitcheck.service.vote.VoteFinder;
@@ -23,8 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationMetaEventConsumer {
-
-    private static final int BATCH_SIZE = 100;
+    private static final int BATCH_SIZE = Policy.NOTIFICATION_TARGET_BATCH_SIZE;
 
     private final NotificationBatchEventPublisher batchEventPublisher;
     private final VoteParticipationRepository voteParticipationRepository;
