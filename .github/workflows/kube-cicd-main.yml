@@ -2,7 +2,7 @@ name: kube-cicd-dev - Spring
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["main"]
 
 concurrency:
   group: kube-cicd-dev-${{ github.ref }}
