@@ -1,11 +1,11 @@
-name: kube-cicd-dev - Spring
+name: kube-cicd-prod - Spring
 
 on:
   push:
     branches: ["main"]
 
 concurrency:
-  group: kube-cicd-dev-${{ github.ref }}
+  group: kube-cicd-prod-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -49,8 +49,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sed -i 's#^\([[:space:]]*import:[[:space:]]*optional:aws-secretsmanager:\).*#\1kube/secret/spring#' src/main/resources/application-dev.yml
-          grep -n 'import:' src/main/resources/application-dev.yml
+          sed -i 's#^\([[:space:]]*import:[[:space:]]*optional:aws-secretsmanager:\).*#\1kube/secret/spring#' src/main/resources/application-prod.yml
+          grep -n 'import:' src/main/resources/application-prod.yml
 
       - name: Build (gradle build)
         run: gradle --no-daemon --build-cache build -x test
@@ -67,7 +67,7 @@ jobs:
       - name: Upload JAR layers
         uses: actions/upload-artifact@v4
         with:
-          name: jar-layers-kube-dev
+          name: jar-layers-kube-prod
           path: jar-layers/
           retention-days: 1
 
@@ -76,6 +76,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: ci
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      image_uri: ${{ steps.meta.outputs.image_uri }}
 
     steps:
       - name: Checkout
@@ -86,7 +89,7 @@ jobs:
       - name: Download JAR layers
         uses: actions/download-artifact@v4
         with:
-          name: jar-layers-kube-dev
+          name: jar-layers-kube-prod
           path: jar-layers/
 
       - name: Configure AWS credentials
@@ -99,17 +102,72 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Set image metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="prod-${GITHUB_SHA::7}"
+          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY"
+
+          echo "image_tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+
       - name: Build and Push Docker Image
         shell: bash
         run: |
           set -euo pipefail
-          TAG="dev-${GITHUB_SHA::7}"
-          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY"
+          TAG="${{ steps.meta.outputs.image_tag }}"
+          IMAGE_URI="${{ steps.meta.outputs.image_uri }}"
 
           docker build \
             -t "$IMAGE_URI:$TAG" \
-            -t "$IMAGE_URI:dev-backend" \
+            -t "$IMAGE_URI:prod-backend" \
             .
 
           docker push "$IMAGE_URI:$TAG"
-          docker push "$IMAGE_URI:dev-backend"
+          docker push "$IMAGE_URI:prod-backend"
+
+  update-deploy-repo:
+    name: Update deploy repo image tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: build-and-push
+
+    steps:
+      - name: Checkout deploy repo
+        uses: actions/checkout@v4
+        with:
+          repository: 100-hours-a-week/16-team-katopia-deploy
+          token: ${{ secrets.DEPLOY_REPO_PAT }}
+          path: deploy-repo
+
+      - name: Update backend image in deployment manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="deploy-repo/prod/backend/deployment.yaml"
+          NEW_IMAGE="${{ needs.build-and-push.outputs.image_uri }}:${{ needs.build-and-push.outputs.image_tag }}"
+
+          sed -i "s#image: .*#image: ${NEW_IMAGE}#g" "$FILE"
+
+          echo "Updated file:"
+          grep -n "image:" "$FILE"
+
+      - name: Commit and push changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd deploy-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add prod/backend/deployment.yaml
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "chore: update backend image to ${{ needs.build-and-push.outputs.image_tag }}"
+          git push
