@@ -1,7 +1,7 @@
 name: bigbang-docker-cicd-prod - Spring
 on:
   push:
-    branches: ["main"]
+    branches: ["stg"]
 
 concurrency:
   group: bigbang-docker-cicd-prod-${{ github.ref }}
