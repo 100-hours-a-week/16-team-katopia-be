@@ -146,6 +146,63 @@ flowchart TD
   PubSub --> SSE[SSE Realtime Publisher]
 ```
 
+### 실시간 알림 저장/전송 흐름(구현 상세)
+```mermaid
+graph LR
+		subgraph Trigger [Notification Trigger Event]
+			SingleTargetEvent@{ shape: event, label: "Single Target"}
+			MultiTargetEvent@{ shape: event, label: "Multi Target"}
+		end
+
+		SingleTargetEvent move@=="Pub"==> BatchQueue
+    move@{ animation: fast }
+
+		MultiTargetEvent move1@=="Pub"==> TargetQueue
+		move1@{ animation: fast }
+
+    subgraph Message_Queue [Message Queue]
+        TargetQueue@{ shape: das, label: "Target Queue" }
+        BatchQueue@{ shape: das, label: "Batch Queue" }
+    end
+
+    subgraph logicalGraph [ ]
+      Message_Queue
+	    TargetConsumer@{ shape: procs, label: "Target Consumer"}
+	    BatchConsumer@{ shape: procs, label: "Batch Consumer"}
+    end
+
+    TargetQueue move2@==> TargetConsumer
+    TargetConsumer move3@=="Pub"==> BatchQueue
+		move2@{ animation: fast }
+		move3@{ animation: fast }
+
+
+    Database[(Database)]
+    Redis@{ shape: hex, label: "Redis Pub/Sub" }
+
+    BatchConsumer --"1️⃣ save"--> Database
+    BatchQueue -."2️⃣ Ack after save".- BatchConsumer
+    BatchQueue ----> BatchConsumer
+    BatchConsumer -- "3️⃣ async send" --> Redis
+
+    subgraph logicalGraph2 [ ]
+	    Redis --> ServerA --> User
+	    Redis --> ServerB --> User
+	    User((SSE Clients))
+    end
+
+
+style logicalGraph fill:none,stroke:none
+style logicalGraph2 fill:none,stroke:none
+style Message_Queue fill:#f5f5f5,stroke:#333
+style TargetQueue fill:#fff,stroke:#333
+style BatchQueue fill:#fff,stroke:#333
+style Database fill:#e1f5fe,stroke:#01579b
+style Trigger fill:#fff3e0,stroke:#ff6f00
+
+
+```
+
 ### 보장 수준
 - 실시간 전송: best-effort
 - 알림 저장: at-least-once
