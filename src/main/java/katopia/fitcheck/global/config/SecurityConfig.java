@@ -51,7 +51,7 @@ public class SecurityConfig {
                     if (allowActuatorAll) {
                         auth.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll();
                     } else {
-                        auth.requestMatchers(EndpointRequest.to("health")).permitAll();
+                        auth.requestMatchers(EndpointRequest.to("health", "prometheus")).permitAll();
                     }
                     if (allowDevOnly) {
                         auth.requestMatchers(EndpointRequest.to("prometheus", "metrics")).permitAll();
