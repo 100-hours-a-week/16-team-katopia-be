@@ -79,7 +79,7 @@ public final class Policy {
             SSE_TIMEOUT = Duration.ofMinutes(5),
             SSE_HEARTBEAT_INTERVAL = ALB_CONNECTION_IDLE_TIMEOUT.minusSeconds(10);
     public static final int
-            SSE_MAX_CONNECTIONS = 3,
+            SSE_MAX_CONNECTIONS = 9999,
             SSE_HEARTBEAT_GROUPS = 10,
             SSE_UNREAD_LIMIT = 10,
             SSE_UNREAD_LIMIT_MAX = 20;

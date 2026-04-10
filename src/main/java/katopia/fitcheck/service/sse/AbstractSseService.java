@@ -29,19 +29,32 @@ public abstract class AbstractSseService<T> {
     public SseEmitter connect(Long memberId, List<T> initialPayloads) {
         String connectionId = newConnectionId();
         long connectedAt = System.currentTimeMillis();
-        onConnected(memberId, connectionId, connectedAt);
-
         SseEmitter emitter = new SseEmitter(Policy.SSE_TIMEOUT.toMillis());
-        registerConnection(memberId, connectionId, emitter);
 
         // 연결 종료/타임아웃/에러 발생 관리
         emitter.onCompletion(() -> disconnect(connectionId));
         emitter.onTimeout(() -> disconnect(connectionId));
         emitter.onError(ex -> disconnect(connectionId));
 
-        // 초기 연결 및 초기 데이터 순차 전송
-        sendPing(connectionId);
-        sendInitial(connectionId, initialPayloads);
+        if (!sendPing(emitter, connectionId)) {
+            return emitter;
+        }
+        if (!sendInitial(emitter, connectionId, initialPayloads)) {
+            return emitter;
+        }
+
+        boolean externalRegistered = false;
+        try {
+            onConnected(memberId, connectionId, connectedAt);
+            externalRegistered = true;
+            registerConnection(memberId, connectionId, emitter);
+        } catch (RuntimeException ex) {
+            if (externalRegistered) {
+                onDisconnected(memberId, connectionId);
+            }
+            completeSilently(emitter);
+            throw ex;
+        }
         return emitter;
     }
 
@@ -141,13 +154,17 @@ public abstract class AbstractSseService<T> {
      * @param connectionId  전송 대상 연결 ID
      * @param initialPayloads 초기 전송할 페이로드 목록
      */
-    protected void sendInitial(String connectionId, List<T> initialPayloads) {
+    protected boolean sendInitial(SseEmitter emitter, String connectionId, List<T> initialPayloads) {
         if (initialPayloads == null || initialPayloads.isEmpty()) {
-            return;
+            return true;
         }
         for (T payload : initialPayloads) {
-            sendToConnection(connectionId, payload);
+            if (!sendToEmitter(emitter, toEvent(payload))) {
+                log.debug("Initial SSE payload send failed. connectionId={}", connectionId);
+                return false;
+            }
         }
+        return true;
     }
 
     /**
@@ -160,13 +177,19 @@ public abstract class AbstractSseService<T> {
         if (connection == null) {
             return;
         }
-        try {
-            connection.emitter.send(SseEmitter.event()
-                    .name("ping")
-                    .data("connected"));
-        } catch (IOException ex) {
+        if (!sendPing(connection.emitter, connectionId)) {
             disconnect(connectionId);
         }
+    }
+
+    protected boolean sendPing(SseEmitter emitter, String connectionId) {
+        if (!sendToEmitter(emitter, SseEmitter.event()
+                .name("ping")
+                .data("connected"))) {
+            log.debug("Initial SSE ping send failed. connectionId={}", connectionId);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -209,11 +232,9 @@ public abstract class AbstractSseService<T> {
         if (connection == null) {
             return;
         }
-        try {
-            connection.emitter.send(toEvent(payload));
-        } catch (IOException ex) {
+        if (!sendToEmitter(connection.emitter, toEvent(payload))) {
             disconnect(connectionId);
-            log.debug("SSE send failed for memberId={}", connection.memberId, ex);
+            log.debug("SSE send failed for memberId={}", connection.memberId);
         }
     }
 
@@ -229,11 +250,26 @@ public abstract class AbstractSseService<T> {
         if (connection == null) {
             return;
         }
-        try {
-            connection.emitter.send(toEvent(eventName, payload));
-        } catch (IOException ex) {
+        if (!sendToEmitter(connection.emitter, toEvent(eventName, payload))) {
             disconnect(connectionId);
-            log.debug("SSE send failed for memberId={}", connection.memberId, ex);
+            log.debug("SSE send failed for memberId={}", connection.memberId);
+        }
+    }
+
+    private boolean sendToEmitter(SseEmitter emitter, SseEmitter.SseEventBuilder event) {
+        try {
+            emitter.send(event);
+            return true;
+        } catch (IOException ex) {
+            completeSilently(emitter);
+            return false;
+        }
+    }
+
+    private void completeSilently(SseEmitter emitter) {
+        try {
+            emitter.complete();
+        } catch (RuntimeException ignored) {
         }
     }
 
